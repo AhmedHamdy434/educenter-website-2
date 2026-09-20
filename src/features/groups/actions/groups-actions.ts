@@ -12,7 +12,7 @@ import {
 import { type ApiResponse, QueryParams } from "@/types";
 
 export interface GroupQueryParams extends QueryParams {
-  active?: boolean;
+  active?: string | boolean;
   gradeId?: string;
   subjectId?: string;
   teacherId?: string;

@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo } from "react";
 import { Plus, Layers } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -11,36 +12,48 @@ import { GradeForm } from "./GradeForm";
 import { useGradesQuery } from "../hooks/queries";
 import { useToggleGradeMutation } from "../hooks/mutations";
 import { getGradeColumns } from "./columns";
-import { useTableFilters } from "@/hooks/useTableFilters";
-import { useGradesModal } from "../state/useGradesModal";
+import { useCrudModal } from "@/hooks/useCrudModal";
 import { type Grade } from "../types";
-import { type ApiResponse } from "@/types";
+import { useTableFilters } from "@/hooks/useTableFilters";
+import { STATUSES } from "@/constants/dropdown-options";
 
-interface GradesListClientProps {
-  initialData: ApiResponse<Grade[]>;
+interface GradeFilters {
+  active?: string;
 }
 
-export function GradesListClient({ initialData }: GradesListClientProps) {
-  // Pagination, search, and filter state
+export function GradesListClient() {
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleFilterChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    active,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+    updateQuery,
+  } = useTableFilters<GradeFilters>();
+
+  const queryParams = {
+    page,
+    limit,
+    search,
+    active,
+    sortBy,
+    sortOrder,
+  };
 
   // Modal state & selected grade
   const {
     isOpen: isModalOpen,
-    selectedGrade,
+    selectedItem: selectedGrade,
     openCreate,
     openEdit,
     close: closeModal,
-  } = useGradesModal();
+  } = useCrudModal<Grade>();
 
   // Data fetching
-  const { data, isLoading } = useGradesQuery(params, initialData);
+  const { data, isLoading } = useGradesQuery(queryParams);
 
   const grades = data?.data || [];
   const total = data?.meta?.total || 0;
@@ -84,19 +97,17 @@ export function GradesListClient({ initialData }: GradesListClientProps) {
           className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
           dir="rtl"
         >
-          <TableSearch
-            placeholder="ابحث عن مرحلة دراسية..."
-            value={params.search}
-            onChange={handleSearchChange}
-          />
+          <TableSearch placeholder="ابحث عن مرحلة دراسية..." />
           <FilterDropdown
             placeholder="فلترة حسب الحالة"
-            value={(params.active as unknown as string) || ""}
-            onChange={(val) => handleFilterChange("active", val)}
-            options={[
-              { label: "نشط", value: "true" },
-              { label: "معطل", value: "false" },
-            ]}
+            value={active || ""}
+            onChange={(val) =>
+              updateQuery({
+                active: val || undefined,
+                page: 1,
+              })
+            }
+            options={STATUSES}
           />
         </div>
 
@@ -104,12 +115,12 @@ export function GradesListClient({ initialData }: GradesListClientProps) {
           columns={columns}
           data={grades}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مراحل دراسية."
         />
       </Card>

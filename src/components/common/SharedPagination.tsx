@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,24 +10,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DEFAULT_LIMIT, LIMITS } from "@/constants/dropdown-options";
 
 interface SharedPaginationProps {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
   total: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
-  onLimitChange: (limit: number) => void;
 }
 
 export function SharedPagination({
-  page,
-  limit,
+  page = 1,
+  limit = DEFAULT_LIMIT,
   total,
   totalPages,
-  onPageChange,
-  onLimitChange,
 }: SharedPaginationProps) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("limit", newLimit.toString());
+    params.set("page", "1");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
   if (total === 0) return null;
 
   const getPageNumbers = () => {
@@ -69,7 +82,10 @@ export function SharedPagination({
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2 text-muted-foreground text-sm w-full" dir="rtl">
+    <div
+      className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2 text-muted-foreground text-sm w-full"
+      dir="rtl"
+    >
       {/* Limit select & Info */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
@@ -77,15 +93,19 @@ export function SharedPagination({
           <Select
             value={limit.toString()}
             onValueChange={(val) => {
-              onLimitChange(Number(val));
+              handleLimitChange(Number(val));
             }}
           >
             <SelectTrigger className="h-9 w-20 border border-border rounded-lg text-foreground bg-card focus:ring-1 focus:ring-ring focus:border-ring focus-visible:outline-none">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border border-border rounded-lg shadow-lg">
-              {[5, 10, 20, 50].map((size) => (
-                <SelectItem key={size} value={size.toString()} className="cursor-pointer focus:bg-secondary">
+              {LIMITS.map((size) => (
+                <SelectItem
+                  key={size}
+                  value={size.toString()}
+                  className="cursor-pointer focus:bg-secondary"
+                >
                   {size}
                 </SelectItem>
               ))}
@@ -106,13 +126,13 @@ export function SharedPagination({
             variant="outline"
             size="icon"
             className="size-9 border-border rounded-lg bg-card text-foreground/75 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            onClick={() => onPageChange(page - 1)}
+            onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             aria-label="الصفحة السابقة"
           >
             <ChevronRight className="size-4" />
           </Button>
-          
+
           {getPageNumbers().map((p, idx) => {
             if (typeof p === "string") {
               return (
@@ -132,7 +152,7 @@ export function SharedPagination({
                 key={p}
                 variant={isActive ? "default" : "outline"}
                 size="icon"
-                onClick={() => onPageChange(p)}
+                onClick={() => handlePageChange(p)}
                 className={`size-9 rounded-lg font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   isActive
                     ? "bg-primary text-primary-foreground hover:bg-primary/90 border-transparent"
@@ -148,7 +168,7 @@ export function SharedPagination({
             variant="outline"
             size="icon"
             className="size-9 border-border rounded-lg bg-card text-foreground/75 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            onClick={() => onPageChange(page + 1)}
+            onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             aria-label="الصفحة التالية"
           >

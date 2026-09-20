@@ -42,6 +42,7 @@ export function getAuditLogColumns({ onViewDetails }: ColumnsProps) {
     {
       accessorKey: "action",
       header: "نوع الإجراء",
+      enableSorting: true,
       cell: ({ row }: { row: { original: AuditLog } }) => (
         <Badge
           variant="outline"
@@ -72,6 +73,7 @@ export function getAuditLogColumns({ onViewDetails }: ColumnsProps) {
     {
       accessorKey: "createdAt",
       header: "تاريخ العملية",
+      enableSorting: true,
       cell: ({ row }: { row: { original: AuditLog } }) => {
         const dateStr = row.original.createdAt
           ? new Date(row.original.createdAt).toLocaleString("ar-EG", {

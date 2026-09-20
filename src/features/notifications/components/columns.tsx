@@ -33,6 +33,7 @@ export function getNotificationColumns() {
     {
       accessorKey: "recipient",
       header: "المستلم",
+      enableSorting: true,
       cell: ({ row }: { row: { original: NotificationLog } }) => {
         const name = row.original.recipient || "مستلم غير مسمى";
         return (
@@ -112,6 +113,7 @@ export function getNotificationColumns() {
     {
       accessorKey: "createdAt",
       header: "وقت الإرسال",
+      enableSorting: true,
       cell: ({ row }: { row: { original: NotificationLog } }) => {
         const dateStr =
           row.original.sentAt || row.original.createdAt

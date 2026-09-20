@@ -26,6 +26,7 @@ export function getSubjectColumns({
     {
       accessorKey: "name",
       header: "اسم المادة الدراسية",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Subject } }) => (
         <span className="font-semibold text-foreground">
           {row.original.name}

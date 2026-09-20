@@ -71,7 +71,9 @@ export interface QueryParams {
   page?: number;
   limit?: number;
   search?: string;
-  active?: boolean | null;
+  active?: string | boolean;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export interface MutationOptions {

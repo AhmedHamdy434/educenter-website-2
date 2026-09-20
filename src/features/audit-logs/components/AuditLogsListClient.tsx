@@ -10,8 +10,13 @@ import { getAuditLogColumns } from "./columns";
 import { AuditLogDetailsModal } from "./AuditLogDetailsModal";
 import { useAuditLogsQuery } from "../hooks/queries";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { type AuditLog } from "../types";
+import { type AuditLog, type AuditLogFilterParams } from "../types";
 import { type ApiResponse } from "@/types";
+
+interface AuditLogFilters {
+  action?: string;
+  entity?: string;
+}
 
 interface AuditLogsListClientProps {
   initialData: ApiResponse<AuditLog[]>;
@@ -21,13 +26,28 @@ export function AuditLogsListClient({ initialData }: AuditLogsListClientProps) {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    action,
+    entity,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+  } = useTableFilters<AuditLogFilters>();
 
-  const { data, isLoading } = useAuditLogsQuery(params, initialData);
+  const queryParams: AuditLogFilterParams = {
+    page,
+    limit,
+    search,
+    action,
+    entity,
+    sortBy,
+    sortOrder,
+  };
+
+  const { data, isLoading } = useAuditLogsQuery(queryParams, initialData);
 
   const logs = data?.data || [];
   const total = data?.meta?.total || logs.length;
@@ -53,23 +73,19 @@ export function AuditLogsListClient({ initialData }: AuditLogsListClientProps) {
       {/* 2. Filters & Table */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
-          <TableSearch
-            placeholder="ابحث في سجل العمليات..."
-            value={params.search}
-            onChange={handleSearchChange}
-          />
+          <TableSearch placeholder="ابحث في سجل العمليات..." />
         </div>
 
         <SharedTable
           columns={columns}
           data={logs}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لا توجد عمليات مسجلة في سجل التدقيق حالياً."
         />
       </Card>
@@ -83,3 +99,4 @@ export function AuditLogsListClient({ initialData }: AuditLogsListClientProps) {
     </div>
   );
 }
+

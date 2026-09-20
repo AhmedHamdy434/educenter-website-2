@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableSearch } from "@/components/common/TableSearch";
@@ -10,8 +10,13 @@ import { Card } from "@/components/ui/card";
 import { getNotificationColumns } from "./columns";
 import { useNotificationsQuery } from "../hooks/queries";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { type NotificationLog } from "../types";
+import { type NotificationLog, type NotificationFilterParams } from "../types";
 import { type ApiResponse } from "@/types";
+
+interface NotificationFilters {
+  status?: string;
+  type?: string;
+}
 
 interface NotificationsListClientProps {
   initialData: ApiResponse<NotificationLog[]>;
@@ -20,23 +25,28 @@ interface NotificationsListClientProps {
 export function NotificationsListClient({
   initialData,
 }: NotificationsListClientProps) {
-  const [status, setStatus] = useState<string>("");
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    status,
+    type,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+    updateQuery,
+  } = useTableFilters<NotificationFilters>();
 
-  const queryParams = useMemo(
-    () => ({
-      page: params.page,
-      limit: params.limit,
-      search: params.search,
-      status: status || undefined,
-    }),
-    [params, status]
-  );
+  const queryParams: NotificationFilterParams = {
+    page,
+    limit,
+    search,
+    status,
+    type,
+    sortBy,
+    sortOrder,
+  };
 
   const { data, isLoading } = useNotificationsQuery(queryParams, initialData);
 
@@ -58,22 +68,24 @@ export function NotificationsListClient({
       {/* 2. Filters & Table */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
-          <TableSearch
-            placeholder="ابحث بالاسم أو رقم الهاتف أو محتوى الرسالة..."
-            value={params.search}
-            onChange={handleSearchChange}
-          />
+          <TableSearch placeholder="ابحث بالاسم أو رقم الهاتف أو محتوى الرسالة..." />
           <div className="flex items-center gap-3">
             <FilterDropdown
               placeholder="حالة التسليم"
-              value={status}
-              onChange={setStatus}
+              value={status || ""}
+              onChange={(val) =>
+                updateQuery({
+                  status: val || undefined,
+                  page: 1,
+                })
+              }
               options={[
                 { label: "تم التسليم", value: "DELIVERED" },
                 { label: "تم الإرسال", value: "SENT" },
                 { label: "قيد الإرسال", value: "PENDING" },
                 { label: "فشل الإرسال", value: "FAILED" },
               ]}
+              allOptionLabel="كل الحالات"
             />
           </div>
         </div>
@@ -82,15 +94,16 @@ export function NotificationsListClient({
           columns={columns}
           data={notifications}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي رسائل مسجلة في السجل حالياً."
         />
       </Card>
     </div>
   );
 }
+

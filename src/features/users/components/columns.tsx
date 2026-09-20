@@ -28,6 +28,7 @@ export function getUserColumns({ onToggleStatus, togglingId }: ColumnsProps) {
     {
       accessorKey: "fullName",
       header: "المستخدم",
+      enableSorting: true,
       cell: ({ row }: { row: { original: UserListItem } }) => (
         <div className="flex items-center gap-3 text-right">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary font-bold text-sm border border-border">
@@ -76,6 +77,7 @@ export function getUserColumns({ onToggleStatus, togglingId }: ColumnsProps) {
     {
       accessorKey: "createdAt",
       header: "تاريخ الإنشاء",
+      enableSorting: true,
       cell: ({ row }: { row: { original: UserListItem } }) => {
         const dateStr = row.original.createdAt
           ? new Date(row.original.createdAt).toLocaleDateString("ar-EG", {

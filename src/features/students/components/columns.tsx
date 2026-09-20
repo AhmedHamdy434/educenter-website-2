@@ -20,8 +20,10 @@ export function getStudentColumns({
 }: ColumnsProps) {
   return [
     {
+      id: "name",
       accessorKey: "user.fullName",
       header: "الطالب",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Student } }) => (
         <div className="flex flex-col text-right">
           <span className="font-bold text-foreground">

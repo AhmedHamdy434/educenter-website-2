@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableSearch } from "@/components/common/TableSearch";
@@ -11,33 +11,42 @@ import { getUserColumns } from "./columns";
 import { useUsersQuery } from "../hooks/queries";
 import { useUpdateUserStatusMutation } from "../hooks/mutations";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { type UserListItem } from "../types";
+import { STATUSES } from "@/constants/dropdown-options";
+import { type UserListItem, type UserFilterParams } from "../types";
 import { type ApiResponse } from "@/types";
+
+interface UserFilters {
+  active?: string;
+  role?: string;
+}
 
 interface UsersListClientProps {
   initialData: ApiResponse<UserListItem[]>;
 }
 
 export function UsersListClient({ initialData }: UsersListClientProps) {
-  const [role, setRole] = useState<string>("");
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleFilterChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    active,
+    role,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+    updateQuery,
+  } = useTableFilters<UserFilters>();
 
-  const queryParams = useMemo(
-    () => ({
-      page: params.page,
-      limit: params.limit,
-      search: params.search,
-      active: params.active,
-      role: role || undefined,
-    }),
-    [params, role]
-  );
+  const queryParams: UserFilterParams = {
+    page,
+    limit,
+    search,
+    active,
+    role,
+    sortBy,
+    sortOrder,
+  };
 
   const { data, isLoading } = useUsersQuery(queryParams, initialData);
 
@@ -78,29 +87,33 @@ export function UsersListClient({ initialData }: UsersListClientProps) {
       {/* 2. Filters & Table inside Container Card */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
-          <TableSearch
-            placeholder="ابحث بالاسم أو البريد أو الهاتف..."
-            value={params.search}
-            onChange={handleSearchChange}
-          />
-          <div className="flex items-center gap-3">
+          <TableSearch placeholder="ابحث بالاسم أو البريد أو الهاتف..." />
+          <div className="flex flex-wrap items-center gap-3">
             <FilterDropdown
               placeholder="نوع الحساب"
-              value={role}
-              onChange={setRole}
+              value={role || ""}
+              onChange={(val) =>
+                updateQuery({
+                  role: val || undefined,
+                  page: 1,
+                })
+              }
               options={[
                 { label: "معلم", value: "TEACHER" },
                 { label: "طالب", value: "STUDENT" },
               ]}
+              allOptionLabel="كل الأدوار"
             />
             <FilterDropdown
               placeholder="حالة الحساب"
-              value={(params.active as unknown as string) || ""}
-              onChange={(val) => handleFilterChange("active", val)}
-              options={[
-                { label: "نشط", value: "true" },
-                { label: "معطل", value: "false" },
-              ]}
+              value={active || ""}
+              onChange={(val) =>
+                updateQuery({
+                  active: val || undefined,
+                  page: 1,
+                })
+              }
+              options={STATUSES}
             />
           </div>
         </div>
@@ -109,15 +122,16 @@ export function UsersListClient({ initialData }: UsersListClientProps) {
           columns={columns}
           data={users}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مستخدمين مطابقين لمعايير البحث."
         />
       </Card>
     </div>
   );
 }
+

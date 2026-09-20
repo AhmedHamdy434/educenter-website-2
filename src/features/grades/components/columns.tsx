@@ -17,6 +17,7 @@ export function getGradeColumns({
     {
       accessorKey: "order",
       header: "الترتيب",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Grade } }) => (
         <span className="inline-flex items-center justify-center rounded-md bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground border border-border">
           {row.original.order}
@@ -26,6 +27,7 @@ export function getGradeColumns({
     {
       accessorKey: "name",
       header: "اسم المرحلة الدراسية",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Grade } }) => (
         <span className="font-bold text-foreground">
           {row.original.name}

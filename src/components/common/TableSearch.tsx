@@ -11,6 +11,8 @@ interface TableSearchProps {
   paramName?: string;
   debounceMs?: number;
   className?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export function TableSearch({
@@ -18,24 +20,40 @@ export function TableSearch({
   paramName = "search",
   debounceMs = 400,
   className,
+  value: controlledValue,
+  onChange: controlledOnChange,
 }: TableSearchProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const currentParam = searchParams.get(paramName) ?? "";
+  const isControlled = controlledOnChange !== undefined;
+
+  const currentParam = !isControlled ? searchParams.get(paramName) ?? "" : "";
   const [prevParam, setPrevParam] = useState(currentParam);
-  const [searchTerm, setSearchTerm] = useState(currentParam);
+  const [searchTerm, setSearchTerm] = useState(controlledValue ?? currentParam);
   const debouncedSearchTerm = useDebounce(searchTerm, debounceMs);
 
+  // Sync internal state if controlledValue changes
+  useEffect(() => {
+    if (isControlled && controlledValue !== undefined) {
+      setSearchTerm(controlledValue);
+    }
+  }, [isControlled, controlledValue]);
+
   // Sync internal state if URL search param changes externally (e.g. navigation or reset)
-  if (currentParam !== prevParam) {
+  if (!isControlled && currentParam !== prevParam) {
     setPrevParam(currentParam);
     setSearchTerm(currentParam);
   }
 
-  // Update URL search param when debounced search term changes
+  // Update URL search param or call controlledOnChange when debounced search term changes
   useEffect(() => {
+    if (isControlled) {
+      controlledOnChange(debouncedSearchTerm);
+      return;
+    }
+
     const activeParam = searchParams.get(paramName) ?? "";
     if (debouncedSearchTerm === activeParam) return;
 
@@ -54,11 +72,16 @@ export function TableSearch({
     const targetUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
 
     router.replace(targetUrl, { scroll: false });
-  }, [debouncedSearchTerm, paramName, pathname, router, searchParams]);
+  }, [debouncedSearchTerm, isControlled, controlledOnChange, paramName, pathname, router, searchParams]);
 
   const handleClear = () => {
     setSearchTerm("");
     setPrevParam("");
+
+    if (isControlled) {
+      controlledOnChange("");
+      return;
+    }
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete(paramName);

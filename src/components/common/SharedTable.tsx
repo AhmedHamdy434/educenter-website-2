@@ -5,20 +5,26 @@ import {
   getCoreRowModel,
   flexRender,
   ColumnDef,
+  SortingState,
+  OnChangeFn,
 } from "@tanstack/react-table";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SharedPagination } from "./SharedPagination";
+import { DEFAULT_LIMIT } from "@/constants/dropdown-options";
+import { cn } from "@/lib/utils";
 
 interface SharedTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
   isLoading?: boolean;
+  // Sorting
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
   // Pagination
   page?: number;
   limit?: number;
   total?: number;
   totalPages?: number;
-  onPageChange?: (page: number) => void;
-  onLimitChange?: (limit: number) => void;
   emptyMessage?: string;
 }
 
@@ -26,17 +32,26 @@ export function SharedTable<TData>({
   columns,
   data,
   isLoading = false,
-  page = 1,
-  limit = 10,
+  sorting,
+  onSortingChange,
+  page,
+  limit,
   total = 0,
   totalPages = 1,
-  onPageChange,
-  onLimitChange,
   emptyMessage = "لا توجد بيانات لعرضها.",
 }: SharedTableProps<TData>) {
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting: sorting ?? [],
+    },
+    onSortingChange,
+    manualSorting: true,
+    enableMultiSort: false,
+    defaultColumn: {
+      enableSorting: false,
+    },
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -50,26 +65,60 @@ export function SharedTable<TData>({
             <thead className="bg-secondary/70 text-foreground text-xs">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-5 py-3 font-bold text-foreground"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
+                  {headerGroup.headers.map((header) => {
+                    const canSort = header.column.getCanSort();
+                    const isSorted = header.column.getIsSorted();
+
+                    return (
+                      <th
+                        key={header.id}
+                        className={cn(
+                          "px-5 py-3 font-bold text-foreground transition-colors",
+                          canSort &&
+                            "cursor-pointer select-none hover:bg-secondary/90",
+                        )}
+                        onClick={
+                          canSort
+                            ? header.column.getToggleSortingHandler()
+                            : undefined
+                        }
+                      >
+                        {header.isPlaceholder ? null : (
+                          <div
+                            className={cn(
+                              "flex items-center gap-1.5",
+                              canSort && "group",
+                            )}
+                          >
+                            <span>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </span>
+                            {canSort && (
+                              <span className="shrink-0 text-muted-foreground transition-colors">
+                                {isSorted === "asc" ? (
+                                  <ArrowUp className="size-3.5 text-primary" />
+                                ) : isSorted === "desc" ? (
+                                  <ArrowDown className="size-3.5 text-primary" />
+                                ) : (
+                                  <ArrowUpDown className="size-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
             <tbody className="divide-y divide-border/60 text-foreground">
               {isLoading ? (
                 // Skeleton Rows
-                Array.from({ length: limit }).map((_, rowIndex) => (
+                Array.from({ length: limit ?? DEFAULT_LIMIT }).map((_, rowIndex) => (
                   <tr key={rowIndex} className="animate-pulse">
                     {columns.map((_, colIndex) => (
                       <td key={colIndex} className="px-5 py-3">
@@ -118,8 +167,6 @@ export function SharedTable<TData>({
           limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={onPageChange || (() => {})}
-          onLimitChange={onLimitChange || (() => {})}
         />
       )}
     </div>

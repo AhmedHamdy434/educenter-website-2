@@ -26,6 +26,7 @@ export function getGroupColumns({
     {
       accessorKey: "name",
       header: "المجموعة",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Group } }) => (
         <div className="flex flex-col text-right">
           <Link

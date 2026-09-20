@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -13,47 +14,66 @@ import { ParentLinkModal } from "./ParentLinkModal";
 import { useStudentsQuery } from "../hooks/queries";
 import { useToggleStudentMutation } from "../hooks/mutations";
 import { getStudentColumns } from "./columns";
+import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { useStudentsModal } from "../state/useStudentsModal";
+import { STATUSES } from "@/constants/dropdown-options";
 import { type Student } from "../types";
 import { type ApiResponse } from "@/types";
+
+interface StudentFilters {
+  active?: string;
+  gradeId?: string;
+}
 
 interface StudentsListClientProps {
   initialData: ApiResponse<Student[]>;
   gradesOptions: { value: string; label: string }[];
 }
 
-export function StudentsListClient({ initialData, gradesOptions }: StudentsListClientProps) {
-  const [paymentHistoryStudent, setPaymentHistoryStudent] = useState<Student | null>(null);
-  const [magicLinkStudent, setMagicLinkStudent] = useState<Student | null>(null);
+export function StudentsListClient({
+  initialData,
+  gradesOptions,
+}: StudentsListClientProps) {
+  const [paymentHistoryStudent, setPaymentHistoryStudent] =
+    useState<Student | null>(null);
+  const [magicLinkStudent, setMagicLinkStudent] = useState<Student | null>(
+    null,
+  );
 
-  // Pagination, search, and filter state
+  // Pagination, search, sort, and filter state
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleFilterChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    active,
+    gradeId,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+    updateQuery,
+  } = useTableFilters<StudentFilters>();
+
+  const queryParams = {
+    page,
+    limit,
+    search,
+    active,
+    gradeId,
+    sortBy,
+    sortOrder,
+  };
 
   // Modal state & selected student
   const {
     isOpen: isModalOpen,
-    selectedStudent,
+    selectedItem: selectedStudent,
     openCreate,
     openEdit,
     close: closeModal,
-  } = useStudentsModal();
+  } = useCrudModal<Student>();
 
   // Data fetching
-  const queryParams = useMemo(() => ({
-    page: params.page,
-    limit: params.limit,
-    search: params.search,
-    active: params.active,
-    gradeId: params.gradeId || undefined,
-  }), [params]);
-
   const { data, isLoading } = useStudentsQuery(queryParams, initialData);
 
   const students = data?.data || [];
@@ -81,7 +101,7 @@ export function StudentsListClient({ initialData, gradesOptions }: StudentsListC
   );
 
   return (
-    <div className="space-y-6 text-right">
+    <div className="space-y-6 text-right" dir="rtl">
       {/* 1. Header */}
       <PageHeader
         title="الطلاب"
@@ -93,33 +113,36 @@ export function StudentsListClient({ initialData, gradesOptions }: StudentsListC
         }}
       />
 
-      {/* 2. Filters & Table */}
-      <Card className="space-y-4">
+      {/* 2. Filters & Table inside Container Card */}
+      <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-4"
+          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
           dir="rtl"
         >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center flex-1">
-            <TableSearch
-              placeholder="ابحث عن طالب..."
-              value={params.search}
-              onChange={handleSearchChange}
-            />
+          <TableSearch placeholder="ابحث عن طالب..." />
+          <div className="flex flex-wrap items-center gap-3">
             <FilterDropdown
               placeholder="المرحلة الدراسية"
-              value={params.gradeId || ""}
-              onChange={(val) => handleFilterChange("gradeId", val)}
+              value={gradeId || ""}
+              onChange={(val) =>
+                updateQuery({
+                  gradeId: val || undefined,
+                  page: 1,
+                })
+              }
               options={gradesOptions}
               allOptionLabel="كل المراحل"
             />
             <FilterDropdown
               placeholder="فلترة حسب الحالة"
-              value={(params.active as unknown as string) || ""}
-              onChange={(val) => handleFilterChange("active", val)}
-              options={[
-                { label: "نشط", value: "true" },
-                { label: "معطل", value: "false" },
-              ]}
+              value={active || ""}
+              onChange={(val) =>
+                updateQuery({
+                  active: val || undefined,
+                  page: 1,
+                })
+              }
+              options={STATUSES}
             />
           </div>
         </div>
@@ -128,12 +151,12 @@ export function StudentsListClient({ initialData, gradesOptions }: StudentsListC
           columns={columns}
           data={students}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي طلاب."
         />
       </Card>
@@ -142,9 +165,7 @@ export function StudentsListClient({ initialData, gradesOptions }: StudentsListC
       <SharedModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={
-          selectedStudent ? "تعديل بيانات الطالب" : "إضافة طالب جديد"
-        }
+        title={selectedStudent ? "تعديل بيانات الطالب" : "إضافة طالب جديد"}
       >
         <StudentForm
           isOpen={isModalOpen}
@@ -173,3 +194,4 @@ export function StudentsListClient({ initialData, gradesOptions }: StudentsListC
     </div>
   );
 }
+

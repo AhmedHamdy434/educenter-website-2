@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -11,44 +12,60 @@ import { TeacherForm } from "./TeacherForm";
 import { useTeachersQuery } from "../hooks/queries";
 import { useToggleTeacherMutation } from "../hooks/mutations";
 import { getTeacherColumns } from "./columns";
+import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { useTeachersModal } from "../state/useTeachersModal";
+import { STATUSES } from "@/constants/dropdown-options";
 import { type Teacher } from "../types";
 import { type ApiResponse } from "@/types";
+
+interface TeacherFilters {
+  active?: string;
+  subjectId?: string;
+}
 
 interface TeachersListClientProps {
   initialData: ApiResponse<Teacher[]>;
   subjectsOptions: { value: string; label: string }[];
 }
 
-export function TeachersListClient({ initialData, subjectsOptions }: TeachersListClientProps) {
-  // Pagination, search, and filter state
+export function TeachersListClient({
+  initialData,
+  subjectsOptions,
+}: TeachersListClientProps) {
+  // Pagination, search, sort, and filter state
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleFilterChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    active,
+    subjectId,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+    updateQuery,
+  } = useTableFilters<TeacherFilters>();
+
+  const queryParams = {
+    page,
+    limit,
+    search,
+    active,
+    subjectId,
+    sortBy,
+    sortOrder,
+  };
 
   // Modal state & selected teacher
   const {
     isOpen: isModalOpen,
-    selectedTeacher,
+    selectedItem: selectedTeacher,
     openCreate,
     openEdit,
     close: closeModal,
-  } = useTeachersModal();
+  } = useCrudModal<Teacher>();
 
   // Data fetching
-  const queryParams = useMemo(() => ({
-    page: params.page,
-    limit: params.limit,
-    search: params.search,
-    active: params.active,
-    subjectId: params.subjectId || undefined,
-  }), [params]);
-
   const { data, isLoading } = useTeachersQuery(queryParams, initialData);
 
   const teachers = data?.data || [];
@@ -86,33 +103,36 @@ export function TeachersListClient({ initialData, subjectsOptions }: TeachersLis
         }}
       />
 
-      {/* 2. Filters & Table */}
-      <Card className="space-y-4">
+      {/* 2. Filters & Table inside Container Card */}
+      <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-4"
+          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
           dir="rtl"
         >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center flex-1">
-            <TableSearch
-              placeholder="ابحث عن مدرس..."
-              value={params.search}
-              onChange={handleSearchChange}
-            />
+          <TableSearch placeholder="ابحث عن مدرس..." />
+          <div className="flex flex-wrap items-center gap-3">
             <FilterDropdown
               placeholder="المادة الدراسية"
-              value={params.subjectId || ""}
-              onChange={(val) => handleFilterChange("subjectId", val)}
+              value={subjectId || ""}
+              onChange={(val) =>
+                updateQuery({
+                  subjectId: val || undefined,
+                  page: 1,
+                })
+              }
               options={subjectsOptions}
               allOptionLabel="كل المواد"
             />
             <FilterDropdown
               placeholder="فلترة حسب الحالة"
-              value={(params.active as unknown as string) || ""}
-              onChange={(val) => handleFilterChange("active", val)}
-              options={[
-                { label: "نشط", value: "true" },
-                { label: "معطل", value: "false" },
-              ]}
+              value={active || ""}
+              onChange={(val) =>
+                updateQuery({
+                  active: val || undefined,
+                  page: 1,
+                })
+              }
+              options={STATUSES}
             />
           </div>
         </div>
@@ -121,12 +141,12 @@ export function TeachersListClient({ initialData, subjectsOptions }: TeachersLis
           columns={columns}
           data={teachers}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مدرسين."
         />
       </Card>
@@ -135,9 +155,7 @@ export function TeachersListClient({ initialData, subjectsOptions }: TeachersLis
       <SharedModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={
-          selectedTeacher ? "تعديل بيانات المدرس" : "إضافة مدرس جديد"
-        }
+        title={selectedTeacher ? "تعديل بيانات المدرس" : "إضافة مدرس جديد"}
       >
         <TeacherForm
           isOpen={isModalOpen}
@@ -149,3 +167,4 @@ export function TeachersListClient({ initialData, subjectsOptions }: TeachersLis
     </div>
   );
 }
+

@@ -16,11 +16,18 @@ import {
   useDeleteGroupMutation,
 } from "../hooks/mutations";
 import { getGroupColumns } from "./columns";
+import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { useGroupsModal } from "../state/useGroupsModal";
+import { STATUSES } from "@/constants/dropdown-options";
 import { type Group } from "../types";
 import { type ApiResponse } from "@/types";
 import { type SelectOption } from "@/components/common/form-select";
+
+interface GroupFilters {
+  active?: string;
+  gradeId?: string;
+  subjectId?: string;
+}
 
 interface GroupsListClientProps {
   initialData: ApiResponse<Group[]>;
@@ -33,37 +40,42 @@ export function GroupsListClient({
   gradesOptions,
   subjectsOptions,
 }: GroupsListClientProps) {
-  // Pagination, search, and filter state
+  // Pagination, search, sort, and filter state
   const {
-    params,
-    setPage,
-    handleSearchChange,
-    handleFilterChange,
-    handleLimitChange,
-  } = useTableFilters();
+    page,
+    limit,
+    search,
+    active,
+    gradeId,
+    subjectId,
+    sortBy,
+    sortOrder,
+    sorting,
+    onSortingChange,
+    updateQuery,
+  } = useTableFilters<GroupFilters>();
+
+  const queryParams = {
+    page,
+    limit,
+    search,
+    active,
+    gradeId,
+    subjectId,
+    sortBy,
+    sortOrder,
+  };
 
   // Modal state & selected group
   const {
     isOpen: isModalOpen,
-    selectedGroup,
+    selectedItem: selectedGroup,
     openCreate,
     openEdit,
     close: closeModal,
-  } = useGroupsModal();
+  } = useCrudModal<Group>();
 
   // Data fetching
-  const queryParams = useMemo(
-    () => ({
-      page: params.page,
-      limit: params.limit,
-      search: params.search,
-      active: params.active,
-      gradeId: params.gradeId || undefined,
-      subjectId: params.subjectId || undefined,
-    }),
-    [params],
-  );
-
   const { data, isLoading } = useGroupsQuery(queryParams, initialData);
 
   const groups = data?.data || [];
@@ -101,7 +113,7 @@ export function GroupsListClient({
   );
 
   return (
-    <div className="space-y-6 text-right">
+    <div className="space-y-6 text-right" dir="rtl">
       {/* 1. Header */}
       <PageHeader
         title="المجموعات الدراسية"
@@ -113,44 +125,50 @@ export function GroupsListClient({
         }}
       />
 
-      {/* 2. Filters & Table */}
-      <Card className="space-y-4">
+      {/* 2. Filters & Table inside Container Card */}
+      <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-4"
+          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
           dir="rtl"
         >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center flex-1">
-            <TableSearch
-              placeholder="ابحث عن مجموعة..."
-              value={params.search}
-              onChange={handleSearchChange}
-            />
-
+          <TableSearch placeholder="ابحث عن مجموعة..." />
+          <div className="flex flex-wrap items-center gap-3">
             <FilterDropdown
               placeholder="المرحلة الدراسية"
-              value={params.gradeId || ""}
-              onChange={(val) => handleFilterChange("gradeId", val)}
+              value={gradeId || ""}
+              onChange={(val) =>
+                updateQuery({
+                  gradeId: val || undefined,
+                  page: 1,
+                })
+              }
               options={gradesOptions}
               allOptionLabel="كل المراحل"
             />
 
             <FilterDropdown
               placeholder="المادة الدراسية"
-              value={params.subjectId || ""}
-              onChange={(val) => handleFilterChange("subjectId", val)}
+              value={subjectId || ""}
+              onChange={(val) =>
+                updateQuery({
+                  subjectId: val || undefined,
+                  page: 1,
+                })
+              }
               options={subjectsOptions}
               allOptionLabel="كل المواد"
             />
 
             <FilterDropdown
               placeholder="فلترة حسب الحالة"
-              value={(params.active as unknown as string) || ""}
-              onChange={(val) => handleFilterChange("active", val)}
-              options={[
-                { label: "نشطة", value: "true" },
-                { label: "معطلة", value: "false" },
-              ]}
-              allOptionLabel="الحالة (الكل)"
+              value={active || ""}
+              onChange={(val) =>
+                updateQuery({
+                  active: val || undefined,
+                  page: 1,
+                })
+              }
+              options={STATUSES}
             />
           </div>
         </div>
@@ -159,12 +177,12 @@ export function GroupsListClient({
           columns={columns}
           data={groups}
           isLoading={isLoading}
-          page={params.page}
-          limit={params.limit}
+          page={page}
+          limit={limit}
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={handleLimitChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مجموعات دراسية."
         />
       </Card>
@@ -185,3 +203,4 @@ export function GroupsListClient({
     </div>
   );
 }
+

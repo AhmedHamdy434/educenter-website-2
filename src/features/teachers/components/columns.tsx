@@ -15,8 +15,10 @@ export function getTeacherColumns({
 }: ColumnsProps) {
   return [
     {
+      id: "name",
       accessorKey: "user.fullName",
       header: "المدرس",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Teacher } }) => (
         <div className="flex flex-col text-right">
           <span className="font-bold text-foreground">
@@ -31,6 +33,7 @@ export function getTeacherColumns({
     {
       accessorKey: "specialization",
       header: "التخصص",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Teacher } }) => (
         <span className="font-semibold text-foreground">
           {row.original.specialization}
@@ -49,6 +52,7 @@ export function getTeacherColumns({
     {
       accessorKey: "salary",
       header: "الراتب",
+      enableSorting: true,
       cell: ({ row }: { row: { original: Teacher } }) => (
         <span className="font-bold text-foreground">
           {row.original.salary} ج.م

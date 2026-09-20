@@ -90,6 +90,9 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 
 ## 11. Constants & Utilities
 *   **Constants**: Name variables in `UPPER_SNAKE_CASE` (e.g., `API_TIMEOUT_MS`). Group local configurations inside the feature's constants folder.
+*   **Shared Dropdown Constants**: Common dropdown options (`DEFAULT_LIMIT`, `LIMITS`, `STATUSES`) must be imported from `@/constants/dropdown-options` instead of re-defining them locally.
+*   **Shared Table Filters Hook (`useTableFilters`)**: All list tables must use `@/hooks/useTableFilters` to synchronize pagination (`page`, `limit`), search (`search`), custom filters, and sorting (`sortBy`, `sortOrder`, `sorting`, `onSortingChange`) with URL search parameters. Filter and sorting updates automatically reset `page` to 1.
+*   **Shared CRUD Modal Hook (`useCrudModal`)**: All entity create/edit modal states must use `@/hooks/useCrudModal<T>()` providing `{ isOpen, selectedItem, openCreate, openEdit, close }`, eliminating redundant per-feature Zustand modal stores.
 *   **Utilities**: Write helpers as pure, deterministic functions (e.g., date formats, currency parsers) inside `src/utils/`.
 *   **Shared Date & Time Utilities**: All schedule selectors (day list, hours, minutes, period dropdown options) and the time formatter function `formatTime` must be imported from `@/utils/time` instead of being re-declared locally in forms and columns.
 *   **Utility Reusability Check**: Before using or creating any helper/utility function (e.g., date formatters), verify if it is already present in the shared `src/utils/` directory. If it is not present, implement it inside the shared directory instead of writing a local/duplicate version.
@@ -169,7 +172,7 @@ Every feature module (e.g., `src/features/students/`, `src/features/subjects/`, 
    - **`columns.tsx`**: Standard column definition function `get<Feature>Columns` for tables.
 3. **`hooks/`**: TanStack Query custom queries and mutations (e.g., `queries.ts` and `mutations.ts`).
 4. **`schemas/`**: Zod validation schemas (e.g., `<feature>-schema.ts`).
-5. **`state/`**: Zustand stores for local/global feature state management (e.g., `use<Feature>Modal.ts`).
+5. **`state/`**: Zustand stores for complex local/global feature state management. *(Note: Standard CRUD modals must use the shared `@/hooks/useCrudModal` hook instead of creating per-feature modal stores).*
 6. **`types/`**: TypeScript interfaces and types for the feature (e.g., `index.ts`).
 7. **`utils/`**: Feature-specific pure functions or constant helpers.
 
@@ -177,11 +180,18 @@ Every feature module (e.g., `src/features/students/`, `src/features/subjects/`, 
 
 #### 1. Page Client Container (`<Feature>sListClient.tsx`)
 Must orchestrate the main view components and should compose:
-- **`<PageHeader>`**: Renders the title, Arabic description, and a "create new" action button which sets the zustand modal state to open.
-- **`<TableSearch>`**: Input component for server-side search querying.
-- **`<FilterDropdown>`**: Custom filter select boxes (e.g. filter by grade or active status).
-- **`<SharedTable>`**: Grid table component accepting columns and data, with loading/pagination controls.
-- **`<SharedModal>`**: A popup wrapper triggered by `isModalOpen` which renders `<Feature>Form`.
+- **`useTableFilters<TFilters>()`**: Reads and updates URL search parameters for `page`, `limit`, `search`, custom filters, and sorting (`sortBy`, `sortOrder`, `sorting`, `onSortingChange`).
+- **`useCrudModal<TEntity>()`**: Provides `{ isOpen, selectedItem, openCreate, openEdit, close }` for create/edit modal lifecycle.
+- **`<PageHeader>`**: Renders the title, Arabic description, and a "create new" action button triggering `openCreate`.
+- **`<TableSearch>`**: Input component synced with URL search parameter (`search`).
+- **`<FilterDropdown>`**: Custom filter select boxes (e.g., status from `STATUSES`, grade) updating the URL via `updateQuery`.
+- **`<SharedTable>`**: Grid table component accepting:
+  - `columns`: Column definitions.
+  - `data`: List items.
+  - `isLoading`: Loading state.
+  - `page`, `limit`, `total`, `totalPages`: Pagination state (handled by internal `SharedPagination` via URL params).
+  - `sorting`, `onSortingChange`: Server-side sorting wired to TanStack Table.
+- **`<SharedModal>`**: A popup wrapper triggered by `isOpen` which renders `<Feature>Form`.
 
 #### 2. Feature Form (`<Feature>Form.tsx`)
 Must manage item creation and editing using React Hook Form + Zod:
@@ -197,4 +207,5 @@ Must manage item creation and editing using React Hook Form + Zod:
 #### 3. Column Definition (`columns.tsx`)
 Must define column metadata for rendering inside the table:
 - Exports `get<Feature>Columns({ onEdit, onToggleStatus, togglingId })` returning TanStack Table columns.
+- Set `enableSorting: true` on columns that support server-side sorting (e.g., `order`, `name`, `createdAt`). Non-sortable columns default to `enableSorting: false` in `SharedTable`.
 - Renders cell templates, badges for boolean states, and localized text.
