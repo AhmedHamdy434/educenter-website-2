@@ -7,6 +7,7 @@ import { GraduationCap, BookOpen, LogOut, HelpCircle } from "lucide-react";
 import { logoutAction } from "@/features/auth/actions/logout";
 import { User, UserRole } from "@/types";
 import { cn } from "@/lib/utils";
+import { ROLE_TRANSLATIONS } from "@/constants";
 import { dashboardRoutes } from "../constants/routes-config";
 
 interface SidebarProps {
@@ -14,12 +15,6 @@ interface SidebarProps {
   user: User;
   onClose?: () => void;
 }
-
-const roleTranslations: Record<UserRole, string> = {
-  [UserRole.OWNER]: "مدير المركز",
-  [UserRole.TEACHER]: "معلم",
-  [UserRole.STUDENT]: "طالب",
-};
 
 export function Sidebar({ role, user, onClose }: SidebarProps) {
   const pathname = usePathname();
@@ -137,17 +132,17 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/12 text-amber-400 font-bold border border-white/15">
-              {user.name ? user.name.charAt(0).toUpperCase() : "م"}
+              {user.fullName ? user.fullName.charAt(0).toUpperCase() : "م"}
             </div>
             <div className="flex flex-col overflow-hidden text-right">
               <span
                 className="text-sm font-bold text-white truncate"
-                title={user.name}
+                title={user.fullName}
               >
-                {user.name || "مستخدم"}
+                {user.fullName || "مستخدم"}
               </span>
               <span className="text-xs text-sidebar-foreground/65 truncate font-medium">
-                {roleTranslations[role] || "صلاحية غير معروفة"}
+                {ROLE_TRANSLATIONS[role] || "صلاحية غير معروفة"}
               </span>
             </div>
           </div>

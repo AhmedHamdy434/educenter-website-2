@@ -38,7 +38,7 @@ export function LoginForm() {
         router.push("/change-password");
       } else {
         router.push(
-          `/${result.data?.user?.center?.slug}/${result.data?.user?.id?.toLowerCase()}`,
+          `/${result.data?.user?.center?.slug}/${result.data?.user.role?.toLowerCase()}`,
         );
       }
     }

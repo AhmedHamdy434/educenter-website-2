@@ -76,6 +76,29 @@ export const serverApiClient = async <T>({
       data = {};
     }
 
+    // Handle 403 Forbidden with CENTER_SUBSCRIPTION_INACTIVE
+    if (res.status === 403 && data.code === "CENTER_SUBSCRIPTION_INACTIVE") {
+      if (typeof window !== "undefined") {
+        if (window.location.pathname !== "/subscription-required") {
+          window.location.href = "/subscription-required";
+        }
+      } else {
+        const { redirect } = await import("next/navigation");
+        redirect("/subscription-required");
+      }
+
+      return {
+        success: false,
+        message:
+          typeof data.message === "string"
+            ? data.message
+            : "اشتراك المركز غير مفعل أو منتهي الصلاحية.",
+        code: "CENTER_SUBSCRIPTION_INACTIVE",
+        statusCode: 403,
+        data: null as unknown as T,
+      };
+    }
+
     // Handle 401 Unauthorized (expired or invalid token)
     if (res.status === 401) {
       if (typeof window !== "undefined") {
@@ -100,6 +123,8 @@ export const serverApiClient = async <T>({
       return {
         success: false,
         message,
+        code: data.code as string | undefined,
+        statusCode: 401,
         data: null as unknown as T,
       };
     }
@@ -115,6 +140,8 @@ export const serverApiClient = async <T>({
       return {
         success: false,
         message: errorMessage,
+        code: data.code as string | undefined,
+        statusCode: res.status,
         data: (data.data ?? null) as unknown as T,
         ...(data.meta ? { meta: data.meta as ApiResponse<T>["meta"] } : {}),
       };
@@ -127,6 +154,16 @@ export const serverApiClient = async <T>({
       ...(data.meta ? { meta: data.meta as ApiResponse<T>["meta"] } : {}),
     };
   } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "digest" in error &&
+      typeof (error as Record<string, unknown>).digest === "string" &&
+      ((error as Record<string, unknown>).digest as string).startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+
     console.error("Error during API request:", error);
     const errorMessage =
       "فشل الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.";

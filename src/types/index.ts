@@ -10,6 +10,8 @@ export type ApiResponse<T> = {
   message: string;
   data: T;
   meta?: Meta;
+  code?: string;
+  statusCode?: number;
 };
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -31,7 +33,7 @@ export enum UserRole {
 
 export interface User {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   phone?: string;
   role?: UserRole;

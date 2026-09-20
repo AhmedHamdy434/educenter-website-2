@@ -1,18 +1,13 @@
 "use client";
 
 import { Menu, Bell, Search, User as UserIcon } from "lucide-react";
-import { User, UserRole } from "@/types";
+import { User } from "@/types";
+import { ROLE_TRANSLATIONS } from "@/constants";
 
 interface DashboardHeaderProps {
   user: User;
   onMenuToggle: () => void;
 }
-
-const roleTranslations: Record<UserRole, string> = {
-  [UserRole.OWNER]: "مدير المركز",
-  [UserRole.TEACHER]: "معلم",
-  [UserRole.STUDENT]: "طالب",
-};
 
 export function DashboardHeader({ user, onMenuToggle }: DashboardHeaderProps) {
   return (
@@ -69,10 +64,10 @@ export function DashboardHeader({ user, onMenuToggle }: DashboardHeaderProps) {
           </div>
           <div className="hidden flex-col items-start md:flex text-right">
             <span className="text-sm font-bold text-foreground">
-              {user.name || "مستخدم"}
+              {user.fullName || "مستخدم"}
             </span>
             <span className="text-[10px] text-muted-foreground font-semibold -mt-0.5">
-              {user.role ? roleTranslations[user.role] : "صلاحية غير معروفة"}
+              {user.role ? ROLE_TRANSLATIONS[user.role] : "صلاحية غير معروفة"}
             </span>
           </div>
         </div>
