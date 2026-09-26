@@ -272,13 +272,9 @@ export function GroupForm({
           name="subjectId"
           control={control}
           options={subjectsOptions}
-          placeholder={
-            isSubjectsLoading
-              ? "جاري التحميل..."
-              : selectedGradeId
-              ? "اختر المادة..."
-              : "اختر المرحلة أولاً"
-          }
+          isLoading={isSubjectsLoading}
+          placeholder={selectedGradeId ? "اختر المادة..." : "اختر المرحلة أولاً"}
+          disabled={!selectedGradeId}
           error={errors.subjectId?.message}
         />
 
@@ -287,13 +283,9 @@ export function GroupForm({
           name="teacherId"
           control={control}
           options={teachersList}
-          placeholder={
-            isTeachersLoading
-              ? "جاري التحميل..."
-              : selectedSubjectId
-              ? "اختر المعلم..."
-              : "اختر المادة أولاً"
-          }
+          isLoading={isTeachersLoading}
+          placeholder={selectedSubjectId ? "اختر المعلم..." : "اختر المادة أولاً"}
+          disabled={!selectedSubjectId}
           error={errors.teacherId?.message}
         />
       </div>

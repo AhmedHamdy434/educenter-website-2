@@ -1,33 +1,32 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { TableSearch } from "@/components/common/TableSearch";
-import { FilterDropdown } from "@/components/common/FilterDropdown";
+import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { GroupForm } from "./GroupForm";
 import { useGroupsQuery } from "../hooks/queries";
 import {
   useToggleGroupStatusMutation,
   useDeleteGroupMutation,
+  useImportGroupsMutation,
 } from "../hooks/mutations";
 import { getGroupColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { STATUSES } from "@/constants/dropdown-options";
-import { type Group } from "../types";
+import { type Group, type GroupFilters } from "../types";
 import { type ApiResponse } from "@/types";
 import { type SelectOption } from "@/components/common/form-select";
-
-interface GroupFilters {
-  active?: string;
-  gradeId?: string;
-  subjectId?: string;
-}
+import {
+  getGroupFiltersConfig,
+  groupExcelConfig,
+  groupPdfConfig,
+} from "../config/groups-toolbar.config";
 
 interface GroupsListClientProps {
   initialData: ApiResponse<Group[]>;
@@ -40,14 +39,16 @@ export function GroupsListClient({
   gradesOptions,
   subjectsOptions,
 }: GroupsListClientProps) {
-  // Pagination, search, sort, and filter state
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null);
+
+  // Pagination, search, sort, and filter state from URL
   const {
     page,
     limit,
     search,
-    active,
-    gradeId,
-    subjectId,
+    active = "",
+    gradeId = "",
+    subjectId = "",
     sortBy,
     sortOrder,
     sorting,
@@ -59,9 +60,9 @@ export function GroupsListClient({
     page,
     limit,
     search,
-    active,
-    gradeId,
-    subjectId,
+    active: active || undefined,
+    gradeId: gradeId || undefined,
+    subjectId: subjectId || undefined,
     sortBy,
     sortOrder,
   };
@@ -78,38 +79,48 @@ export function GroupsListClient({
   // Data fetching
   const { data, isLoading } = useGroupsQuery(queryParams, initialData);
 
-  const groups = data?.data || [];
-  const total = data?.meta?.total || 0;
-  const totalPages = data?.meta?.totalPages || 1;
-
   // Mutations
-  const toggleMutation = useToggleGroupStatusMutation();
-  const deleteMutation = useDeleteGroupMutation();
+  const {
+    mutate: toggleStatus,
+    isPending: togglePending,
+    variables: togglingId,
+  } = useToggleGroupStatusMutation();
 
-  const togglingId = toggleMutation.isPending
-    ? (toggleMutation.variables ?? null)
-    : null;
-  const deletingId = deleteMutation.isPending
-    ? (deleteMutation.variables ?? null)
-    : null;
+  const {
+    mutateAsync: deleteGroup,
+    isPending: deletePending,
+    variables: deletingId,
+  } = useDeleteGroupMutation();
+
+  const { mutateAsync: importGroups } = useImportGroupsMutation();
 
   const routeParams = useParams<{ centerSlug: string }>();
   const centerSlug = routeParams?.centerSlug;
 
-  const toggleStatus = toggleMutation.mutate;
-  const deleteGroup = deleteMutation.mutate;
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return;
+    const res = await deleteGroup(groupToDelete.id);
+    if (res.success) {
+      setGroupToDelete(null);
+    }
+  };
 
   const columns = useMemo(
     () =>
       getGroupColumns({
         onEdit: openEdit,
-        onDelete: deleteGroup,
+        onDelete: setGroupToDelete,
         onToggleStatus: toggleStatus,
-        togglingId,
-        deletingId,
+        togglingId: togglePending ? (togglingId ?? null) : null,
+        deletingId: deletePending ? (deletingId ?? null) : null,
         centerSlug,
       }),
-    [openEdit, deleteGroup, toggleStatus, togglingId, deletingId, centerSlug],
+    [openEdit, toggleStatus, togglingId, togglePending, deletingId, deletePending, centerSlug],
+  );
+
+  const filtersConfig = useMemo(
+    () => getGroupFiltersConfig(gradesOptions, subjectsOptions),
+    [gradesOptions, subjectsOptions],
   );
 
   return (
@@ -118,6 +129,7 @@ export function GroupsListClient({
       <PageHeader
         title="المجموعات الدراسية"
         description="إدارة المجموعات والحصص الدراسية الأسبوعية وتعيين المعلمين والمراحل الدراسية لها."
+        icon={Users}
         actionButton={{
           label: "مجموعة جديدة",
           icon: Plus,
@@ -127,60 +139,23 @@ export function GroupsListClient({
 
       {/* 2. Filters & Table inside Container Card */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
-        <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
-          dir="rtl"
-        >
-          <TableSearch placeholder="ابحث عن مجموعة..." />
-          <div className="flex flex-wrap items-center gap-3">
-            <FilterDropdown
-              placeholder="المرحلة الدراسية"
-              value={gradeId || ""}
-              onChange={(val) =>
-                updateQuery({
-                  gradeId: val || undefined,
-                  page: 1,
-                })
-              }
-              options={gradesOptions}
-              allOptionLabel="كل المراحل"
-            />
-
-            <FilterDropdown
-              placeholder="المادة الدراسية"
-              value={subjectId || ""}
-              onChange={(val) =>
-                updateQuery({
-                  subjectId: val || undefined,
-                  page: 1,
-                })
-              }
-              options={subjectsOptions}
-              allOptionLabel="كل المواد"
-            />
-
-            <FilterDropdown
-              placeholder="فلترة حسب الحالة"
-              value={active || ""}
-              onChange={(val) =>
-                updateQuery({
-                  active: val || undefined,
-                  page: 1,
-                })
-              }
-              options={STATUSES}
-            />
-          </div>
-        </div>
+        <TableToolbar
+          searchPlaceholder="ابحث عن مجموعة..."
+          filters={filtersConfig}
+          filterValues={{ active, gradeId, subjectId }}
+          onFilterChange={updateQuery}
+          excelConfig={groupExcelConfig}
+          pdfConfig={groupPdfConfig}
+          totalRecords={data?.meta?.total ?? 0}
+          isLoading={isLoading}
+          onImport={importGroups}
+        />
 
         <SharedTable
           columns={columns}
-          data={groups}
+          data={data?.data || []}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مجموعات دراسية."
@@ -200,7 +175,20 @@ export function GroupsListClient({
           gradesOptions={gradesOptions}
         />
       </SharedModal>
+
+      {/* 4. Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!groupToDelete}
+        onClose={() => setGroupToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="حذف المجموعة الدراسية"
+        description={`هل أنت متأكد من حذف المجموعة الدراسية "${groupToDelete?.name}"؟ سيتم حذف جميع السجلات المرتبطة بها نهائياً.`}
+        confirmText="نعم، احذف"
+        cancelText="إلغاء"
+        isLoading={deletePending}
+      />
     </div>
   );
 }
+
 

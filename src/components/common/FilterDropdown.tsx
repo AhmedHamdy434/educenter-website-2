@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FilterOption {
@@ -17,6 +17,8 @@ interface FilterDropdownProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
 export function FilterDropdown({
@@ -27,11 +29,16 @@ export function FilterDropdown({
   value,
   onChange,
   className,
+  isLoading = false,
+  disabled = false,
 }: FilterDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const defaultPlaceholder = allOptionLabel || placeholder || "الكل";
+  const isDisabled = disabled || isLoading;
+  const defaultPlaceholder = isLoading
+    ? "جاري التحميل..."
+    : (allOptionLabel || placeholder || "الكل");
   const selectedOption = options.find((opt) => opt.value === value);
 
   // Close dropdown on outside click
@@ -61,24 +68,33 @@ export function FilterDropdown({
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        disabled={isDisabled}
+        onClick={() => !isDisabled && setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer"
+        className={cn(
+          "flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
+          isDisabled && "cursor-not-allowed opacity-60 hover:bg-card",
+          className
+        )}
       >
-        <span className="truncate">
+        <span className="truncate text-xs">
           {selectedOption ? selectedOption.label : defaultPlaceholder}
         </span>
-        <ChevronDown
-          className={cn(
-            "size-4 text-muted-foreground transition-transform duration-200",
-            isOpen && "rotate-180 text-primary"
-          )}
-        />
+        {isLoading ? (
+          <Loader2 className="size-4 animate-spin text-muted-foreground shrink-0" />
+        ) : (
+          <ChevronDown
+            className={cn(
+              "size-4 text-muted-foreground transition-transform duration-200 shrink-0",
+              isOpen && "rotate-180 text-primary"
+            )}
+          />
+        )}
       </button>
 
       {/* Options Dropdown */}
-      {isOpen && (
+      {isOpen && !isDisabled && (
         <div className="absolute z-50 mt-1.5 w-full min-w-[160px] rounded-xl border border-border bg-card p-1 shadow-lg animate-in fade-in-50 zoom-in-95 duration-100">
           <ul role="listbox" className="space-y-0.5 max-h-60 overflow-y-auto">
             {options.map((option) => {

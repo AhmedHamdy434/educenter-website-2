@@ -19,9 +19,16 @@ interface SubjectFormProps {
   onClose: () => void;
   subject?: Subject | null;
   gradesOptions: { value: string; label: string }[];
+  isGradesLoading?: boolean;
 }
 
-export function SubjectForm({ isOpen, onClose, subject, gradesOptions }: SubjectFormProps) {
+export function SubjectForm({
+  isOpen,
+  onClose,
+  subject,
+  gradesOptions,
+  isGradesLoading = false,
+}: SubjectFormProps) {
   const {
     register,
     handleSubmit,
@@ -101,6 +108,7 @@ export function SubjectForm({ isOpen, onClose, subject, gradesOptions }: Subject
           name="gradeId"
           control={control}
           options={gradesOptions}
+          isLoading={isGradesLoading}
           placeholder="اختر المرحلة الدراسية"
           error={errors.gradeId?.message}
         />

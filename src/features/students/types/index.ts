@@ -60,3 +60,8 @@ export interface StudentPayment {
     name: string;
   };
 }
+
+export interface StudentFilters {
+  active?: string;
+  gradeId?: string;
+}

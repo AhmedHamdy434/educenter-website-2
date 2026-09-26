@@ -27,6 +27,8 @@ export interface SelectFilterConfig<TKey extends string = string>
   type: "select";
   options: FilterOption[];
   allOptionLabel?: string;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
 export type FilterConfig<TKey extends string = string> = SelectFilterConfig<TKey>;

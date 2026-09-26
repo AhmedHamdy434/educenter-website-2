@@ -4,6 +4,7 @@ import {
   updateTeacherAction,
   toggleTeacherStatusAction,
 } from "../actions/teachers-actions";
+import { importFileAction } from "@/lib/export/export-actions";
 import { type TeacherFormValues } from "../schemas/teacher-schema";
 import { teachersKeys } from "../utils/queryKeys";
 
@@ -71,4 +72,35 @@ export function useUpdateTeacherMutation() {
     },
   });
 }
+
+export function useImportTeachersMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      dryRun = false,
+    }: {
+      file: File;
+      dryRun?: boolean;
+    }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return importFileAction(
+        `/teachers/import/excel?dryRun=${dryRun}`,
+        formData,
+      );
+    },
+    meta: {
+      skipToast: true,
+    },
+    onSuccess: (result, variables) => {
+      if (!variables.dryRun && result.success) {
+        queryClient.invalidateQueries({ queryKey: teachersKeys.all });
+      }
+    },
+  });
+}
+
 

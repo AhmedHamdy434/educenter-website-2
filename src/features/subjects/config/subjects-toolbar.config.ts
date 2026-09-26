@@ -7,6 +7,7 @@ import { STATUSES } from "@/constants/dropdown-options";
 
 export function getSubjectFiltersConfig(
   gradesOptions: { value: string; label: string }[] = [],
+  gradesLoading?: boolean,
 ): FilterConfig<"active" | "gradeId">[] {
   return [
     {
@@ -16,6 +17,7 @@ export function getSubjectFiltersConfig(
       placeholder: "اختر المرحلة",
       allOptionLabel: "كل المراحل",
       options: gradesOptions,
+      isLoading: gradesLoading,
     },
     {
       key: "active",

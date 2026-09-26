@@ -4,6 +4,7 @@ import {
   updateStudentAction,
   toggleStudentStatusAction,
 } from "../actions/students-actions";
+import { importFileAction } from "@/lib/export/export-actions";
 import { type StudentFormValues } from "../schemas/student-schema";
 import { studentsKeys } from "../utils/queryKeys";
 
@@ -70,3 +71,32 @@ export function useUpdateStudentMutation() {
   });
 }
 
+export function useImportStudentsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      dryRun = false,
+    }: {
+      file: File;
+      dryRun?: boolean;
+    }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return importFileAction(
+        `/students/import/excel?dryRun=${dryRun}`,
+        formData,
+      );
+    },
+    meta: {
+      skipToast: true,
+    },
+    onSuccess: (result, variables) => {
+      if (!variables.dryRun && result.success) {
+        queryClient.invalidateQueries({ queryKey: studentsKeys.all });
+      }
+    },
+  });
+}

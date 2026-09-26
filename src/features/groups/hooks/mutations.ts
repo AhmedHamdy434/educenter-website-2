@@ -10,6 +10,7 @@ import {
 } from "../actions/groups-actions";
 import { type GroupFormValues } from "../schemas/group-schema";
 import { groupsKeys } from "../utils/queryKeys";
+import { importFileAction } from "@/lib/export/export-actions";
 
 export function useToggleGroupStatusMutation() {
   const queryClient = useQueryClient();
@@ -142,6 +143,36 @@ export function usePayGroupStudentMonthMutation() {
         // Invalidate groups and student payments caches
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
         queryClient.invalidateQueries({ queryKey: ["students", "payments"] });
+      }
+    },
+  });
+}
+
+export function useImportGroupsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      dryRun = false,
+    }: {
+      file: File;
+      dryRun?: boolean;
+    }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return importFileAction(
+        `/groups/import/excel?dryRun=${dryRun}`,
+        formData,
+      );
+    },
+    meta: {
+      skipToast: true,
+    },
+    onSuccess: (result, variables) => {
+      if (!variables.dryRun && result.success) {
+        queryClient.invalidateQueries({ queryKey: groupsKeys.all });
       }
     },
   });

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { type Group } from "../types";
+import { type ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Trash2 } from "lucide-react";
@@ -7,7 +9,7 @@ import { DAY_NAMES_AR, formatTime } from "@/utils/time";
 
 interface ColumnsProps {
   onEdit: (group: Group) => void;
-  onDelete: (id: string) => void;
+  onDelete: (group: Group) => void;
   onToggleStatus: (id: string) => void;
   togglingId: string | null;
   deletingId: string | null;
@@ -21,32 +23,37 @@ export function getGroupColumns({
   togglingId,
   deletingId,
   centerSlug,
-}: ColumnsProps) {
+}: ColumnsProps): ColumnDef<Group>[] {
   return [
     {
       accessorKey: "name",
       header: "المجموعة",
       enableSorting: true,
-      cell: ({ row }: { row: { original: Group } }) => (
-        <div className="flex flex-col text-right">
-          <Link
-            href={`${centerSlug}/owner/groups/${row.original.id}`}
-            className="font-bold text-primary hover:underline transition-colors"
-          >
-            {row.original.name}
-          </Link>
-          <span className="text-xs text-muted-foreground">
-            {row.original.grade.name}
-          </span>
-        </div>
-      ),
+      cell: ({ row }: { row: { original: Group } }) => {
+        const groupHref = centerSlug
+          ? `/${centerSlug}/owner/groups/${row.original.id}`
+          : `#`;
+        return (
+          <div className="flex flex-col text-right">
+            <Link
+              href={groupHref}
+              className="font-bold text-primary hover:underline transition-colors"
+            >
+              {row.original.name}
+            </Link>
+            <span className="text-xs text-muted-foreground">
+              {row.original.grade?.name || "غير محدد"}
+            </span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "subject.name",
       header: "المادة",
       cell: ({ row }: { row: { original: Group } }) => (
         <span className="font-semibold text-foreground">
-          {row.original.subject.name}
+          {row.original.subject?.name || "غير محدد"}
         </span>
       ),
     },
@@ -55,7 +62,7 @@ export function getGroupColumns({
       header: "المعلم",
       cell: ({ row }: { row: { original: Group } }) => (
         <span className="text-muted-foreground font-medium text-sm">
-          {row.original.teacher.user.fullName}
+          {row.original.teacher?.user?.fullName || "غير محدد"}
         </span>
       ),
     },
@@ -66,9 +73,9 @@ export function getGroupColumns({
         const enrolled = row.original._count?.students ?? 0;
         const capacity = row.original.capacity;
         return (
-          <span className="text-sm font-bold text-foreground">
-            {enrolled} {capacity ? `/${capacity}` : ""}
-          </span>
+          <Badge variant="subtle" className="font-bold">
+            {enrolled} {capacity ? `/ ${capacity}` : ""}
+          </Badge>
         );
       },
     },
@@ -119,11 +126,7 @@ export function getGroupColumns({
             تعديل
           </Button>
           <Button
-            onClick={() => {
-              if (confirm("هل أنت متأكد من حذف هذه المجموعة الدراسية نهائياً؟")) {
-                onDelete(row.original.id);
-              }
-            }}
+            onClick={() => onDelete(row.original)}
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-lg"

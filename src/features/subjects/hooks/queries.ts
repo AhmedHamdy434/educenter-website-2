@@ -36,6 +36,6 @@ export function useSubjectsOptionsQuery(gradeId?: string, enabled = true) {
         label: `${s.name} (${s.grade.name})`,
       }));
     },
-    enabled: enabled && !!gradeId,
+    enabled: enabled && (gradeId === undefined || !!gradeId),
   });
 }

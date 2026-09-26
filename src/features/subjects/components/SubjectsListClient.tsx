@@ -49,7 +49,8 @@ export function SubjectsListClient() {
     sortOrder,
   };
 
-  const { data: gradesOptionsData } = useGradesOptionsQuery();
+  const { data: gradesOptionsData, isLoading: gradesLoading } =
+    useGradesOptionsQuery();
   const gradesOptions = useMemo(
     () => gradesOptionsData ?? [],
     [gradesOptionsData],
@@ -86,8 +87,8 @@ export function SubjectsListClient() {
   );
 
   const filtersConfig = useMemo(
-    () => getSubjectFiltersConfig(gradesOptions),
-    [gradesOptions],
+    () => getSubjectFiltersConfig(gradesOptions, gradesLoading),
+    [gradesOptions, gradesLoading],
   );
 
   return (
@@ -142,6 +143,7 @@ export function SubjectsListClient() {
           onClose={closeModal}
           subject={selectedSubject}
           gradesOptions={gradesOptions}
+          isGradesLoading={gradesLoading}
         />
       </SharedModal>
     </div>

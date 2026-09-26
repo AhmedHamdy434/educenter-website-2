@@ -19,9 +19,16 @@ interface StudentFormProps {
   onClose: () => void;
   student?: Student | null;
   gradesOptions: { value: string; label: string }[];
+  isGradesLoading?: boolean;
 }
 
-export function StudentForm({ isOpen, onClose, student, gradesOptions }: StudentFormProps) {
+export function StudentForm({
+  isOpen,
+  onClose,
+  student,
+  gradesOptions,
+  isGradesLoading,
+}: StudentFormProps) {
   const {
     register,
     handleSubmit,
@@ -155,6 +162,7 @@ export function StudentForm({ isOpen, onClose, student, gradesOptions }: Student
           name="gradeId"
           control={control}
           options={gradesOptions}
+          isLoading={isGradesLoading}
           placeholder="اختر المرحلة الدراسية"
           error={errors.gradeId?.message}
         />

@@ -50,3 +50,9 @@ export interface UpdateTeacherDTO {
   subjectIds?: string[];
   isActive?: boolean;
 }
+
+export interface TeacherFilters {
+  active?: string;
+  subjectId?: string;
+}
+

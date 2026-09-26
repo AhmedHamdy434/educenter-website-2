@@ -19,9 +19,16 @@ interface TeacherFormProps {
   onClose: () => void;
   teacher?: Teacher | null;
   subjectsOptions: { value: string; label: string }[];
+  isSubjectsLoading?: boolean;
 }
 
-export function TeacherForm({ isOpen, onClose, teacher, subjectsOptions }: TeacherFormProps) {
+export function TeacherForm({
+  isOpen,
+  onClose,
+  teacher,
+  subjectsOptions,
+  isSubjectsLoading,
+}: TeacherFormProps) {
   const {
     register,
     handleSubmit,
@@ -165,6 +172,7 @@ export function TeacherForm({ isOpen, onClose, teacher, subjectsOptions }: Teach
         name="subjectIds"
         control={control}
         options={subjectsOptions}
+        isLoading={isSubjectsLoading}
         placeholder="اختر المواد الدراسية..."
         error={errors.subjectIds?.message}
       />

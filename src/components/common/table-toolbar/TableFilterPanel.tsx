@@ -11,6 +11,7 @@ interface TableFilterPanelProps<TFilters extends Record<string, string | undefin
   filterValues: TFilters;
   onFilterChange: (updates: Partial<TFilters> & { page?: number }) => void;
   activeCount: number;
+  isLoading?: boolean;
 }
 
 export function TableFilterPanel<TFilters extends Record<string, string | undefined>>({
@@ -19,6 +20,7 @@ export function TableFilterPanel<TFilters extends Record<string, string | undefi
   filterValues,
   onFilterChange,
   activeCount,
+  isLoading = false,
 }: TableFilterPanelProps<TFilters>) {
   if (!isOpen || filters.length === 0) return null;
 
@@ -37,6 +39,8 @@ export function TableFilterPanel<TFilters extends Record<string, string | undefi
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-end">
         {filters.map((filter) => {
           const currentValue = filterValues[filter.key] ?? "";
+          const isFilterLoading =
+            filter.isLoading !== undefined ? filter.isLoading : isLoading;
           return (
             <div key={filter.key} className="space-y-1">
               <FilterDropdown
@@ -45,6 +49,8 @@ export function TableFilterPanel<TFilters extends Record<string, string | undefi
                 allOptionLabel={filter.allOptionLabel}
                 options={filter.options}
                 value={String(currentValue)}
+                isLoading={isFilterLoading}
+                disabled={filter.disabled || isFilterLoading}
                 onChange={(val) => {
                   onFilterChange({
                     [filter.key]: val || undefined,

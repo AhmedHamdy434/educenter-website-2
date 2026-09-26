@@ -1,6 +1,8 @@
+import { ColumnDef } from "@tanstack/react-table";
 import { type Teacher } from "../types";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 interface ColumnsProps {
   onEdit: (teacher: Teacher) => void;
@@ -12,14 +14,14 @@ export function getTeacherColumns({
   onEdit,
   onToggleStatus,
   togglingId,
-}: ColumnsProps) {
+}: ColumnsProps): ColumnDef<Teacher>[] {
   return [
     {
       id: "name",
       accessorKey: "user.fullName",
       header: "المدرس",
       enableSorting: true,
-      cell: ({ row }: { row: { original: Teacher } }) => (
+      cell: ({ row }) => (
         <div className="flex flex-col text-right">
           <span className="font-bold text-foreground">
             {row.original.user.fullName}
@@ -31,29 +33,33 @@ export function getTeacherColumns({
       ),
     },
     {
+      id: "specialization",
       accessorKey: "specialization",
       header: "التخصص",
       enableSorting: true,
-      cell: ({ row }: { row: { original: Teacher } }) => (
+      cell: ({ row }) => (
         <span className="font-semibold text-foreground">
           {row.original.specialization}
         </span>
       ),
     },
     {
+      id: "phone",
       accessorKey: "user.phone",
       header: "الهاتف",
-      cell: ({ row }: { row: { original: Teacher } }) => (
+      enableSorting: true,
+      cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs block" dir="ltr">
           {row.original.user.phone}
         </span>
       ),
     },
     {
+      id: "salary",
       accessorKey: "salary",
       header: "الراتب",
       enableSorting: true,
-      cell: ({ row }: { row: { original: Teacher } }) => (
+      cell: ({ row }) => (
         <span className="font-bold text-foreground">
           {row.original.salary} ج.م
         </span>
@@ -62,27 +68,31 @@ export function getTeacherColumns({
     {
       id: "subjects",
       header: "المواد الدراسية",
-      cell: ({ row }: { row: { original: Teacher } }) => {
+      cell: ({ row }) => {
         const subjects = row.original.subjects || [];
-        if (subjects.length === 0) return <span className="text-muted-foreground text-xs">لا توجد مواد</span>;
+        if (subjects.length === 0) {
+          return <span className="text-muted-foreground text-xs">لا توجد مواد</span>;
+        }
         return (
           <div className="flex flex-wrap gap-1 max-w-xs justify-start">
             {subjects.map((s) => (
-              <span
+              <Badge
                 key={s.id}
-                className="inline-block bg-secondary border border-border rounded-md px-2 py-0.5 text-xs text-primary font-bold"
+                variant="subtle"
+                className="text-primary font-bold text-xs"
               >
                 {s.subject.name}
-              </span>
+              </Badge>
             ))}
           </div>
         );
       },
     },
     {
+      id: "status",
       accessorKey: "user.isActive",
       header: "الحالة",
-      cell: ({ row }: { row: { original: Teacher } }) => (
+      cell: ({ row }) => (
         <Switch
           checked={row.original.user.isActive}
           onCheckedChange={() => onToggleStatus(row.original.id)}
@@ -94,7 +104,7 @@ export function getTeacherColumns({
     {
       id: "actions",
       header: "الإجراءات",
-      cell: ({ row }: { row: { original: Teacher } }) => (
+      cell: ({ row }) => (
         <Button
           onClick={() => onEdit(row.original)}
           variant="brandOutline"

@@ -110,6 +110,7 @@ export function TableToolbar<TData, TFilters extends Record<string, string | und
           filterValues={filterValues}
           onFilterChange={onFilterChange}
           activeCount={activeCount}
+          isLoading={isLoading}
         />
       )}
 

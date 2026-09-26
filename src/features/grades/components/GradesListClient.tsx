@@ -20,7 +20,7 @@ import { useCrudModal } from "@/hooks/useCrudModal";
 import { GradeFilters, type Grade } from "../types";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import {
-  gradeFiltersConfig,
+  getGradeFiltersConfig,
   gradeExcelConfig,
   gradePdfConfig,
 } from "../config/grades-toolbar.config";
@@ -101,6 +101,11 @@ export function GradesListClient() {
     ],
   );
 
+  const filtersConfig = useMemo(
+    () => getGradeFiltersConfig(isLoading),
+    [isLoading],
+  );
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
       {/* 1. Header with Focused Title Icon */}
@@ -119,7 +124,7 @@ export function GradesListClient() {
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
         <TableToolbar
           searchPlaceholder="ابحث عن مرحلة دراسية..."
-          filters={gradeFiltersConfig}
+          filters={filtersConfig}
           filterValues={{ active }}
           onFilterChange={updateQuery}
           excelConfig={gradeExcelConfig}

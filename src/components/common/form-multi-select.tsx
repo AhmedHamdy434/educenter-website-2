@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { ChevronDown, X, Check, Search } from "lucide-react";
+import { ChevronDown, X, Check, Search, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ export type FormMultiSelectProps<
   disabled?: boolean;
   required?: boolean;
   className?: string;
+  isLoading?: boolean;
 };
 
 export function FormMultiSelect<TFieldValues extends FieldValues = FieldValues>({
@@ -35,6 +36,7 @@ export function FormMultiSelect<TFieldValues extends FieldValues = FieldValues>(
   disabled = false,
   required = false,
   className,
+  isLoading = false,
 }: FormMultiSelectProps<TFieldValues>) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,7 +102,7 @@ export function FormMultiSelect<TFieldValues extends FieldValues = FieldValues>(
               {/* Trigger Button */}
               <button
                 type="button"
-                disabled={disabled}
+                disabled={disabled || isLoading}
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
                 className={cn(
@@ -108,12 +110,17 @@ export function FormMultiSelect<TFieldValues extends FieldValues = FieldValues>(
                   error
                     ? "border-destructive focus:border-destructive focus:ring-1 focus:ring-destructive/10"
                     : "focus:border-primary focus:ring-1 focus:ring-primary/10",
-                  disabled && "opacity-50 cursor-not-allowed bg-muted",
+                  (disabled || isLoading) && "opacity-60 cursor-not-allowed bg-muted",
                   className
                 )}
               >
                 <div className="flex flex-wrap items-center gap-1.5 flex-1 pr-1">
-                  {selectedValues.length === 0 ? (
+                  {isLoading ? (
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                      جاري التحميل...
+                    </span>
+                  ) : selectedValues.length === 0 ? (
                     <span className="text-muted-foreground">{placeholder}</span>
                   ) : (
                     <span className="text-foreground text-xs font-bold bg-secondary px-2.5 py-1 rounded-md border border-border">
@@ -130,7 +137,7 @@ export function FormMultiSelect<TFieldValues extends FieldValues = FieldValues>(
               </button>
 
               {/* Dropdown Options */}
-              {isOpen && !disabled && (
+              {isOpen && !disabled && !isLoading && (
                 <div className="absolute z-50 mt-1.5 w-full rounded-xl border border-border bg-card shadow-lg p-1.5 text-right animate-in fade-in-50 zoom-in-95 duration-100 flex flex-col max-h-64">
                   {/* Search inside select */}
                   <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/40 rounded-lg mb-1">

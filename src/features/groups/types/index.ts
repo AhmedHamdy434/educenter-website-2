@@ -132,3 +132,10 @@ export interface GroupStudentPaymentInfo {
   unpaidMonths: string[];
 }
 
+export interface GroupFilters {
+  active?: string;
+  gradeId?: string;
+  subjectId?: string;
+  teacherId?: string;
+}
+

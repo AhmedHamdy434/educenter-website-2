@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,6 +26,7 @@ export type FormSelectProps<
   placeholder?: string;
   options: FormSelectOption[];
   disabled?: boolean;
+  isLoading?: boolean;
   required?: boolean;
   id?: string;
   className?: string;
@@ -54,18 +56,22 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
   defaultValue,
   onValueChange,
   disabled,
+  isLoading = false,
   required,
   name,
   control,
   id,
   className,
 }: FormSelectProps<TFieldValues>) {
+  const isDisabled = disabled || isLoading;
+  const effectivePlaceholder = isLoading ? "جاري التحميل..." : placeholder;
+
   const renderSelect = (currentVal: string | undefined, handleValChange: (val: string) => void) => (
     <Select
       value={currentVal}
       defaultValue={defaultValue}
       onValueChange={handleValChange}
-      disabled={disabled}
+      disabled={isDisabled}
       name={name}
       dir="rtl"
     >
@@ -78,10 +84,16 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
             ? "border-destructive focus:border-destructive focus:ring-1 focus:ring-destructive/10"
             : "focus:border-primary focus:ring-1 focus:ring-primary/10",
           !currentVal && !defaultValue && "text-muted-foreground",
+          isDisabled && "opacity-60 cursor-not-allowed",
           className
         )}
       >
-        <SelectValue placeholder={placeholder} />
+        <div className="flex items-center gap-2 truncate">
+          {isLoading && (
+            <Loader2 className="size-4 animate-spin text-muted-foreground shrink-0" />
+          )}
+          <SelectValue placeholder={effectivePlaceholder} />
+        </div>
       </SelectTrigger>
       <SelectContent
         className="rounded-xl border border-border bg-card shadow-lg z-50 text-right"

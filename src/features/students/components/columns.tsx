@@ -1,6 +1,8 @@
+import { ColumnDef } from "@tanstack/react-table";
 import { type Student } from "../types";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Link2 } from "lucide-react";
 
 interface ColumnsProps {
@@ -17,14 +19,14 @@ export function getStudentColumns({
   onToggleStatus,
   onGenerateParentLink,
   togglingId,
-}: ColumnsProps) {
+}: ColumnsProps): ColumnDef<Student>[] {
   return [
     {
       id: "name",
       accessorKey: "user.fullName",
       header: "الطالب",
       enableSorting: true,
-      cell: ({ row }: { row: { original: Student } }) => (
+      cell: ({ row }) => (
         <div className="flex flex-col text-right">
           <span className="font-bold text-foreground">
             {row.original.user.fullName}
@@ -38,37 +40,42 @@ export function getStudentColumns({
     {
       id: "grade",
       header: "المرحلة الدراسية",
-      cell: ({ row }: { row: { original: Student } }) => {
+      cell: ({ row }) => {
         const activeEnrollment = row.original.enrollments?.find((e) => e.isActive);
         return (
-          <span className="font-bold text-primary bg-secondary px-2.5 py-1 rounded-md text-xs border border-border">
+          <Badge variant="subtle" className="text-primary font-bold">
             {activeEnrollment?.grade.name || "غير مسجل"}
-          </span>
+          </Badge>
         );
       },
     },
     {
+      id: "phone",
       accessorKey: "user.phone",
       header: "الهاتف",
-      cell: ({ row }: { row: { original: Student } }) => (
+      enableSorting: true,
+      cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs block" dir="ltr">
           {row.original.user.phone}
         </span>
       ),
     },
     {
+      id: "parentPhone",
       accessorKey: "parentPhone",
       header: "هاتف ولي الأمر",
-      cell: ({ row }: { row: { original: Student } }) => (
+      enableSorting: true,
+      cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs block" dir="ltr">
           {row.original.parentPhone}
         </span>
       ),
     },
     {
+      id: "notes",
       accessorKey: "notes",
       header: "ملاحظات",
-      cell: ({ row }: { row: { original: Student } }) => (
+      cell: ({ row }) => (
         <span
           className="text-muted-foreground max-w-xs truncate block text-xs"
           title={row.original.notes || ""}
@@ -78,9 +85,10 @@ export function getStudentColumns({
       ),
     },
     {
+      id: "status",
       accessorKey: "user.isActive",
       header: "الحالة",
-      cell: ({ row }: { row: { original: Student } }) => (
+      cell: ({ row }) => (
         <Switch
           checked={row.original.user.isActive}
           onCheckedChange={() => onToggleStatus(row.original.id)}
@@ -92,7 +100,7 @@ export function getStudentColumns({
     {
       id: "actions",
       header: "الإجراءات",
-      cell: ({ row }: { row: { original: Student } }) => (
+      cell: ({ row }) => (
         <div className="flex gap-1.5 justify-center items-center">
           <Button
             onClick={() => onEdit(row.original)}

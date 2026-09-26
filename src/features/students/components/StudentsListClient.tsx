@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { TableSearch } from "@/components/common/TableSearch";
-import { FilterDropdown } from "@/components/common/FilterDropdown";
+import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
 import { Card } from "@/components/ui/card";
@@ -12,27 +11,31 @@ import { StudentForm } from "./StudentForm";
 import { StudentPaymentsModal } from "./StudentPaymentsModal";
 import { ParentLinkModal } from "./ParentLinkModal";
 import { useStudentsQuery } from "../hooks/queries";
-import { useToggleStudentMutation } from "../hooks/mutations";
+import {
+  useToggleStudentMutation,
+  useImportStudentsMutation,
+} from "../hooks/mutations";
+import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
 import { getStudentColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { STATUSES } from "@/constants/dropdown-options";
-import { type Student } from "../types";
+import { type Student, type StudentFilters } from "../types";
 import { type ApiResponse } from "@/types";
-
-interface StudentFilters {
-  active?: string;
-  gradeId?: string;
-}
+import { type SelectOption } from "@/components/common/form-select";
+import {
+  getStudentFiltersConfig,
+  studentExcelConfig,
+  studentPdfConfig,
+} from "../config/students-toolbar.config";
 
 interface StudentsListClientProps {
   initialData: ApiResponse<Student[]>;
-  gradesOptions: { value: string; label: string }[];
+  gradesOptions?: SelectOption[];
 }
 
 export function StudentsListClient({
   initialData,
-  gradesOptions,
+  gradesOptions: initialGradesOptions = [],
 }: StudentsListClientProps) {
   const [paymentHistoryStudent, setPaymentHistoryStudent] =
     useState<Student | null>(null);
@@ -40,13 +43,13 @@ export function StudentsListClient({
     null,
   );
 
-  // Pagination, search, sort, and filter state
+  // Pagination, search, sort, and filter state from URL
   const {
     page,
     limit,
     search,
-    active,
-    gradeId,
+    active = "",
+    gradeId = "",
     sortBy,
     sortOrder,
     sorting,
@@ -58,11 +61,21 @@ export function StudentsListClient({
     page,
     limit,
     search,
-    active,
-    gradeId,
+    active: active || undefined,
+    gradeId: gradeId || undefined,
     sortBy,
     sortOrder,
   };
+
+  // Grades options query for dynamic updates & loading state
+  const { data: fetchedGradesOptions, isLoading: isGradesLoading } =
+    useGradesOptionsQuery();
+
+  const gradesOptions = useMemo(() => {
+    return fetchedGradesOptions && fetchedGradesOptions.length > 0
+      ? fetchedGradesOptions
+      : initialGradesOptions;
+  }, [fetchedGradesOptions, initialGradesOptions]);
 
   // Modal state & selected student
   const {
@@ -75,18 +88,20 @@ export function StudentsListClient({
 
   // Data fetching
   const { data, isLoading } = useStudentsQuery(queryParams, initialData);
-
-  const students = data?.data || [];
-  const total = data?.meta?.total || 0;
-  const totalPages = data?.meta?.totalPages || 1;
+  const students = useMemo(() => data?.data ?? [], [data?.data]);
 
   // Mutations
   const toggleMutation = useToggleStudentMutation();
+  const { mutateAsync: importStudents } = useImportStudentsMutation();
 
   const togglingId = toggleMutation.isPending
     ? (toggleMutation.variables ?? null)
     : null;
   const toggleStatus = toggleMutation.mutate;
+
+  const handleGenerateParentLink = useCallback((student: Student) => {
+    setMagicLinkStudent(student);
+  }, []);
 
   const columns = useMemo(
     () =>
@@ -94,11 +109,27 @@ export function StudentsListClient({
         onEdit: openEdit,
         onViewPayments: setPaymentHistoryStudent,
         onToggleStatus: toggleStatus,
-        onGenerateParentLink: (student) => setMagicLinkStudent(student),
+        onGenerateParentLink: handleGenerateParentLink,
         togglingId,
       }),
-    [openEdit, toggleStatus, togglingId],
+    [openEdit, toggleStatus, handleGenerateParentLink, togglingId],
   );
+
+  // Toolbar filters configuration
+  const filtersConfig = useMemo(
+    () => getStudentFiltersConfig(gradesOptions, isGradesLoading),
+    [gradesOptions, isGradesLoading],
+  );
+
+  const filterValues = useMemo(
+    () => ({
+      active,
+      gradeId,
+    }),
+    [active, gradeId],
+  );
+
+
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
@@ -113,48 +144,25 @@ export function StudentsListClient({
         }}
       />
 
-      {/* 2. Filters & Table inside Container Card */}
+      {/* 2. Unified Toolbar & Table inside Container Card */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
-        <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
-          dir="rtl"
-        >
-          <TableSearch placeholder="ابحث عن طالب..." />
-          <div className="flex flex-wrap items-center gap-3">
-            <FilterDropdown
-              placeholder="المرحلة الدراسية"
-              value={gradeId || ""}
-              onChange={(val) =>
-                updateQuery({
-                  gradeId: val || undefined,
-                  page: 1,
-                })
-              }
-              options={gradesOptions}
-              allOptionLabel="كل المراحل"
-            />
-            <FilterDropdown
-              placeholder="فلترة حسب الحالة"
-              value={active || ""}
-              onChange={(val) =>
-                updateQuery({
-                  active: val || undefined,
-                  page: 1,
-                })
-              }
-              options={STATUSES}
-            />
-          </div>
-        </div>
+        <TableToolbar
+          searchPlaceholder="ابحث عن طالب..."
+          filters={filtersConfig}
+          filterValues={filterValues}
+          onFilterChange={updateQuery}
+          excelConfig={studentExcelConfig}
+          pdfConfig={studentPdfConfig}
+          totalRecords={data?.meta?.total ?? 0}
+          isLoading={isLoading}
+          onImport={importStudents}
+        />
 
         <SharedTable
           columns={columns}
           data={students}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي طلاب."
@@ -172,6 +180,7 @@ export function StudentsListClient({
           onClose={closeModal}
           student={selectedStudent}
           gradesOptions={gradesOptions}
+          isGradesLoading={isGradesLoading}
         />
       </SharedModal>
 
@@ -194,4 +203,3 @@ export function StudentsListClient({
     </div>
   );
 }
-

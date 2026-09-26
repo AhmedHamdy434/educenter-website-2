@@ -96,7 +96,13 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **Query Parameter Sanitization**: When extracting filter values from URL params via `useTableFilters` to pass to TanStack Query hooks or API clients, sanitize empty strings (e.g., `active: active || undefined`) so empty strings are omitted from query payloads.
 *   **Utilities**: Write helpers as pure, deterministic functions (e.g., date formats, currency parsers) inside `src/utils/`.
 *   **Shared Date & Time Utilities**: All schedule selectors (day list, hours, minutes, period dropdown options) and the time formatter function `formatTime` must be imported from `@/utils/time` instead of being re-declared locally in forms and columns.
+*   **Dropdown Loading States**: Dropdowns with asynchronous data dependencies (`FilterDropdown`, `FormSelect`, `FormMultiSelect`) must support and accept `isLoading?: boolean`. When true, they must display a loading spinner (`Loader2`) alongside placeholder "جاري التحميل..." and disable interaction until data resolution.
+*   **Feature Toolbar Configurations**: All list table toolbar settings must be isolated in `src/features/<feature>/config/<feature>-toolbar.config.ts`, exporting:
+    - `get<Feature>FiltersConfig(options, isLoading)` returning typed `FilterConfig<...>[]`.
+    - `<feature>ExcelConfig: ToolbarExcelConfig` with `exportEndpoint`, `templateEndpoint`, and localized `fileName`.
+    - `<feature>PdfConfig: ToolbarPdfConfig` with `exportEndpoint` and localized `fileName`.
 *   **Utility Reusability Check**: Before using or creating any helper/utility function (e.g., date formatters), verify if it is already present in the shared `src/utils/` directory. If it is not present, implement it inside the shared directory instead of writing a local/duplicate version.
+
 
 ---
 
@@ -171,11 +177,12 @@ Every feature module (e.g., `src/features/students/`, `src/features/subjects/`, 
    - **`<Feature>sListClient.tsx`**: The main page container (client component).
    - **`<Feature>Form.tsx`**: The modal form component.
    - **`columns.tsx`**: Standard column definition function `get<Feature>Columns` for tables.
-3. **`hooks/`**: TanStack Query custom queries and mutations (e.g., `queries.ts` and `mutations.ts`).
-4. **`schemas/`**: Zod validation schemas (e.g., `<feature>-schema.ts`).
-5. **`state/`**: Zustand stores for complex local/global feature state management. *(Note: Standard CRUD modals must use the shared `@/hooks/useCrudModal` hook instead of creating per-feature modal stores).*
-6. **`types/`**: TypeScript interfaces and types for the feature (e.g., `index.ts`).
-7. **`utils/`**: Feature-specific pure functions or constant helpers.
+3. **`config/`**: Feature toolbar configuration files (e.g., `<feature>-toolbar.config.ts`) exporting typed filter config factory `get<Feature>FiltersConfig(options, isLoading)`, `<feature>ExcelConfig`, and `<feature>PdfConfig`.
+4. **`hooks/`**: TanStack Query custom queries and mutations (e.g., `queries.ts` and `mutations.ts`).
+5. **`schemas/`**: Zod validation schemas (e.g., `<feature>-schema.ts`).
+6. **`state/`**: Zustand stores for complex local/global feature state management. *(Note: Standard CRUD modals must use the shared `@/hooks/useCrudModal` hook instead of creating per-feature modal stores).*
+7. **`types/`**: TypeScript interfaces and types for the feature (e.g., `index.ts`), including `<Feature>Filters`.
+8. **`utils/`**: Feature-specific pure functions or constant helpers.
 
 ### Core Component Design Patterns
 
@@ -184,7 +191,18 @@ Must orchestrate the main view components and should compose:
 - **`useTableFilters<TFilters>()`**: Reads and updates URL search parameters for `page`, `limit`, `search`, custom filters, and sorting (`sortBy`, `sortOrder`, `sorting`, `onSortingChange`).
 - **`useCrudModal<TEntity>()`**: Provides `{ isOpen, selectedItem, openCreate, openEdit, close }` for create/edit modal lifecycle.
 - **`<PageHeader>`**: Renders the title, Arabic description, and a "create new" action button triggering `openCreate`.
-- **`<TableToolbar>`**: Replaces manual search/filter bars by unifying search (`searchPlaceholder`), filter panel (`filters`, `filterValues`), server export endpoints (`excelConfig`, `pdfConfig`), and Excel import modal (`onImport`).
+- **`<TableToolbar>`**: Replaces manual search/filter bars by unifying:
+  - `searchPlaceholder`: Localized placeholder for search input.
+  - `filters`: Dynamic filter configurations from `get<Feature>FiltersConfig(options, isLoading)`.
+  - `filterValues`: Current filter state values mapped to keys.
+  - `onFilterChange={updateQuery}`: Directly wires filter updates into URL search params.
+  - `excelConfig`: Server-side export configuration (`exportEndpoint`, `templateEndpoint`, `fileName`).
+  - `pdfConfig`: Server-side PDF export configuration (`exportEndpoint`, `fileName`).
+  - `totalRecords`: Backend total items count (`data?.meta?.total ?? 0`).
+  - `isLoading`: Query loading state.
+  - `onImport`: Excel import mutation handler (`onImport={import<Feature>}`).
+- **Excel Import Mutation (`useImport<Feature>Mutation`)**: Must accept `{ file: File, dryRun?: boolean }`, append `file` to `FormData`, call `importFileAction(endpoint, formData)`, specify `meta: { skipToast: true }`, and trigger `queryClient.invalidateQueries` on success when `!variables.dryRun`.
+- **Options Stabilization**: Wrap fallback options in `useMemo(() => data ?? [], [data])` to guarantee stable array references and avoid breaking downstream `useMemo` hooks.
 - **`<SharedTable>`**: Grid table component accepting:
   - `columns`: Column definitions explicitly typed as `ColumnDef<TEntity>[]`.
   - `data`: List items.
@@ -201,8 +219,8 @@ Must manage item creation and editing using React Hook Form + Zod:
 - Use the **`control`** object and register inputs.
 - Form inputs must leverage standard styling wrapper components:
   - **`<FormInput>`**: Standard text/number inputs.
-  - **`<FormSelect>`**: Single choice selector.
-  - **`<FormMultiSelect>`**: Custom multi-select dropdown with list filter and tag list output.
+  - **`<FormSelect>`**: Single choice selector supporting `isLoading` to show `Loader2` indicator when options query is pending.
+  - **`<FormMultiSelect>`**: Custom multi-select dropdown supporting `isLoading` with search, list filter, and tag list output.
   - **`<FormTextarea>`**: Richer description textarea.
   - **`<FormActions>`**: Arabic-labeled submit/cancel buttons with dynamic loading indicators.
 
@@ -210,6 +228,7 @@ Must manage item creation and editing using React Hook Form + Zod:
 Must define column metadata for rendering inside the table:
 - Exports `get<Feature>Columns({ ... }): ColumnDef<TEntity>[]` with an explicit return type from `@tanstack/react-table`.
 - Set `enableSorting: true` on columns that support server-side sorting (e.g., `order`, `name`, `createdAt`). Non-sortable columns default to `enableSorting: false` in `SharedTable`.
-- **Badges & Chips**: Use `<Badge variant="subtle">` for index/order/counter chips instead of hardcoded ad-hoc `<span>` elements.
+- **Badges & Chips**: Use `<Badge variant="subtle">` for index/order/counter/status/enrollment chips instead of hardcoded ad-hoc `<span>` elements.
 - **Server-Side Export Only**: Do NOT define client-side `meta: { exportHeader, exportValue }` in columns; file exports (Excel/PDF) are handled strictly server-side via backend endpoints.
 - **Stable Callbacks**: Pass direct function references (e.g., `onDelete: setItemToDelete`) to prevent breaking `useMemo` in parent containers.
+

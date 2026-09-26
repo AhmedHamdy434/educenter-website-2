@@ -5,16 +5,23 @@ import {
 } from "@/types/table-toolbar";
 import { STATUSES } from "@/constants/dropdown-options";
 
-export const gradeFiltersConfig: FilterConfig<"active">[] = [
-  {
-    key: "active",
-    type: "select",
-    label: "حالة المرحلة",
-    placeholder: "اختر الحالة",
-    allOptionLabel: "جميع الحالات",
-    options: STATUSES,
-  },
-];
+export function getGradeFiltersConfig(
+  isLoading?: boolean,
+): FilterConfig<"active">[] {
+  return [
+    {
+      key: "active",
+      type: "select",
+      label: "حالة المرحلة",
+      placeholder: "اختر الحالة",
+      allOptionLabel: "جميع الحالات",
+      options: STATUSES,
+      isLoading,
+    },
+  ];
+}
+
+export const gradeFiltersConfig: FilterConfig<"active">[] = getGradeFiltersConfig();
 
 export const gradeExcelConfig: ToolbarExcelConfig = {
   exportEndpoint: "/grades/export/excel",
