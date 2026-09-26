@@ -8,6 +8,7 @@ export const serverApiClient = async <T>({
   body,
   headers,
   cache = "no-store",
+  responseType = "json",
 }: RequestOptions): Promise<ApiResponse<T>> => {
   let token: string | undefined;
 
@@ -20,7 +21,10 @@ export const serverApiClient = async <T>({
       // Cookies may be unavailable in some server execution contexts
     }
   } else {
-    // Client-side: read token from cookies
+    // Client-side: attempt to read token from cookies if available.
+    // Note: The primary auth token is stored with `httpOnly: true` (Rule 13),
+    // which prevents client JS/document.cookie access. Authorized requests
+    // must run on the server via Server Actions ("use server").
     token = document.cookie
       .split("; ")
       .find((row) => row.trim().startsWith("token="))
@@ -38,7 +42,7 @@ export const serverApiClient = async <T>({
     ...(headers as Record<string, string>),
   };
 
-  if (!isFormData && !headersInit["Content-Type"]) {
+  if (!isFormData && !headersInit["Content-Type"] && body !== undefined) {
     headersInit["Content-Type"] = "application/json";
   }
 
@@ -69,9 +73,54 @@ export const serverApiClient = async <T>({
       }
     }
 
+    // Process binary blob responses on successful status
+    if (res.ok && responseType === "blob") {
+      const blob = await res.blob();
+      let filename: string | undefined;
+
+      const disposition = res.headers.get("content-disposition");
+      if (disposition) {
+        const utf8Match = /filename\*=UTF-8''([^;\n]*)/i.exec(disposition);
+        if (utf8Match && utf8Match[1]) {
+          try {
+            filename = decodeURIComponent(utf8Match[1]);
+          } catch {
+            filename = utf8Match[1];
+          }
+        } else {
+          const standardMatch = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i.exec(disposition);
+          if (standardMatch && standardMatch[1]) {
+            filename = standardMatch[1].replace(/['"]/g, "").trim();
+            try {
+              filename = decodeURIComponent(filename);
+            } catch {
+              // keep as is
+            }
+          }
+        }
+      }
+
+      return {
+        success: true,
+        message: "تم تحميل الملف بنجاح.",
+        data: blob as unknown as T,
+        meta: filename ? ({ filename } as unknown as ApiResponse<T>["meta"]) : undefined,
+      };
+    }
+
     let data: Record<string, unknown> = {};
     try {
-      data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
+        }
+      }
     } catch {
       data = {};
     }

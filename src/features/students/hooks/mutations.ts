@@ -5,7 +5,6 @@ import {
   toggleStudentStatusAction,
 } from "../actions/students-actions";
 import { type StudentFormValues } from "../schemas/student-schema";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 import { studentsKeys } from "../utils/queryKeys";
 
 export function useToggleStudentMutation() {
@@ -14,15 +13,9 @@ export function useToggleStudentMutation() {
   return useMutation({
     mutationFn: async (id: string) => toggleStudentStatusAction(id),
     onSuccess: (result) => {
-      handleResponseToast(result);
-      queryClient.invalidateQueries({ queryKey: studentsKeys.all });
-    },
-    onError: () => {
-      handleResponseToast({
-        success: false,
-        message: "فشل تغيير حالة تفعيل حساب الطالب.",
-        data: null,
-      });
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: studentsKeys.all });
+      }
     },
   });
 }
@@ -42,7 +35,6 @@ export function useCreateStudentMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: studentsKeys.all });
       }
@@ -71,10 +63,10 @@ export function useUpdateStudentMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: studentsKeys.all });
       }
     },
   });
 }
+

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 
@@ -29,17 +29,19 @@ export function TableSearch({
 
   const isControlled = controlledOnChange !== undefined;
 
-  const currentParam = !isControlled ? searchParams.get(paramName) ?? "" : "";
+  const currentParam = !isControlled ? (searchParams.get(paramName) ?? "") : "";
   const [prevParam, setPrevParam] = useState(currentParam);
   const [searchTerm, setSearchTerm] = useState(controlledValue ?? currentParam);
   const debouncedSearchTerm = useDebounce(searchTerm, debounceMs);
 
+  const [prevControlledValue, setPrevControlledValue] =
+    useState(controlledValue);
+
   // Sync internal state if controlledValue changes
-  useEffect(() => {
-    if (isControlled && controlledValue !== undefined) {
-      setSearchTerm(controlledValue);
-    }
-  }, [isControlled, controlledValue]);
+  if (isControlled && controlledValue !== prevControlledValue) {
+    setPrevControlledValue(controlledValue);
+    setSearchTerm(controlledValue ?? "");
+  }
 
   // Sync internal state if URL search param changes externally (e.g. navigation or reset)
   if (!isControlled && currentParam !== prevParam) {
@@ -72,28 +74,15 @@ export function TableSearch({
     const targetUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
 
     router.replace(targetUrl, { scroll: false });
-  }, [debouncedSearchTerm, isControlled, controlledOnChange, paramName, pathname, router, searchParams]);
-
-  const handleClear = () => {
-    setSearchTerm("");
-    setPrevParam("");
-
-    if (isControlled) {
-      controlledOnChange("");
-      return;
-    }
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(paramName);
-    if (params.has("page")) {
-      params.set("page", "1");
-    }
-
-    const newQuery = params.toString();
-    const targetUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
-
-    router.replace(targetUrl, { scroll: false });
-  };
+  }, [
+    debouncedSearchTerm,
+    isControlled,
+    controlledOnChange,
+    paramName,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   return (
     <div className={cn("relative w-full", className)}>
@@ -108,19 +97,6 @@ export function TableSearch({
         onChange={(e) => setSearchTerm(e.target.value)}
         className="h-10 w-full rounded-xl border border-border bg-card pr-9 pl-9 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary shadow-none"
       />
-
-      {searchTerm && (
-        <button
-          type="button"
-          onClick={handleClear}
-          aria-label="مسح نص البحث"
-          className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground hover:text-foreground cursor-pointer"
-        >
-          <X className="size-4" />
-        </button>
-      )}
     </div>
   );
 }
-
-

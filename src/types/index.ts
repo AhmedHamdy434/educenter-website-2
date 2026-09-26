@@ -4,6 +4,7 @@ export interface Meta {
   page: number;
   limit: number;
   totalPages: number;
+  filename?: string;
 }
 export type ApiResponse<T> = {
   success: boolean;
@@ -23,6 +24,7 @@ export type RequestOptions = {
   body?: any;
   headers?: HeadersInit;
   cache?: RequestCache;
+  responseType?: "json" | "blob";
 };
 
 export enum UserRole {
@@ -79,3 +81,13 @@ export interface QueryParams {
 export interface MutationOptions {
   onSuccess?: () => void;
 }
+
+declare module "@tanstack/react-query" {
+  interface Register {
+    mutationMeta: {
+      skipToast?: boolean;
+      successMessage?: string;
+      errorMessage?: string;
+    };
+  }
+}

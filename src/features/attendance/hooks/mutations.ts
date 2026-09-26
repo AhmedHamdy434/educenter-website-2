@@ -3,7 +3,6 @@ import {
   startOrGetSessionAction,
   saveAttendanceAction,
 } from "../actions/attendance-actions";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 import { attendanceKeys } from "./queries";
 import { type SaveAttendanceDTO } from "../types";
 
@@ -13,7 +12,6 @@ export function useStartAttendanceSessionMutation() {
   return useMutation({
     mutationFn: async (groupId: string) => startOrGetSessionAction(groupId),
     onSuccess: (result, groupId) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({
           queryKey: attendanceKeys.groupSessions(groupId),
@@ -37,7 +35,6 @@ export function useSaveAttendanceMutation() {
       data: SaveAttendanceDTO;
     }) => saveAttendanceAction(groupId, sessionId, data),
     onSuccess: (result, variables) => {
-      handleResponseToast(result);
       if (result.success) {
         // Invalidate session details, session history list and group reports
         queryClient.invalidateQueries({

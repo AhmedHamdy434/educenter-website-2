@@ -12,19 +12,15 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SharedPagination } from "./SharedPagination";
 import { DEFAULT_LIMIT } from "@/constants/dropdown-options";
 import { cn } from "@/lib/utils";
+import { Meta } from "@/types";
 
 interface SharedTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
   isLoading?: boolean;
-  // Sorting
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  // Pagination
-  page?: number;
-  limit?: number;
-  total?: number;
-  totalPages?: number;
+  meta?: Meta;
   emptyMessage?: string;
 }
 
@@ -34,12 +30,10 @@ export function SharedTable<TData>({
   isLoading = false,
   sorting,
   onSortingChange,
-  page,
-  limit,
-  total = 0,
-  totalPages = 1,
+  meta = { total: 1, page: 1, limit: 10, totalPages: 1 },
   emptyMessage = "لا توجد بيانات لعرضها.",
 }: SharedTableProps<TData>) {
+  const { total, page, limit, totalPages } = meta;
   const table = useReactTable({
     data,
     columns,
@@ -118,15 +112,17 @@ export function SharedTable<TData>({
             <tbody className="divide-y divide-border/60 text-foreground">
               {isLoading ? (
                 // Skeleton Rows
-                Array.from({ length: limit ?? DEFAULT_LIMIT }).map((_, rowIndex) => (
-                  <tr key={rowIndex} className="animate-pulse">
-                    {columns.map((_, colIndex) => (
-                      <td key={colIndex} className="px-5 py-3">
-                        <div className="h-4 rounded bg-muted/70 w-3/4" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
+                Array.from({ length: limit ?? DEFAULT_LIMIT }).map(
+                  (_, rowIndex) => (
+                    <tr key={rowIndex} className="animate-pulse">
+                      {columns.map((_, colIndex) => (
+                        <td key={colIndex} className="px-5 py-3">
+                          <div className="h-4 rounded bg-muted/70 w-3/4" />
+                        </td>
+                      ))}
+                    </tr>
+                  ),
+                )
               ) : data.length === 0 ? (
                 // Empty State
                 <tr>
@@ -145,10 +141,13 @@ export function SharedTable<TData>({
                     className="hover:bg-muted/30 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-5 py-3 font-medium text-xs">
+                      <td
+                        key={cell.id}
+                        className="px-5 py-3 font-medium text-xs"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </td>
                     ))}

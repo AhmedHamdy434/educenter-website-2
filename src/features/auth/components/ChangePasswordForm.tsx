@@ -14,7 +14,6 @@ import { changePasswordAction } from "../actions/change-password";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/common/form-input";
 import { FadeIn } from "@/components/common/motion-wrapper";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 
 export function ChangePasswordForm() {
   const router = useRouter();
@@ -34,8 +33,6 @@ export function ChangePasswordForm() {
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
     const result = await changePasswordAction(data);
-
-    handleResponseToast(result);
     if (result.success) {
       router.push("/");
       router.refresh();

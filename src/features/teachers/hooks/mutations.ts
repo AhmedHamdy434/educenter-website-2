@@ -5,7 +5,6 @@ import {
   toggleTeacherStatusAction,
 } from "../actions/teachers-actions";
 import { type TeacherFormValues } from "../schemas/teacher-schema";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 import { teachersKeys } from "../utils/queryKeys";
 
 export function useToggleTeacherMutation() {
@@ -14,15 +13,9 @@ export function useToggleTeacherMutation() {
   return useMutation({
     mutationFn: async (id: string) => toggleTeacherStatusAction(id),
     onSuccess: (result) => {
-      handleResponseToast(result);
-      queryClient.invalidateQueries({ queryKey: teachersKeys.all });
-    },
-    onError: () => {
-      handleResponseToast({
-        success: false,
-        message: "فشل تغيير حالة تفعيل حساب المدرس.",
-        data: null,
-      });
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: teachersKeys.all });
+      }
     },
   });
 }
@@ -43,7 +36,6 @@ export function useCreateTeacherMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: teachersKeys.all });
       }
@@ -73,10 +65,10 @@ export function useUpdateTeacherMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: teachersKeys.all });
       }
     },
   });
 }
+

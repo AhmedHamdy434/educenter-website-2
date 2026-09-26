@@ -101,7 +101,7 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 
 ## 12. Error Handling
 *   **Standard Response**: API methods must return `{ success: boolean, message: string, data?: T }`.
-*   **Toasts**: Always call `handleResponseToast(result)` from `@/lib/api/handleResponseToast` for client-side feedback.
+*   **Toasts**: Centralized via `MutationCache` in `ReactQueryProvider.tsx` which automatically triggers `handleResponseToast(result)` for all React Query mutations (with optional opt-out via `meta: { skipToast: true }`). For direct non-mutation client calls, manually call `handleResponseToast(result)` from `@/lib/api/handleResponseToast`.
 *   **Uncaught Errors**: Use Next.js `error.tsx` page boundaries to capture unhandled rendering failures.
 
 ---

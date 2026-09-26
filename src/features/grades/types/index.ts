@@ -20,3 +20,7 @@ export interface UpdateGradeDTO {
   order?: number;
   isActive?: boolean;
 }
+
+export interface GradeFilters {
+  active?: string;
+}

@@ -1,32 +1,38 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Layers } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { TableSearch } from "@/components/common/TableSearch";
-import { FilterDropdown } from "@/components/common/FilterDropdown";
+import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { GradeForm } from "./GradeForm";
 import { useGradesQuery } from "../hooks/queries";
-import { useToggleGradeMutation } from "../hooks/mutations";
+import {
+  useToggleGradeMutation,
+  useDeleteGradeMutation,
+  useImportGradesMutation,
+} from "../hooks/mutations";
 import { getGradeColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
-import { type Grade } from "../types";
+import { GradeFilters, type Grade } from "../types";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { STATUSES } from "@/constants/dropdown-options";
-
-interface GradeFilters {
-  active?: string;
-}
+import {
+  gradeFiltersConfig,
+  gradeExcelConfig,
+  gradePdfConfig,
+} from "../config/grades-toolbar.config";
 
 export function GradesListClient() {
+  const [gradeToDelete, setGradeToDelete] = useState<Grade | null>(null);
+
   const {
     page,
     limit,
     search,
-    active,
+    active = "",
     sortBy,
     sortOrder,
     sorting,
@@ -55,26 +61,29 @@ export function GradesListClient() {
   // Data fetching
   const { data, isLoading } = useGradesQuery(queryParams);
 
-  const grades = data?.data || [];
-  const total = data?.meta?.total || 0;
-  const totalPages = data?.meta?.totalPages || 1;
-
   // Mutations
-  const toggleMutation = useToggleGradeMutation();
-
-  const togglingId = toggleMutation.isPending
-    ? (toggleMutation.variables ?? null)
-    : null;
-  const toggleStatus = toggleMutation.mutate;
+  const {
+    mutate: toggleStatus,
+    isPending: togglePending,
+    variables: togglingId,
+  } = useToggleGradeMutation();
+  const {
+    mutate: deleteGrade,
+    isPending: deletePending,
+    variables: deletingId,
+  } = useDeleteGradeMutation();
+  const { mutateAsync: importGrades } = useImportGradesMutation();
 
   const columns = useMemo(
     () =>
       getGradeColumns({
         onEdit: openEdit,
+        onDelete: (grade) => setGradeToDelete(grade),
         onToggleStatus: toggleStatus,
-        togglingId,
+        togglingId: togglePending ? togglingId : null,
+        deletingId: deletePending ? deletingId : null,
       }),
-    [openEdit, toggleStatus, togglingId],
+    [openEdit, toggleStatus, togglingId, togglePending, deletingId, deletePending],
   );
 
   return (
@@ -93,32 +102,24 @@ export function GradesListClient() {
 
       {/* 2. Filters & Table inside Container Card */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
-        <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
-          dir="rtl"
-        >
-          <TableSearch placeholder="ابحث عن مرحلة دراسية..." />
-          <FilterDropdown
-            placeholder="فلترة حسب الحالة"
-            value={active || ""}
-            onChange={(val) =>
-              updateQuery({
-                active: val || undefined,
-                page: 1,
-              })
-            }
-            options={STATUSES}
-          />
-        </div>
+        <TableToolbar
+          searchPlaceholder="ابحث عن مرحلة دراسية..."
+          filters={gradeFiltersConfig}
+          filterValues={{ active }}
+          onFilterChange={updateQuery}
+          excelConfig={gradeExcelConfig}
+          pdfConfig={gradePdfConfig}
+          columns={columns}
+          totalRecords={data?.meta?.total ?? 0}
+          isLoading={isLoading}
+          onImport={importGrades}
+        />
 
         <SharedTable
           columns={columns}
-          data={grades}
+          data={data?.data || []}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مراحل دراسية."
@@ -139,6 +140,23 @@ export function GradesListClient() {
           grade={selectedGrade}
         />
       </SharedModal>
+
+      {/* 4. Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!gradeToDelete}
+        onClose={() => setGradeToDelete(null)}
+        onConfirm={async () => {
+          if (gradeToDelete) {
+            deleteGrade(gradeToDelete.id);
+            setGradeToDelete(null);
+          }
+        }}
+        title="تأكيد حذف المرحلة الدراسية"
+        description={`هل أنت متأكد من رغبتك في حذف المرحلة الدراسية "${gradeToDelete?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        isLoading={deletingId === gradeToDelete?.id}
+      />
     </div>
   );
 }

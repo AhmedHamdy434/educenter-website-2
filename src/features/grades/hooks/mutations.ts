@@ -3,10 +3,11 @@ import {
   createGradeAction,
   updateGradeAction,
   toggleGradeStatusAction,
+  deleteGradeAction,
 } from "../actions/grades-actions";
 import { type GradeFormValues } from "../schemas/grade-schema";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 import { gradesKeys } from "../utils/queryKeys";
+import { importFileAction } from "@/lib/export/export-actions";
 
 export function useToggleGradeMutation() {
   const queryClient = useQueryClient();
@@ -14,15 +15,9 @@ export function useToggleGradeMutation() {
   return useMutation({
     mutationFn: async (id: string) => toggleGradeStatusAction(id),
     onSuccess: (result) => {
-      handleResponseToast(result);
-      queryClient.invalidateQueries({ queryKey: gradesKeys.all });
-    },
-    onError: () => {
-      handleResponseToast({
-        success: false,
-        message: "فشل تغيير حالة تفعيل المرحلة الدراسية.",
-        data: null,
-      });
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
+      }
     },
   });
 }
@@ -34,7 +29,6 @@ export function useCreateGradeMutation() {
       return createGradeAction(values);
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
@@ -55,10 +49,55 @@ export function useUpdateGradeMutation() {
       return updateGradeAction(id, values);
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
 }
+
+export function useDeleteGradeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      return deleteGradeAction(id);
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
+      }
+    },
+  });
+}
+
+export function useImportGradesMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      dryRun = false,
+    }: {
+      file: File;
+      dryRun?: boolean;
+    }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return importFileAction(
+        `/grades/import/excel?dryRun=${dryRun}`,
+        formData
+      );
+    },
+    meta: {
+      skipToast: true,
+    },
+    onSuccess: (result, variables) => {
+      if (!variables.dryRun && result.success) {
+        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
+      }
+    },
+  });
+}
+
+

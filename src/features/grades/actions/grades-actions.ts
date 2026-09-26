@@ -26,7 +26,6 @@ export async function getGradeById(id: string): Promise<ApiResponse<Grade>> {
 export async function createGradeAction(
   data: CreateGradeDTO,
 ): Promise<ApiResponse<Grade>> {
-  console.log("dataaaaaaa", data);
   return serverApiClient<Grade>({
     url: "/grades",
     method: "POST",
@@ -53,3 +52,13 @@ export async function toggleGradeStatusAction(
     method: "PATCH",
   });
 }
+
+export async function deleteGradeAction(
+  id: string,
+): Promise<ApiResponse<void>> {
+  return serverApiClient<void>({
+    url: `/grades/${id}`,
+    method: "DELETE",
+  });
+}
+

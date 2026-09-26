@@ -15,7 +15,6 @@ import { resetPasswordAction } from "../actions/reset-password";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/common/form-input";
 import { FadeIn } from "@/components/common/motion-wrapper";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -54,7 +53,6 @@ export function ResetPasswordForm() {
   const onSubmit = async (data: ResetPasswordFormValues) => {
     const result = await resetPasswordAction(data);
 
-    handleResponseToast(result);
     if (result.success) {
       router.push("/login");
     }

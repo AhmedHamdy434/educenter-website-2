@@ -9,7 +9,6 @@ import {
   payGroupStudentMonthAction,
 } from "../actions/groups-actions";
 import { type GroupFormValues } from "../schemas/group-schema";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 import { groupsKeys } from "../utils/queryKeys";
 
 export function useToggleGroupStatusMutation() {
@@ -17,16 +16,8 @@ export function useToggleGroupStatusMutation() {
 
   return useMutation({
     mutationFn: async (id: string) => toggleGroupStatusAction(id),
-    onSuccess: (result) => {
-      handleResponseToast(result);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupsKeys.all });
-    },
-    onError: () => {
-      handleResponseToast({
-        success: false,
-        message: "فشل تغيير حالة تفعيل المجموعة.",
-        data: null,
-      });
     },
   });
 }
@@ -48,7 +39,6 @@ export function useCreateGroupMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
       }
@@ -79,7 +69,6 @@ export function useUpdateGroupMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
       }
@@ -92,8 +81,7 @@ export function useDeleteGroupMutation() {
 
   return useMutation({
     mutationFn: async (id: string) => deleteGroupAction(id),
-    onSuccess: (result) => {
-      handleResponseToast(result);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupsKeys.all });
     },
   });
@@ -112,7 +100,6 @@ export function useAddStudentsToGroupMutation() {
       subscriptionStartDate?: string;
     }) => addStudentsToGroupAction(id, studentIds, subscriptionStartDate),
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
       }
@@ -131,7 +118,6 @@ export function useRemoveStudentsFromGroupMutation() {
       studentIds: string[];
     }) => removeStudentsFromGroupAction(id, studentIds),
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
       }
@@ -152,7 +138,6 @@ export function usePayGroupStudentMonthMutation() {
       notes?: string;
     }) => payGroupStudentMonthAction(groupStudentId, subscriptionDate, notes),
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         // Invalidate groups and student payments caches
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
@@ -161,4 +146,3 @@ export function usePayGroupStudentMonthMutation() {
     },
   });
 }
-

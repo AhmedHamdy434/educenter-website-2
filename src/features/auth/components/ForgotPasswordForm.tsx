@@ -14,7 +14,6 @@ import { forgotPasswordAction } from "../actions/forgot-password";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/common/form-input";
 import { FadeIn } from "@/components/common/motion-wrapper";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
@@ -33,7 +32,6 @@ export function ForgotPasswordForm() {
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     const result = await forgotPasswordAction(data);
 
-    handleResponseToast(result);
     if (result.success) {
       router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
     }

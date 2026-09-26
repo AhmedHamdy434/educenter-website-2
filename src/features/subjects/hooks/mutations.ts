@@ -5,7 +5,6 @@ import {
   toggleSubjectStatusAction,
 } from "../actions/subjects-actions";
 import { type SubjectFormValues } from "../schemas/subject-schema";
-import { handleResponseToast } from "@/lib/api/handleResponseToast";
 import { subjectsKeys } from "../utils/queryKeys";
 
 export function useToggleSubjectMutation() {
@@ -14,15 +13,9 @@ export function useToggleSubjectMutation() {
   return useMutation({
     mutationFn: async (id: string) => toggleSubjectStatusAction(id),
     onSuccess: (result) => {
-      handleResponseToast(result);
-      queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
-    },
-    onError: () => {
-      handleResponseToast({
-        success: false,
-        message: "فشل تغيير حالة تفعيل المادة الدراسية.",
-        data: null,
-      });
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
+      }
     },
   });
 }
@@ -34,7 +27,6 @@ export function useCreateSubjectMutation() {
       return createSubjectAction(values);
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
       }
@@ -58,10 +50,10 @@ export function useUpdateSubjectMutation() {
       });
     },
     onSuccess: (result) => {
-      handleResponseToast(result);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
       }
     },
   });
 }
+
