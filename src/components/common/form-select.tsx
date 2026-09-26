@@ -67,12 +67,13 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
       onValueChange={handleValChange}
       disabled={disabled}
       name={name}
+      dir="rtl"
     >
       <SelectTrigger
         id={id}
         aria-invalid={!!error}
         className={cn(
-          "w-full h-11 px-4 py-3 rounded-xl border border-input bg-card text-foreground text-sm font-medium outline-none transition-all text-right flex items-center justify-between shadow-none",
+          "w-full min-h-11 px-4 py-3 rounded-xl border border-input bg-card text-foreground text-sm font-medium outline-none transition-all text-right flex items-center justify-between shadow-none",
           error
             ? "border-destructive focus:border-destructive focus:ring-1 focus:ring-destructive/10"
             : "focus:border-primary focus:ring-1 focus:ring-primary/10",

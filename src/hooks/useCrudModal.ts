@@ -1,25 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 export function useCrudModal<T>() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     setSelectedItem(null);
     setIsOpen(true);
-  };
+  }, []);
 
-  const openEdit = (item: T) => {
+  const openEdit = useCallback((item: T) => {
     setSelectedItem(item);
     setIsOpen(true);
-  };
+  }, []);
 
-  const close = () => {
+  const close = useCallback(() => {
     setIsOpen(false);
     setSelectedItem(null);
-  };
+  }, []);
 
   return {
     isOpen,

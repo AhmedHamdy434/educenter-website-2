@@ -1,4 +1,5 @@
 import { type Grade } from "../types";
+import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -17,7 +18,7 @@ export function getGradeColumns({
   onToggleStatus,
   togglingId,
   deletingId,
-}: ColumnsProps) {
+}: ColumnsProps): ColumnDef<Grade>[] {
   return [
     {
       accessorKey: "order",
@@ -48,7 +49,7 @@ export function getGradeColumns({
       ),
     },
     {
-      id: "subjectsCount",
+      id: "subjects",
       accessorKey: "_count.subjects",
       header: "عدد المواد",
       enableSorting: true,
@@ -57,7 +58,7 @@ export function getGradeColumns({
       ),
     },
     {
-      id: "groupsCount",
+      id: "groups",
       accessorKey: "_count.groups",
       header: "عدد المجموعات",
       enableSorting: true,
@@ -66,7 +67,7 @@ export function getGradeColumns({
       ),
     },
     {
-      id: "studentsCount",
+      id: "enrollments",
       accessorKey: "_count.enrollments",
       header: "عدد الطلاب",
       enableSorting: true,

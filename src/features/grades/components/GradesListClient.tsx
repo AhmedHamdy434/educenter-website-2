@@ -44,7 +44,7 @@ export function GradesListClient() {
     page,
     limit,
     search,
-    active,
+    active: active || undefined,
     sortBy,
     sortOrder,
   };
@@ -74,11 +74,19 @@ export function GradesListClient() {
   } = useDeleteGradeMutation();
   const { mutateAsync: importGrades } = useImportGradesMutation();
 
+  const handleConfirmDelete = async () => {
+    if (!gradeToDelete) return;
+    const res = await deleteGrade(gradeToDelete.id);
+    if (res.success) {
+      setGradeToDelete(null);
+    }
+  };
+
   const columns = useMemo(
     () =>
       getGradeColumns({
         onEdit: openEdit,
-        onDelete: (grade) => setGradeToDelete(grade),
+        onDelete: setGradeToDelete,
         onToggleStatus: toggleStatus,
         togglingId: togglePending ? togglingId : null,
         deletingId: deletePending ? deletingId : null,
@@ -116,7 +124,6 @@ export function GradesListClient() {
           onFilterChange={updateQuery}
           excelConfig={gradeExcelConfig}
           pdfConfig={gradePdfConfig}
-          columns={columns}
           totalRecords={data?.meta?.total ?? 0}
           isLoading={isLoading}
           onImport={importGrades}
@@ -152,12 +159,7 @@ export function GradesListClient() {
       <ConfirmDialog
         isOpen={!!gradeToDelete}
         onClose={() => setGradeToDelete(null)}
-        onConfirm={async () => {
-          if (gradeToDelete) {
-            const res = await deleteGrade(gradeToDelete.id);
-            if (res.success) setGradeToDelete(null);
-          }
-        }}
+        onConfirm={handleConfirmDelete}
         title="تأكيد حذف المرحلة الدراسية"
         description={`هل أنت متأكد من رغبتك في حذف المرحلة الدراسية "${gradeToDelete?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
         confirmLabel="حذف"

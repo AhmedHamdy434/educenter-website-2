@@ -6,7 +6,7 @@ import { QueryParams, type ApiResponse } from "@/types";
 
 export function useSubjectsQuery(
   params: QueryParams & { gradeId?: string },
-  initialData: ApiResponse<Subject[]>,
+  initialData?: ApiResponse<Subject[]>,
 ) {
   // Only use initialData when params match initial state (page 1, limit 10, no search, no active filter, no gradeId filter)
   const isInitialParams =

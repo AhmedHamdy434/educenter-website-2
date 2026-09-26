@@ -1,4 +1,6 @@
 import { type Subject } from "../types";
+import { type ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
@@ -12,15 +14,13 @@ export function getSubjectColumns({
   onEdit,
   onToggleStatus,
   togglingId,
-}: ColumnsProps) {
+}: ColumnsProps): ColumnDef<Subject>[] {
   return [
     {
       id: "index",
       header: "#",
       cell: ({ row }: { row: { index: number } }) => (
-        <span className="inline-flex items-center justify-center rounded-md bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground border border-border">
-          {row.index + 1}
-        </span>
+        <Badge variant="subtle">{row.index + 1}</Badge>
       ),
     },
     {
@@ -40,6 +40,26 @@ export function getSubjectColumns({
         <span className="font-medium text-primary bg-secondary px-2.5 py-1 rounded-md text-xs border border-border">
           {row.original.grade?.name || "غير محددة"}
         </span>
+      ),
+    },
+    {
+      id: "groups",
+      accessorKey: "_count.groups",
+      header: "عدد المجموعات",
+      enableSorting: true,
+      cell: ({ row }: { row: { original: Subject } }) => (
+        <Badge variant="subtle">{row.original._count?.groups ?? "-"}</Badge>
+      ),
+    },
+    {
+      id: "teachers",
+      accessorKey: "_count.teacherSubjects",
+      header: "عدد المعلمين",
+      enableSorting: true,
+      cell: ({ row }: { row: { original: Subject } }) => (
+        <Badge variant="subtle">
+          {row.original._count?.teacherSubjects ?? "-"}
+        </Badge>
       ),
     },
     {
@@ -74,7 +94,7 @@ export function getSubjectColumns({
           onClick={() => onEdit(row.original)}
           variant="brandOutline"
           size="sm"
-          className="h-8 rounded-lg"
+          className="h-8 rounded-lg font-semibold"
         >
           تعديل
         </Button>

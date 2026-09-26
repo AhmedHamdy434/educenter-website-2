@@ -3,6 +3,7 @@ import { getGrades } from "../actions/grades-actions";
 import { gradesKeys } from "../utils/queryKeys";
 import { type Grade } from "../types";
 import { QueryParams, type ApiResponse } from "@/types";
+import { toSelectOptions } from "@/utils/options";
 
 export function useGradesQuery(
   params: QueryParams,
@@ -12,5 +13,16 @@ export function useGradesQuery(
     queryKey: gradesKeys.list(params),
     queryFn: async () => getGrades(params),
     initialData: initialData ? initialData : undefined,
+  });
+}
+
+export function useGradesOptionsQuery(enabled = true) {
+  return useQuery({
+    queryKey: gradesKeys.options(),
+    queryFn: async () => {
+      const res = await getGrades({ limit: 100, active: "true" });
+      return toSelectOptions(res.data);
+    },
+    enabled,
   });
 }

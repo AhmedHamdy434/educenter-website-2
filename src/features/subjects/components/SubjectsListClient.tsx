@@ -1,44 +1,37 @@
 "use client";
 
 import { useMemo } from "react";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { TableSearch } from "@/components/common/TableSearch";
-import { FilterDropdown } from "@/components/common/FilterDropdown";
+import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
 import { Card } from "@/components/ui/card";
 import { SubjectForm } from "./SubjectForm";
 import { useSubjectsQuery } from "../hooks/queries";
-import { useToggleSubjectMutation } from "../hooks/mutations";
+import {
+  useToggleSubjectMutation,
+  useImportSubjectsMutation,
+} from "../hooks/mutations";
 import { getSubjectColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
+import { SubjectFilters, type Subject } from "../types";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { STATUSES } from "@/constants/dropdown-options";
-import { type Subject } from "../types";
-import { type ApiResponse } from "@/types";
+import {
+  getSubjectFiltersConfig,
+  subjectExcelConfig,
+  subjectPdfConfig,
+} from "../config/subjects-toolbar.config";
+import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
 
-interface SubjectFilters {
-  active?: string;
-  gradeId?: string;
-}
-
-interface SubjectsListClientProps {
-  initialData: ApiResponse<Subject[]>;
-  gradesOptions: { value: string; label: string }[];
-}
-
-export function SubjectsListClient({
-  initialData,
-  gradesOptions,
-}: SubjectsListClientProps) {
-  // Pagination, search, sort, and filter state
+export function SubjectsListClient() {
+  // Filters, sorting, search from URL
   const {
     page,
     limit,
     search,
-    active,
-    gradeId,
+    active = "",
+    gradeId = "",
     sortBy,
     sortOrder,
     sorting,
@@ -50,11 +43,17 @@ export function SubjectsListClient({
     page,
     limit,
     search,
-    active,
-    gradeId,
+    active: active || undefined,
+    gradeId: gradeId || undefined,
     sortBy,
     sortOrder,
   };
+
+  const { data: gradesOptionsData } = useGradesOptionsQuery();
+  const gradesOptions = useMemo(
+    () => gradesOptionsData ?? [],
+    [gradesOptionsData],
+  );
 
   // Modal state & selected subject
   const {
@@ -66,36 +65,38 @@ export function SubjectsListClient({
   } = useCrudModal<Subject>();
 
   // Data fetching
-  const { data, isLoading } = useSubjectsQuery(queryParams, initialData);
-
-  const subjects = data?.data || [];
-  const total = data?.meta?.total || 0;
-  const totalPages = data?.meta?.totalPages || 1;
+  const { data, isLoading } = useSubjectsQuery(queryParams);
 
   // Mutations
-  const toggleMutation = useToggleSubjectMutation();
-
-  const togglingId = toggleMutation.isPending
-    ? (toggleMutation.variables ?? null)
-    : null;
-  const toggleStatus = toggleMutation.mutate;
+  const {
+    mutate: toggleStatus,
+    isPending: togglePending,
+    variables: togglingId,
+  } = useToggleSubjectMutation();
+  const { mutateAsync: importSubjects } = useImportSubjectsMutation();
 
   const columns = useMemo(
     () =>
       getSubjectColumns({
         onEdit: openEdit,
         onToggleStatus: toggleStatus,
-        togglingId,
+        togglingId: togglePending ? (togglingId ?? null) : null,
       }),
-    [openEdit, toggleStatus, togglingId],
+    [openEdit, toggleStatus, togglingId, togglePending],
+  );
+
+  const filtersConfig = useMemo(
+    () => getSubjectFiltersConfig(gradesOptions),
+    [gradesOptions],
   );
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* 1. Header */}
+      {/* 1. Header with Focused Title Icon */}
       <PageHeader
         title="المواد الدراسية"
         description="إدارة وتهيئة المواد والمناهج الدراسية التابعة للمركز التعليمي."
+        icon={BookOpen}
         actionButton={{
           label: "مادة جديدة",
           icon: Plus,
@@ -105,53 +106,30 @@ export function SubjectsListClient({
 
       {/* 2. Filters & Table inside Container Card */}
       <Card className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-none">
-        <div
-          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2"
-          dir="rtl"
-        >
-          <TableSearch placeholder="ابحث عن مادة دراسية..." />
-          <div className="flex flex-wrap items-center gap-3">
-            <FilterDropdown
-              placeholder="المرحلة الدراسية"
-              value={gradeId || ""}
-              onChange={(val) =>
-                updateQuery({
-                  gradeId: val || undefined,
-                  page: 1,
-                })
-              }
-              options={gradesOptions}
-              allOptionLabel="كل المراحل"
-            />
-            <FilterDropdown
-              placeholder="فلترة حسب الحالة"
-              value={active || ""}
-              onChange={(val) =>
-                updateQuery({
-                  active: val || undefined,
-                  page: 1,
-                })
-              }
-              options={STATUSES}
-            />
-          </div>
-        </div>
+        <TableToolbar
+          searchPlaceholder="ابحث عن مادة دراسية..."
+          filters={filtersConfig}
+          filterValues={{ active, gradeId }}
+          onFilterChange={updateQuery}
+          excelConfig={subjectExcelConfig}
+          pdfConfig={subjectPdfConfig}
+          totalRecords={data?.meta?.total ?? 0}
+          isLoading={isLoading}
+          onImport={importSubjects}
+        />
 
         <SharedTable
           columns={columns}
-          data={subjects}
+          data={data?.data || []}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مواد دراسية."
         />
       </Card>
 
-      {/* 3. Form Modal */}
+      {/* 3. Form Modal (Shared Form Logic) */}
       <SharedModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -169,4 +147,3 @@ export function SubjectsListClient({
     </div>
   );
 }
-

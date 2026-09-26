@@ -92,7 +92,8 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **Constants**: Name variables in `UPPER_SNAKE_CASE` (e.g., `API_TIMEOUT_MS`). Group local configurations inside the feature's constants folder.
 *   **Shared Dropdown Constants**: Common dropdown options (`DEFAULT_LIMIT`, `LIMITS`, `STATUSES`) must be imported from `@/constants/dropdown-options` instead of re-defining them locally.
 *   **Shared Table Filters Hook (`useTableFilters`)**: All list tables must use `@/hooks/useTableFilters` to synchronize pagination (`page`, `limit`), search (`search`), custom filters, and sorting (`sortBy`, `sortOrder`, `sorting`, `onSortingChange`) with URL search parameters. Filter and sorting updates automatically reset `page` to 1.
-*   **Shared CRUD Modal Hook (`useCrudModal`)**: All entity create/edit modal states must use `@/hooks/useCrudModal<T>()` providing `{ isOpen, selectedItem, openCreate, openEdit, close }`, eliminating redundant per-feature Zustand modal stores.
+*   **Shared CRUD Modal Hook (`useCrudModal`)**: All entity create/edit modal states must use `@/hooks/useCrudModal<T>()` providing `{ isOpen, selectedItem, openCreate, openEdit, close }`, eliminating redundant per-feature Zustand modal stores. Its action handlers must be memoized via `useCallback` to maintain reference stability and prevent invalidating downstream `useMemo` hooks (such as table columns).
+*   **Query Parameter Sanitization**: When extracting filter values from URL params via `useTableFilters` to pass to TanStack Query hooks or API clients, sanitize empty strings (e.g., `active: active || undefined`) so empty strings are omitted from query payloads.
 *   **Utilities**: Write helpers as pure, deterministic functions (e.g., date formats, currency parsers) inside `src/utils/`.
 *   **Shared Date & Time Utilities**: All schedule selectors (day list, hours, minutes, period dropdown options) and the time formatter function `formatTime` must be imported from `@/utils/time` instead of being re-declared locally in forms and columns.
 *   **Utility Reusability Check**: Before using or creating any helper/utility function (e.g., date formatters), verify if it is already present in the shared `src/utils/` directory. If it is not present, implement it inside the shared directory instead of writing a local/duplicate version.
@@ -183,15 +184,16 @@ Must orchestrate the main view components and should compose:
 - **`useTableFilters<TFilters>()`**: Reads and updates URL search parameters for `page`, `limit`, `search`, custom filters, and sorting (`sortBy`, `sortOrder`, `sorting`, `onSortingChange`).
 - **`useCrudModal<TEntity>()`**: Provides `{ isOpen, selectedItem, openCreate, openEdit, close }` for create/edit modal lifecycle.
 - **`<PageHeader>`**: Renders the title, Arabic description, and a "create new" action button triggering `openCreate`.
-- **`<TableSearch>`**: Input component synced with URL search parameter (`search`).
-- **`<FilterDropdown>`**: Custom filter select boxes (e.g., status from `STATUSES`, grade) updating the URL via `updateQuery`.
+- **`<TableToolbar>`**: Replaces manual search/filter bars by unifying search (`searchPlaceholder`), filter panel (`filters`, `filterValues`), server export endpoints (`excelConfig`, `pdfConfig`), and Excel import modal (`onImport`).
 - **`<SharedTable>`**: Grid table component accepting:
-  - `columns`: Column definitions.
+  - `columns`: Column definitions explicitly typed as `ColumnDef<TEntity>[]`.
   - `data`: List items.
   - `isLoading`: Loading state.
-  - `page`, `limit`, `total`, `totalPages`: Pagination state (handled by internal `SharedPagination` via URL params).
+  - `meta`: Backend pagination metadata (`meta={data?.meta}`) containing `total`, `page`, `limit`, `totalPages`.
   - `sorting`, `onSortingChange`: Server-side sorting wired to TanStack Table.
+  - `emptyMessage`: Localized empty state message.
 - **`<SharedModal>`**: A popup wrapper triggered by `isOpen` which renders `<Feature>Form`.
+- **`<ConfirmDialog>`**: Standard deletion confirmation dialog utilizing state `itemToDelete`, `onClose={() => setItemToDelete(null)}`, and a clean async callback `handleConfirmDelete`.
 
 #### 2. Feature Form (`<Feature>Form.tsx`)
 Must manage item creation and editing using React Hook Form + Zod:
@@ -206,6 +208,8 @@ Must manage item creation and editing using React Hook Form + Zod:
 
 #### 3. Column Definition (`columns.tsx`)
 Must define column metadata for rendering inside the table:
-- Exports `get<Feature>Columns({ onEdit, onToggleStatus, togglingId })` returning TanStack Table columns.
+- Exports `get<Feature>Columns({ ... }): ColumnDef<TEntity>[]` with an explicit return type from `@tanstack/react-table`.
 - Set `enableSorting: true` on columns that support server-side sorting (e.g., `order`, `name`, `createdAt`). Non-sortable columns default to `enableSorting: false` in `SharedTable`.
-- Renders cell templates, badges for boolean states, and localized text.
+- **Badges & Chips**: Use `<Badge variant="subtle">` for index/order/counter chips instead of hardcoded ad-hoc `<span>` elements.
+- **Server-Side Export Only**: Do NOT define client-side `meta: { exportHeader, exportValue }` in columns; file exports (Excel/PDF) are handled strictly server-side via backend endpoints.
+- **Stable Callbacks**: Pass direct function references (e.g., `onDelete: setItemToDelete`) to prevent breaking `useMemo` in parent containers.

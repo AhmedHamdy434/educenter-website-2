@@ -6,6 +6,7 @@ import {
 } from "../actions/subjects-actions";
 import { type SubjectFormValues } from "../schemas/subject-schema";
 import { subjectsKeys } from "../utils/queryKeys";
+import { importFileAction } from "@/lib/export/export-actions";
 
 export function useToggleSubjectMutation() {
   const queryClient = useQueryClient();
@@ -51,6 +52,36 @@ export function useUpdateSubjectMutation() {
     },
     onSuccess: (result) => {
       if (result.success) {
+        queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
+      }
+    },
+  });
+}
+
+export function useImportSubjectsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      dryRun = false,
+    }: {
+      file: File;
+      dryRun?: boolean;
+    }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return importFileAction(
+        `/subjects/import/excel?dryRun=${dryRun}`,
+        formData,
+      );
+    },
+    meta: {
+      skipToast: true,
+    },
+    onSuccess: (result, variables) => {
+      if (!variables.dryRun && result.success) {
         queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
       }
     },

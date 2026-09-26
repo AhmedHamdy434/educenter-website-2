@@ -8,6 +8,10 @@ export interface Subject {
     id: string;
     name: string;
   };
+  _count?: {
+    groups?: number;
+    teacherSubjects?: number;
+  };
   createdAt: string;
 }
 
@@ -21,4 +25,9 @@ export interface UpdateSubjectDTO {
   name?: string;
   description?: string;
   isActive?: boolean;
+}
+
+export interface SubjectFilters {
+  active?: string;
+  gradeId?: string;
 }
