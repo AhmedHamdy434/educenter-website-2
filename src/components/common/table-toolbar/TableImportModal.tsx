@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { UploadCloud, FileSpreadsheet, Download, AlertCircle, CheckCircle2, Loader2, X } from "lucide-react";
+import {
+  UploadCloud,
+  FileSpreadsheet,
+  Download,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  X,
+} from "lucide-react";
 import { SharedModal } from "@/components/common/SharedModal";
 import { Button } from "@/components/ui/button";
 import { downloadFile } from "@/lib/export/file-download";
@@ -57,7 +65,6 @@ export function TableImportModal({
         url: templateEndpoint,
         defaultFileName: "import-template.xlsx",
       });
-      toast.success("تم تنزيل القالب بنجاح.");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "فشل تحميل القالب.";
       toast.error(msg);
@@ -67,7 +74,10 @@ export function TableImportModal({
   };
 
   const handleFileSelect = async (selectedFile: File) => {
-    if (!selectedFile.name.endsWith(".xlsx") && !selectedFile.name.endsWith(".xls")) {
+    if (
+      !selectedFile.name.endsWith(".xlsx") &&
+      !selectedFile.name.endsWith(".xls")
+    ) {
       toast.error("يرجى اختيار ملف Excel بصيغة .xlsx فقط.");
       return;
     }
@@ -97,9 +107,6 @@ export function TableImportModal({
       const validSummary: ExcelImportSummary = res.data;
       setSummary(validSummary);
       setErrors([]);
-      toast.success(
-        `الملف صالح: تم العثور على ${validSummary.totalRows || 0} صف جاهز للاستيراد.`
-      );
     } catch {
       toast.error("فشل فحص الملف، يرجى المحاولة مرة أخرى.");
     } finally {
@@ -118,8 +125,6 @@ export function TableImportModal({
         toast.error(res.message || "حدث خطأ أثناء استيراد البيانات.");
         return;
       }
-
-      toast.success(res.message || "تم استيراد البيانات بنجاح.");
       onImportSuccess?.();
       handleClose();
     } catch {
@@ -138,7 +143,9 @@ export function TableImportModal({
             <div className="flex items-center gap-2.5">
               <FileSpreadsheet className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-xs font-semibold text-foreground">قالب Excel النموذجي</p>
+                <p className="text-xs font-semibold text-foreground">
+                  قالب Excel النموذجي
+                </p>
                 <p className="text-[11px] text-muted-foreground">
                   استخدم هذا القالب لضمان مطابقة أسماء الأعمدة والتنسيقات.
                 </p>
@@ -184,8 +191,12 @@ export function TableImportModal({
             }}
           />
           <UploadCloud className="h-10 w-10 text-muted-foreground mb-2" />
-          <p className="text-xs font-semibold text-foreground">انقر لاختيار ملف أو اسحبه إلى هنا</p>
-          <p className="text-[11px] text-muted-foreground mt-1">يدعم ملفات Excel (.xlsx) بحد أقصى 3 ميجابايت</p>
+          <p className="text-xs font-semibold text-foreground">
+            انقر لاختيار ملف أو اسحبه إلى هنا
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            يدعم ملفات Excel (.xlsx) بحد أقصى 3 ميجابايت
+          </p>
           {file && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-1 text-xs font-medium text-foreground">
               <FileSpreadsheet className="h-4 w-4 text-primary" />
@@ -217,7 +228,8 @@ export function TableImportModal({
           <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
             <span>
-              الملف جاهز للاستيراد بنجاح! تم التحقق من <strong>{summary.totalRows}</strong> صف مطابق للمعايير.
+              الملف جاهز للاستيراد بنجاح! تم التحقق من{" "}
+              <strong>{summary.totalRows}</strong> صف مطابق للمعايير.
             </span>
           </div>
         )}
@@ -231,7 +243,10 @@ export function TableImportModal({
             </div>
             <div className="max-h-48 overflow-y-auto rounded-lg border border-destructive/20 bg-destructive/5 p-2 space-y-1 text-xs">
               {errors.slice(0, 50).map((err, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-[11px] text-destructive/90 pb-1 border-b border-destructive/10 last:border-none">
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 text-[11px] text-destructive/90 pb-1 border-b border-destructive/10 last:border-none"
+                >
                   <span className="font-bold shrink-0">صف {err.row}:</span>
                   <span>{err.message}</span>
                 </div>
@@ -247,15 +262,27 @@ export function TableImportModal({
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
-          <Button type="button" variant="outline" size="sm" onClick={handleClose} disabled={isSubmitting}>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
             إلغاء
           </Button>
           <Button
             type="button"
             variant="default"
-            size="sm"
+            size="lg"
             onClick={handleConfirmImport}
-            disabled={!file || isValidating || errors.length > 0 || isSubmitting || !summary}
+            disabled={
+              !file ||
+              isValidating ||
+              errors.length > 0 ||
+              isSubmitting ||
+              !summary
+            }
             className="gap-1.5 font-semibold"
           >
             {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
