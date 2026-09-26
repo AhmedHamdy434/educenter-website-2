@@ -68,7 +68,7 @@ export function GradesListClient() {
     variables: togglingId,
   } = useToggleGradeMutation();
   const {
-    mutate: deleteGrade,
+    mutateAsync: deleteGrade,
     isPending: deletePending,
     variables: deletingId,
   } = useDeleteGradeMutation();
@@ -83,7 +83,14 @@ export function GradesListClient() {
         togglingId: togglePending ? togglingId : null,
         deletingId: deletePending ? deletingId : null,
       }),
-    [openEdit, toggleStatus, togglingId, togglePending, deletingId, deletePending],
+    [
+      openEdit,
+      toggleStatus,
+      togglingId,
+      togglePending,
+      deletingId,
+      deletePending,
+    ],
   );
 
   return (
@@ -147,15 +154,15 @@ export function GradesListClient() {
         onClose={() => setGradeToDelete(null)}
         onConfirm={async () => {
           if (gradeToDelete) {
-            deleteGrade(gradeToDelete.id);
-            setGradeToDelete(null);
+            const res = await deleteGrade(gradeToDelete.id);
+            if (res.success) setGradeToDelete(null);
           }
         }}
         title="تأكيد حذف المرحلة الدراسية"
         description={`هل أنت متأكد من رغبتك في حذف المرحلة الدراسية "${gradeToDelete?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
         confirmLabel="حذف"
         cancelLabel="إلغاء"
-        isLoading={deletingId === gradeToDelete?.id}
+        isLoading={deletePending}
       />
     </div>
   );

@@ -5,7 +5,13 @@ export interface Grade {
   order: number;
   isActive: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  centerId?: string;
+  _count?: {
+    subjects: number;
+    groups: number;
+    enrollments: number;
+  };
 }
 
 export interface CreateGradeDTO {

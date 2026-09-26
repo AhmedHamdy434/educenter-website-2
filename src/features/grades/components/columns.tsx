@@ -1,4 +1,5 @@
 import { type Grade } from "../types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
@@ -22,24 +23,14 @@ export function getGradeColumns({
       accessorKey: "order",
       header: "الترتيب",
       enableSorting: true,
-      meta: {
-        exportHeader: "الترتيب",
-        exportValue: (row: Grade) => row.order,
-      },
       cell: ({ row }: { row: { original: Grade } }) => (
-        <span className="inline-flex items-center justify-center rounded-md bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground border border-border">
-          {row.original.order}
-        </span>
+        <Badge variant="subtle">{row.original.order}</Badge>
       ),
     },
     {
       accessorKey: "name",
       header: "اسم المرحلة الدراسية",
       enableSorting: true,
-      meta: {
-        exportHeader: "اسم المرحلة الدراسية",
-        exportValue: (row: Grade) => row.name,
-      },
       cell: ({ row }: { row: { original: Grade } }) => (
         <span className="font-bold text-foreground">{row.original.name}</span>
       ),
@@ -47,26 +38,47 @@ export function getGradeColumns({
     {
       accessorKey: "description",
       header: "الوصف",
-      meta: {
-        exportHeader: "الوصف",
-        exportValue: (row: Grade) => row.description || "لا يوجد وصف",
-      },
       cell: ({ row }: { row: { original: Grade } }) => (
         <span
           className="text-muted-foreground max-w-xs truncate block text-xs"
           title={row.original.description || ""}
         >
-          {row.original.description || "لا يوجد وصف"}
+          {row.original.description || "-"}
         </span>
+      ),
+    },
+    {
+      id: "subjectsCount",
+      accessorKey: "_count.subjects",
+      header: "عدد المواد",
+      enableSorting: true,
+      cell: ({ row }: { row: { original: Grade } }) => (
+        <Badge variant="subtle">{row.original._count?.subjects ?? "-"}</Badge>
+      ),
+    },
+    {
+      id: "groupsCount",
+      accessorKey: "_count.groups",
+      header: "عدد المجموعات",
+      enableSorting: true,
+      cell: ({ row }: { row: { original: Grade } }) => (
+        <Badge variant="subtle">{row.original._count?.groups ?? "-"}</Badge>
+      ),
+    },
+    {
+      id: "studentsCount",
+      accessorKey: "_count.enrollments",
+      header: "عدد الطلاب",
+      enableSorting: true,
+      cell: ({ row }: { row: { original: Grade } }) => (
+        <Badge variant="subtle">
+          {row.original._count?.enrollments ?? "-"}
+        </Badge>
       ),
     },
     {
       accessorKey: "isActive",
       header: "الحالة",
-      meta: {
-        exportHeader: "الحالة",
-        exportValue: (row: Grade) => (row.isActive ? "مفعّل" : "غير مفعّل"),
-      },
       cell: ({ row }: { row: { original: Grade } }) => (
         <Switch
           checked={row.original.isActive}
