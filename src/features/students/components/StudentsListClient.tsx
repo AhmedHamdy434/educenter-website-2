@@ -20,23 +20,14 @@ import { getStudentColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { type Student, type StudentFilters } from "../types";
-import { type ApiResponse } from "@/types";
-import { type SelectOption } from "@/components/common/form-select";
+
 import {
   getStudentFiltersConfig,
   studentExcelConfig,
   studentPdfConfig,
 } from "../config/students-toolbar.config";
 
-interface StudentsListClientProps {
-  initialData: ApiResponse<Student[]>;
-  gradesOptions?: SelectOption[];
-}
-
-export function StudentsListClient({
-  initialData,
-  gradesOptions: initialGradesOptions = [],
-}: StudentsListClientProps) {
+export function StudentsListClient({}) {
   const [paymentHistoryStudent, setPaymentHistoryStudent] =
     useState<Student | null>(null);
   const [magicLinkStudent, setMagicLinkStudent] = useState<Student | null>(
@@ -71,11 +62,10 @@ export function StudentsListClient({
   const { data: fetchedGradesOptions, isLoading: isGradesLoading } =
     useGradesOptionsQuery();
 
-  const gradesOptions = useMemo(() => {
-    return fetchedGradesOptions && fetchedGradesOptions.length > 0
-      ? fetchedGradesOptions
-      : initialGradesOptions;
-  }, [fetchedGradesOptions, initialGradesOptions]);
+  const gradesOptions = useMemo(
+    () => fetchedGradesOptions ?? [],
+    [fetchedGradesOptions],
+  );
 
   // Modal state & selected student
   const {
@@ -87,7 +77,7 @@ export function StudentsListClient({
   } = useCrudModal<Student>();
 
   // Data fetching
-  const { data, isLoading } = useStudentsQuery(queryParams, initialData);
+  const { data, isLoading } = useStudentsQuery(queryParams);
   const students = useMemo(() => data?.data ?? [], [data?.data]);
 
   // Mutations
@@ -128,8 +118,6 @@ export function StudentsListClient({
     }),
     [active, gradeId],
   );
-
-
 
   return (
     <div className="space-y-6 text-right" dir="rtl">

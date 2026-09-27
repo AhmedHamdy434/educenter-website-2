@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
@@ -18,23 +18,13 @@ import { getTeacherColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { type Teacher, type TeacherFilters } from "../types";
-import { type ApiResponse } from "@/types";
-import { type SelectOption } from "@/components/common/form-select";
 import {
   getTeacherFiltersConfig,
   teacherExcelConfig,
   teacherPdfConfig,
 } from "../config/teachers-toolbar.config";
 
-interface TeachersListClientProps {
-  initialData: ApiResponse<Teacher[]>;
-  subjectsOptions?: SelectOption[];
-}
-
-export function TeachersListClient({
-  initialData,
-  subjectsOptions: initialSubjectsOptions = [],
-}: TeachersListClientProps) {
+export function TeachersListClient() {
   // Pagination, search, sort, and filter state from URL
   const {
     page,
@@ -63,11 +53,10 @@ export function TeachersListClient({
   const { data: fetchedSubjectsOptions, isLoading: isSubjectsLoading } =
     useSubjectsOptionsQuery();
 
-  const subjectsOptions = useMemo(() => {
-    return fetchedSubjectsOptions && fetchedSubjectsOptions.length > 0
-      ? fetchedSubjectsOptions
-      : initialSubjectsOptions;
-  }, [fetchedSubjectsOptions, initialSubjectsOptions]);
+  const subjectsOptions = useMemo(
+    () => fetchedSubjectsOptions ?? [],
+    [fetchedSubjectsOptions],
+  );
 
   // Modal state & selected teacher
   const {
@@ -79,7 +68,7 @@ export function TeachersListClient({
   } = useCrudModal<Teacher>();
 
   // Data fetching
-  const { data, isLoading } = useTeachersQuery(queryParams, initialData);
+  const { data, isLoading } = useTeachersQuery(queryParams);
   const teachers = useMemo(() => data?.data ?? [], [data?.data]);
 
   // Mutations

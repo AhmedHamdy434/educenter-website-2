@@ -10,27 +10,12 @@ import { type Group } from "../types";
 import { type ApiResponse } from "@/types";
 
 
-export function useGroupsQuery(
-  params: GroupQueryParams,
-  initialData: ApiResponse<Group[]>,
-) {
-  const isInitialParams =
-    params.page === 1 &&
-    params.limit === 10 &&
-    !params.search &&
-    (params.active === null ||
-      params.active === undefined ||
-      (params.active as unknown) === "") &&
-    !params.gradeId &&
-    !params.subjectId &&
-    !params.teacherId;
-
+export function useGroupsQuery(params: GroupQueryParams) {
   return useQuery({
     queryKey: groupsKeys.list(params),
     queryFn: async () => {
       return getGroups(params);
     },
-    initialData: isInitialParams ? initialData : undefined,
   });
 }
 

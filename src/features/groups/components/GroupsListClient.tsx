@@ -20,7 +20,6 @@ import { getGroupColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { type Group, type GroupFilters } from "../types";
-import { type ApiResponse } from "@/types";
 import {
   getGroupFiltersConfig,
   groupExcelConfig,
@@ -29,11 +28,7 @@ import {
 import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
 import { useSubjectsOptionsQuery } from "@/features/subjects/hooks/queries";
 
-interface GroupsListClientProps {
-  initialData: ApiResponse<Group[]>;
-}
-
-export function GroupsListClient({ initialData }: GroupsListClientProps) {
+export function GroupsListClient() {
   const [groupToDelete, setGroupToDelete] = useState<Group | null>(null);
 
   // Pagination, search, sort, and filter state from URL
@@ -72,7 +67,7 @@ export function GroupsListClient({ initialData }: GroupsListClientProps) {
   } = useCrudModal<Group>();
 
   // Data fetching
-  const { data, isLoading } = useGroupsQuery(queryParams, initialData);
+  const { data, isLoading } = useGroupsQuery(queryParams);
   const { data: gradesOptions, isLoading: gradesLoading } =
     useGradesOptionsQuery();
 
