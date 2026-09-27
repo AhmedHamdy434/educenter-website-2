@@ -33,35 +33,13 @@ export function getTeacherColumns({
       ),
     },
     {
-      id: "specialization",
-      accessorKey: "specialization",
-      header: "التخصص",
-      enableSorting: true,
-      cell: ({ row }) => (
-        <span className="font-semibold text-foreground">
-          {row.original.specialization}
-        </span>
-      ),
-    },
-    {
       id: "phone",
       accessorKey: "user.phone",
       header: "الهاتف",
       enableSorting: true,
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs block" dir="ltr">
-          {row.original.user.phone}
-        </span>
-      ),
-    },
-    {
-      id: "salary",
-      accessorKey: "salary",
-      header: "الراتب",
-      enableSorting: true,
-      cell: ({ row }) => (
-        <span className="font-bold text-foreground">
-          {row.original.salary} ج.م
+          {row.original.user.phone || "—"}
         </span>
       ),
     },

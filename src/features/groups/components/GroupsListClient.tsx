@@ -21,24 +21,19 @@ import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { type Group, type GroupFilters } from "../types";
 import { type ApiResponse } from "@/types";
-import { type SelectOption } from "@/components/common/form-select";
 import {
   getGroupFiltersConfig,
   groupExcelConfig,
   groupPdfConfig,
 } from "../config/groups-toolbar.config";
+import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
+import { useSubjectsOptionsQuery } from "@/features/subjects/hooks/queries";
 
 interface GroupsListClientProps {
   initialData: ApiResponse<Group[]>;
-  gradesOptions: SelectOption[];
-  subjectsOptions: SelectOption[];
 }
 
-export function GroupsListClient({
-  initialData,
-  gradesOptions,
-  subjectsOptions,
-}: GroupsListClientProps) {
+export function GroupsListClient({ initialData }: GroupsListClientProps) {
   const [groupToDelete, setGroupToDelete] = useState<Group | null>(null);
 
   // Pagination, search, sort, and filter state from URL
@@ -78,6 +73,11 @@ export function GroupsListClient({
 
   // Data fetching
   const { data, isLoading } = useGroupsQuery(queryParams, initialData);
+  const { data: gradesOptions, isLoading: gradesLoading } =
+    useGradesOptionsQuery();
+
+  const { data: subjectsOptions, isLoading: subjectsLoading } =
+    useSubjectsOptionsQuery();
 
   // Mutations
   const {
@@ -115,12 +115,20 @@ export function GroupsListClient({
         deletingId: deletePending ? (deletingId ?? null) : null,
         centerSlug,
       }),
-    [openEdit, toggleStatus, togglingId, togglePending, deletingId, deletePending, centerSlug],
+    [
+      openEdit,
+      toggleStatus,
+      togglingId,
+      togglePending,
+      deletingId,
+      deletePending,
+      centerSlug,
+    ],
   );
 
   const filtersConfig = useMemo(
-    () => getGroupFiltersConfig(gradesOptions, subjectsOptions),
-    [gradesOptions, subjectsOptions],
+    () => getGroupFiltersConfig(gradesOptions, subjectsOptions, gradesLoading,subjectsLoading),
+    [gradesLoading, gradesOptions, subjectsLoading, subjectsOptions],
   );
 
   return (
@@ -172,7 +180,7 @@ export function GroupsListClient({
           isOpen={isModalOpen}
           onClose={closeModal}
           group={selectedGroup}
-          gradesOptions={gradesOptions}
+          gradesOptions={gradesOptions ?? []}
         />
       </SharedModal>
 
@@ -183,12 +191,10 @@ export function GroupsListClient({
         onConfirm={handleConfirmDelete}
         title="حذف المجموعة الدراسية"
         description={`هل أنت متأكد من حذف المجموعة الدراسية "${groupToDelete?.name}"؟ سيتم حذف جميع السجلات المرتبطة بها نهائياً.`}
-        confirmText="نعم، احذف"
-        cancelText="إلغاء"
+        confirmLabel="نعم، احذف"
+        cancelLabel="إلغاء"
         isLoading={deletePending}
       />
     </div>
   );
 }
-
-

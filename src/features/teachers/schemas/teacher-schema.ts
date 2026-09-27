@@ -17,12 +17,6 @@ export const teacherSchema = z.object({
   phone: z
     .string()
     .min(1, { message: "رقم الهاتف مطلوب" }),
-  specialization: z
-    .string()
-    .min(1, { message: "التخصص مطلوب" }),
-  salary: z
-    .number({ message: "يجب إدخال راتب صحيح" })
-    .min(0, { message: "الراتب يجب أن يكون 0 أو أكثر" }),
   bio: z
     .string()
     .max(1000, { message: "السيرة الذاتية لا يمكن أن تتجاوز 1000 حرف" })

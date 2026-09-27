@@ -69,7 +69,6 @@ export interface TableToolbarProps<TData, TFilters extends Record<string, string
   onFilterChange?: (updates: Partial<TFilters> & { page?: number }) => void;
   excelConfig?: ToolbarExcelConfig;
   pdfConfig?: ToolbarPdfConfig;
-  columns?: import("@tanstack/react-table").ColumnDef<TData, unknown>[];
   totalRecords?: number;
   isLoading?: boolean;
   className?: string;

@@ -18,7 +18,6 @@ export function TableToolbar<TData, TFilters extends Record<string, string | und
   onFilterChange,
   excelConfig,
   pdfConfig,
-  columns = [],
   totalRecords = 0,
   isLoading = false,
   className = "",
@@ -93,7 +92,6 @@ export function TableToolbar<TData, TFilters extends Record<string, string | und
         <TableActions
           excelConfig={excelConfig}
           pdfConfig={pdfConfig}
-          columns={columns}
           currentParams={currentParams}
           totalRecords={totalRecords}
           isLoading={isLoading}

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Download, Upload, FileText, Loader2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { downloadFile } from "@/lib/export/file-download";
 import { ToolbarExcelConfig, ToolbarPdfConfig } from "@/types/table-toolbar";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface TableActionsProps {
   excelConfig?: ToolbarExcelConfig;
   pdfConfig?: ToolbarPdfConfig;
-  columns?: unknown;
   currentParams?: Record<string, string | number | undefined>;
   totalRecords?: number;
   isLoading?: boolean;
@@ -31,15 +33,11 @@ export function TableActions({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
-        setIsMobileMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
   }, []);
+
+  useOnClickOutside(mobileMenuRef, closeMobileMenu);
 
   const hasExcelExport = Boolean(excelConfig?.exportEndpoint);
   const hasExcelImport = Boolean(hasImport);
@@ -61,7 +59,11 @@ export function TableActions({
         defaultFileName: excelConfig.fileName || "export.xlsx",
       });
     } catch (err: unknown) {
-      console.log(err);
+      const errorMsg =
+        err instanceof Error && err.message
+          ? err.message
+          : "فشل تصدير ملف Excel، حاول مرة أخرى.";
+      toast.error(errorMsg);
     } finally {
       setIsExportingExcel(false);
     }
@@ -77,64 +79,75 @@ export function TableActions({
         defaultFileName: pdfConfig.fileName || `${pdfConfig.title || "document"}.pdf`,
       });
     } catch (err: unknown) {
-      console.log(err);
+      const errorMsg =
+        err instanceof Error && err.message
+          ? err.message
+          : "فشل تصدير ملف PDF، حاول مرة أخرى.";
+      toast.error(errorMsg);
     } finally {
       setIsExportingPdf(false);
     }
   };
 
+  // Unified action definitions to deduplicate desktop and mobile configurations
+  const actionItems = [
+    {
+      key: "import-excel",
+      show: hasExcelImport,
+      label: "استيراد Excel",
+      icon: Upload,
+      iconColor: "text-primary",
+      onClick: onOpenImport,
+      disabled: false,
+      loading: false,
+    },
+    {
+      key: "export-excel",
+      show: hasExcelExport,
+      label: "تصدير Excel",
+      icon: Download,
+      iconColor: "text-emerald-600",
+      onClick: handleExportExcel,
+      disabled: isExportDisabled || isExportingExcel,
+      loading: isExportingExcel,
+    },
+    {
+      key: "export-pdf",
+      show: hasPdf,
+      label: "تصدير PDF",
+      icon: FileText,
+      iconColor: "text-rose-600",
+      onClick: handleExportPdf,
+      disabled: isExportDisabled || isExportingPdf,
+      loading: isExportingPdf,
+    },
+  ].filter((item) => item.show);
+
   return (
     <div className="flex items-center gap-2">
       {/* Desktop Buttons */}
       <div className="hidden sm:flex sm:items-center sm:gap-2">
-        {hasExcelImport && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onOpenImport}
-            className="h-9 gap-1.5 text-xs font-semibold"
-          >
-            <Upload className="h-3.5 w-3.5 text-primary" />
-            استيراد Excel
-          </Button>
-        )}
-
-        {hasExcelExport && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleExportExcel}
-            disabled={isExportDisabled || isExportingExcel}
-            className="h-9 gap-1.5 text-xs font-semibold"
-          >
-            {isExportingExcel ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="h-3.5 w-3.5 text-emerald-600" />
-            )}
-            تصدير Excel
-          </Button>
-        )}
-
-        {hasPdf && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleExportPdf}
-            disabled={isExportDisabled || isExportingPdf}
-            className="h-9 gap-1.5 text-xs font-semibold"
-          >
-            {isExportingPdf ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <FileText className="h-3.5 w-3.5 text-rose-600" />
-            )}
-            تصدير PDF
-          </Button>
-        )}
+        {actionItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Button
+              key={item.key}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={item.onClick}
+              disabled={item.disabled}
+              className="h-9 gap-1.5 text-xs font-semibold cursor-pointer"
+            >
+              {item.loading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Icon className={cn("h-3.5 w-3.5", item.iconColor)} />
+              )}
+              <span>{item.label}</span>
+            </Button>
+          );
+        })}
       </div>
 
       {/* Mobile Actions Dropdown */}
@@ -144,65 +157,41 @@ export function TableActions({
           variant="outline"
           size="sm"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-          className="h-9 gap-1 text-xs font-semibold"
+          className="h-9 gap-1 text-xs font-semibold cursor-pointer"
+          aria-expanded={isMobileMenuOpen}
+          aria-label="قائمة الإجراءات"
         >
           <MoreVertical className="h-4 w-4" />
-          الإجراءات
+          <span>الإجراءات</span>
         </Button>
 
         {isMobileMenuOpen && (
-          <div className="absolute left-0 mt-1.5 w-44 rounded-lg border border-border bg-card p-1 shadow-lg z-20 space-y-0.5 text-right" dir="rtl">
-            {hasExcelImport && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  onOpenImport();
-                }}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-              >
-                <Upload className="h-3.5 w-3.5 text-primary" />
-                استيراد Excel
-              </button>
-            )}
-
-            {hasExcelExport && (
-              <button
-                type="button"
-                disabled={isExportDisabled || isExportingExcel}
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleExportExcel();
-                }}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-50 transition-colors"
-              >
-                {isExportingExcel ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Download className="h-3.5 w-3.5 text-emerald-600" />
-                )}
-                تصدير Excel
-              </button>
-            )}
-
-            {hasPdf && (
-              <button
-                type="button"
-                disabled={isExportDisabled || isExportingPdf}
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleExportPdf();
-                }}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-50 transition-colors"
-              >
-                {isExportingPdf ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <FileText className="h-3.5 w-3.5 text-rose-600" />
-                )}
-                تصدير PDF
-              </button>
-            )}
+          <div
+            className="absolute left-0 mt-1.5 w-44 rounded-lg border border-border bg-card p-1 shadow-lg z-20 space-y-0.5 text-right"
+            dir="rtl"
+          >
+            {actionItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  disabled={item.disabled}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    item.onClick();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-50 transition-colors cursor-pointer"
+                >
+                  {item.loading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Icon className={cn("h-3.5 w-3.5", item.iconColor)} />
+                  )}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

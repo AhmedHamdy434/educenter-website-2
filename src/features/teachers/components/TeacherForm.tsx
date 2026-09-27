@@ -42,8 +42,6 @@ export function TeacherForm({
       email: "",
       password: "",
       phone: "",
-      specialization: "",
-      salary: 0,
       bio: "",
       subjectIds: [],
     },
@@ -79,14 +77,14 @@ export function TeacherForm({
 
   // Populate form values if editing
   useEffect(() => {
+    if (!isOpen) return;
+
     if (teacher) {
       reset({
         fullName: teacher.user.fullName,
         email: teacher.user.email,
         password: "", // Leave blank when editing
-        phone: teacher.user.phone,
-        specialization: teacher.specialization,
-        salary: teacher.salary,
+        phone: teacher.user.phone || "",
         bio: teacher.bio || "",
         subjectIds: teacher.subjects.map((s) => s.subject.id),
       });
@@ -96,8 +94,6 @@ export function TeacherForm({
         email: "",
         password: "",
         phone: "",
-        specialization: "",
-        salary: 0,
         bio: "",
         subjectIds: [],
       });
@@ -141,28 +137,9 @@ export function TeacherForm({
         <FormInput
           label="رقم الهاتف"
           id="phone"
-          placeholder="مثال: +966500000000"
+          placeholder="مثال: 01012345678"
           error={errors.phone?.message}
           {...register("phone")}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="التخصص"
-          id="specialization"
-          placeholder="مثال: الرياضيات والفيزياء"
-          error={errors.specialization?.message}
-          {...register("specialization")}
-        />
-
-        <FormInput
-          label="الراتب الشهري"
-          id="salary"
-          type="number"
-          placeholder="مثال: 5000"
-          error={errors.salary?.message}
-          {...register("salary", { valueAsNumber: true })}
         />
       </div>
 
@@ -180,7 +157,7 @@ export function TeacherForm({
       <FormTextarea
         label="نبذة تعريفية أو سيرة ذاتية (اختياري)"
         id="bio"
-        placeholder="معلم خبرة 10 سنوات في تدريس الرياضيات..."
+        placeholder="معلم خبرة في تدريس المواد الدراسية..."
         error={errors.bio?.message}
         {...register("bio")}
       />

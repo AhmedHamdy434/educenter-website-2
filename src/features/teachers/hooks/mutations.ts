@@ -30,8 +30,6 @@ export function useCreateTeacherMutation() {
         email: values.email,
         password: values.password || undefined,
         phone: values.phone,
-        specialization: values.specialization,
-        salary: values.salary,
         bio: values.bio || undefined,
         subjectIds: values.subjectIds,
       });
@@ -59,8 +57,6 @@ export function useUpdateTeacherMutation() {
         email: values.email,
         password: values.password || undefined,
         phone: values.phone,
-        specialization: values.specialization,
-        salary: values.salary,
         bio: values.bio || undefined,
         subjectIds: values.subjectIds,
       });

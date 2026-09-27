@@ -17,9 +17,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   title?: string;
   description?: string;
-  confirmText?: string;
   confirmLabel?: string;
-  cancelText?: string;
   cancelLabel?: string;
   isLoading?: boolean;
   isDestructive?: boolean;
@@ -31,15 +29,11 @@ export function ConfirmDialog({
   onConfirm,
   title = "تأكيد الحذف",
   description = "هل أنت متأكد من رغبتك في حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
-  confirmText,
-  confirmLabel,
-  cancelText,
-  cancelLabel,
+  confirmLabel = "حذف",
+  cancelLabel = "إلغاء",
   isLoading = false,
   isDestructive = true,
 }: ConfirmDialogProps) {
-  const finalConfirmText = confirmLabel || confirmText || "حذف";
-  const finalCancelText = cancelLabel || cancelText || "إلغاء";
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -71,7 +65,7 @@ export function ConfirmDialog({
             disabled={isLoading}
             className="h-10 px-5 rounded-lg border-border text-foreground hover:bg-muted font-semibold cursor-pointer"
           >
-            {finalCancelText}
+            {cancelLabel}
           </Button>
           <Button
             type="button"
@@ -88,7 +82,7 @@ export function ConfirmDialog({
                 جاري المعالجة...
               </>
             ) : (
-              finalConfirmText
+              confirmLabel
             )}
           </Button>
         </AlertDialogFooter>

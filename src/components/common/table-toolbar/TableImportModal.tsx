@@ -29,6 +29,8 @@ interface TableImportModalProps {
   }) => Promise<ApiResponse<ExcelImportSummary>>;
 }
 
+const MAX_FILE_SIZE_MB = 3;
+
 export function TableImportModal({
   isOpen,
   onClose,
@@ -79,6 +81,13 @@ export function TableImportModal({
       !selectedFile.name.endsWith(".xls")
     ) {
       toast.error("يرجى اختيار ملف Excel بصيغة .xlsx فقط.");
+      return;
+    }
+
+    if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(
+        `حجم الملف يتجاوز الحد الأقصى المسموح به (${MAX_FILE_SIZE_MB} ميجابايت).`
+      );
       return;
     }
 

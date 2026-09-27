@@ -1,8 +1,8 @@
 import { type Grade } from "../types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { RowActions } from "@/components/common/RowActions";
 
 interface ColumnsProps {
   onEdit: (grade: Grade) => void;
@@ -93,25 +93,12 @@ export function getGradeColumns({
       id: "actions",
       header: "الإجراءات",
       cell: ({ row }: { row: { original: Grade } }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => onEdit(row.original)}
-            variant="brandOutline"
-            size="sm"
-            className="h-8 rounded-lg font-semibold"
-          >
-            تعديل
-          </Button>
-          <Button
-            onClick={() => onDelete(row.original)}
-            variant="outline"
-            size="sm"
-            className="h-8 rounded-lg font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive hover:text-destructive cursor-pointer"
-            disabled={deletingId === row.original.id}
-          >
-            حذف
-          </Button>
-        </div>
+        <RowActions
+          onEdit={() => onEdit(row.original)}
+          onDelete={() => onDelete(row.original)}
+          isDeleting={deletingId === row.original.id}
+          deleteVariant="button"
+        />
       ),
     },
   ];

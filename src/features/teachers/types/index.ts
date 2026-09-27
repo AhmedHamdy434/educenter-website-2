@@ -9,9 +9,7 @@ export interface TeacherSubjectRelation {
 
 export interface Teacher {
   id: string;
-  specialization: string;
-  salary: number;
-  bio?: string;
+  bio?: string | null;
   createdAt: string;
   updatedAt?: string;
   user: {
@@ -19,7 +17,7 @@ export interface Teacher {
     fullName: string;
     email: string;
     phone: string;
-    avatar?: string;
+    avatar?: string | null;
     isActive: boolean;
     centerId?: string;
   };
@@ -30,10 +28,8 @@ export interface CreateTeacherDTO {
   fullName: string;
   email: string;
   password?: string;
-  phone: string;
+  phone?: string;
   avatar?: string;
-  specialization: string;
-  salary: number;
   bio?: string;
   subjectIds: string[];
 }
@@ -44,8 +40,6 @@ export interface UpdateTeacherDTO {
   password?: string;
   phone?: string;
   avatar?: string;
-  specialization?: string;
-  salary?: number;
   bio?: string;
   subjectIds?: string[];
   isActive?: boolean;
@@ -55,4 +49,3 @@ export interface TeacherFilters {
   active?: string;
   subjectId?: string;
 }
-

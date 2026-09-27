@@ -63,7 +63,7 @@ export interface GroupStudent {
 export interface GroupDetails extends Group {
   teacher: {
     id: string;
-    specialization: string;
+    specialization?: string;
     user: {
       id: string;
       fullName: string;

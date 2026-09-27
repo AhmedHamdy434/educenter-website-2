@@ -85,6 +85,8 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 ## 10. Custom Hooks
 *   Prefix all custom hooks with `use`.
 *   Create hooks to encapsulate complex state interactions, keeping React components clean and focused.
+*   **Shared Outside Click Hook (`useOnClickOutside`)**: All dropdowns, popovers, custom selectors, and mobile menus must use `@/hooks/useOnClickOutside(ref, handler)` to handle mouse and touch dismissals, eliminating manual `document.addEventListener` boilerplate.
+*   **Shared Cascading Reset Hook (`useResetOnChange`)**: When form fields have dependent or cascading relationships (e.g. `gradeId -> subjectId -> teacherId`), use `@/hooks/useResetOnChange(value, onChange, initialValue?, resetTrigger?)` to cleanly trigger resets only on intentional user value changes while skipping initial mount and entity edit loads.
 
 ---
 
@@ -95,8 +97,13 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **Shared CRUD Modal Hook (`useCrudModal`)**: All entity create/edit modal states must use `@/hooks/useCrudModal<T>()` providing `{ isOpen, selectedItem, openCreate, openEdit, close }`, eliminating redundant per-feature Zustand modal stores. Its action handlers must be memoized via `useCallback` to maintain reference stability and prevent invalidating downstream `useMemo` hooks (such as table columns).
 *   **Query Parameter Sanitization**: When extracting filter values from URL params via `useTableFilters` to pass to TanStack Query hooks or API clients, sanitize empty strings (e.g., `active: active || undefined`) so empty strings are omitted from query payloads.
 *   **Utilities**: Write helpers as pure, deterministic functions (e.g., date formats, currency parsers) inside `src/utils/`.
-*   **Shared Date & Time Utilities**: All schedule selectors (day list, hours, minutes, period dropdown options) and the time formatter function `formatTime` must be imported from `@/utils/time` instead of being re-declared locally in forms and columns.
+*   **Shared Date & Time Utilities**: All schedule selectors (day list, hours, minutes, period dropdown options), the time formatter function `formatTime`, and the 12-to-24 hour converter `to24Hour(hour, period)` must be imported from `@/utils/time` instead of being re-declared locally in forms and columns.
 *   **Dropdown Loading States**: Dropdowns with asynchronous data dependencies (`FilterDropdown`, `FormSelect`, `FormMultiSelect`) must support and accept `isLoading?: boolean`. When true, they must display a loading spinner (`Loader2`) alongside placeholder "جاري التحميل..." and disable interaction until data resolution.
+*   **Shared Row Actions (`<RowActions>`)**: Table edit and delete action buttons must use `@/components/common/RowActions` with `deleteVariant: "icon" | "button"` to prevent duplicating inline action button styles and handlers across features.
+*   **Standardized Modals & Dialogs**:
+    - `<SharedModal>` is built on Radix UI `DialogPrimitive` with keyboard `Escape` closing, overlay focus-trap, and accessible `DialogTitle`. Modals must strictly consume `{ isOpen, onClose, title, children }`.
+    - `<ConfirmDialog>` must use `confirmLabel` and `cancelLabel` (legacy `confirmText` and `cancelText` are deprecated and removed).
+*   **File Import Guards**: All Excel/file import modals must enforce file size limits (max 3 MB via `MAX_FILE_SIZE_MB = 3`) and validate file extensions before triggering server upload actions.
 *   **Feature Toolbar Configurations**: All list table toolbar settings must be isolated in `src/features/<feature>/config/<feature>-toolbar.config.ts`, exporting:
     - `get<Feature>FiltersConfig(options, isLoading)` returning typed `FilterConfig<...>[]`.
     - `<feature>ExcelConfig: ToolbarExcelConfig` with `exportEndpoint`, `templateEndpoint`, and localized `fileName`.
@@ -162,6 +169,11 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   [ ] Decoupled code correctly inside `src/features/<feature>/`?
 *   [ ] Checked that no `any` types were used?
 *   [ ] Handled loading, empty, and error states?
+*   [ ] Checked that form fields, Zod schemas, and table columns strictly match the backend Prisma schema and DTOs (no ghost/unsupported fields)?
+*   [ ] Used `@/hooks/useOnClickOutside` instead of manual window/document listeners?
+*   [ ] Used `@/hooks/useResetOnChange` for cascading field resets instead of manual `useEffect` + `useRef` boilerplate?
+*   [ ] Used `@/components/common/RowActions` for table edit/delete actions?
+*   [ ] Included `if (!isOpen) return;` early return in modal form reset `useEffect`?
 *   [ ] Called `handleResponseToast()` for user notifications?
 *   [ ] Verified code builds cleanly (`npx tsc --noEmit`) and passes `npm run lint`?
 
@@ -217,6 +229,10 @@ Must orchestrate the main view components and should compose:
 Must manage item creation and editing using React Hook Form + Zod:
 - **`useForm<FormValues>`** with `resolver: zodResolver(<feature>Schema)`.
 - Use the **`control`** object and register inputs.
+- **Strict Schema Alignment (No Ghost Fields)**: Form fields, Zod schemas, and DTO payloads must strictly match existing backend DTOs and Prisma database models. Never introduce unsupported fields (e.g. ad-hoc `salary` or `specialization`) without full-stack backend and database support.
+- **Early Return on Close**: The reset `useEffect` must start with `if (!isOpen) return;` to avoid redundant state updates and re-renders when the modal is closed.
+- **Cascading Field Resets**: When form fields have dependent relationships (e.g. `gradeId -> subjectId -> teacherId`), use `@/hooks/useResetOnChange` instead of inline `useEffect` + `useRef` boilerplate.
+- **Sub-Component Extraction**: For complex or multi-state input sections (such as schedule builders, rich editors, or multi-field pickers), extract focused subcomponents (e.g., `<WeeklySchedulePicker>`) to keep form components under 200 lines.
 - Form inputs must leverage standard styling wrapper components:
   - **`<FormInput>`**: Standard text/number inputs.
   - **`<FormSelect>`**: Single choice selector supporting `isLoading` to show `Loader2` indicator when options query is pending.
@@ -227,8 +243,11 @@ Must manage item creation and editing using React Hook Form + Zod:
 #### 3. Column Definition (`columns.tsx`)
 Must define column metadata for rendering inside the table:
 - Exports `get<Feature>Columns({ ... }): ColumnDef<TEntity>[]` with an explicit return type from `@tanstack/react-table`.
+- **Only Valid Database/API Fields**: Only define columns and enable server-side sorting for fields that actually exist in the database and API select payloads. Never render columns with phantom values (`undefined`).
 - Set `enableSorting: true` on columns that support server-side sorting (e.g., `order`, `name`, `createdAt`). Non-sortable columns default to `enableSorting: false` in `SharedTable`.
 - **Badges & Chips**: Use `<Badge variant="subtle">` for index/order/counter/status/enrollment chips instead of hardcoded ad-hoc `<span>` elements.
+- **Row Actions**: Table edit and delete action buttons must use `<RowActions>` with `deleteVariant: "icon" | "button"` to prevent repeating inline button styling.
 - **Server-Side Export Only**: Do NOT define client-side `meta: { exportHeader, exportValue }` in columns; file exports (Excel/PDF) are handled strictly server-side via backend endpoints.
 - **Stable Callbacks**: Pass direct function references (e.g., `onDelete: setItemToDelete`) to prevent breaking `useMemo` in parent containers.
+
 

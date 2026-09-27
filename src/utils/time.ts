@@ -103,3 +103,18 @@ export const formatMonthName = (monthStr: string): string => {
   });
 };
 
+/**
+ * Converts a 12-hour format hour (1-12) and period ("AM" | "PM") into 24-hour format (0-23).
+ */
+export const to24Hour = (hour: number | string, period: string): number => {
+  let h = typeof hour === "string" ? parseInt(hour, 10) : hour;
+  if (isNaN(h)) return 0;
+  if (period === "PM" && h < 12) {
+    h += 12;
+  } else if (period === "AM" && h === 12) {
+    h = 0;
+  }
+  return h;
+};
+
+

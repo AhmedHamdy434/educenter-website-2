@@ -92,7 +92,7 @@ export function GroupInfoSidebar({ group, isTeacher }: GroupInfoSidebarProps) {
                 {group.teacher.user.fullName}
               </span>
               <span className="text-xs text-muted-foreground truncate">
-                {group.teacher.specialization || "معلم المادة"}
+                {group.subject?.name || "معلم المادة"}
               </span>
             </div>
           </div>

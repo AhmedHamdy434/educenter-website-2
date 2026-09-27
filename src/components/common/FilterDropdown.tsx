@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { ChevronDown, Check, Loader2 } from "lucide-react";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { cn } from "@/lib/utils";
 
 export interface FilterOption {
@@ -42,20 +43,7 @@ export function FilterDropdown({
   const selectedOption = options.find((opt) => opt.value === value);
 
   // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
   return (
     <div className={cn("relative min-w-[140px]", className)} ref={dropdownRef}>

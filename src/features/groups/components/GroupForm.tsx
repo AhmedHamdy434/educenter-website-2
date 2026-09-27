@@ -1,29 +1,22 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2 } from "lucide-react";
 
 import { FormInput } from "@/components/common/form-input";
 import { FormSelect, type SelectOption } from "@/components/common/form-select";
 import { FormActions } from "@/components/common/FormActions";
 import { groupSchema, type GroupFormValues } from "../schemas/group-schema";
-import { type Group, type DayOfWeek } from "../types";
+import { type Group } from "../types";
 import {
   useCreateGroupMutation,
   useUpdateGroupMutation,
 } from "../hooks/mutations";
 import { useSubjectsOptionsQuery } from "@/features/subjects/hooks/queries";
 import { useTeachersOptionsQuery } from "@/features/teachers/hooks/queries";
-import {
-  DAY_NAMES_AR,
-  formatTime,
-  DAYS_OPTIONS,
-  HOUR_OPTIONS,
-  MINUTE_OPTIONS,
-  PERIOD_OPTIONS,
-} from "@/utils/time";
+import { useResetOnChange } from "@/hooks/useResetOnChange";
+import { WeeklySchedulePicker } from "./WeeklySchedulePicker";
 
 interface GroupFormProps {
   isOpen: boolean;
@@ -38,12 +31,6 @@ export function GroupForm({
   group,
   gradesOptions,
 }: GroupFormProps) {
-  // Time picker temporary state
-  const [tempDay, setTempDay] = useState<string>("SATURDAY");
-  const [tempHour, setTempHour] = useState<string>("4");
-  const [tempMinute, setTempMinute] = useState<string>("30");
-  const [tempPeriod, setTempPeriod] = useState<string>("PM");
-
   const {
     register,
     handleSubmit,
@@ -91,31 +78,35 @@ export function GroupForm({
   const { data: teachersList = [], isLoading: isTeachersLoading } =
     useTeachersOptionsQuery(selectedSubjectId, isOpen);
 
-  // Keep track of previous values to handle cascading resets only on user change
-  const prevGradeIdRef = useRef(group?.gradeId || "");
-  const prevSubjectIdRef = useRef(group?.subjectId || "");
-
-  useEffect(() => {
-    if (selectedGradeId && selectedGradeId !== prevGradeIdRef.current) {
-      if (prevGradeIdRef.current !== "") {
+  // Cascading resets: when gradeId changes, reset subjectId and teacherId
+  useResetOnChange(
+    selectedGradeId,
+    (_current, prev) => {
+      if (prev !== "") {
         setValue("subjectId", "");
         setValue("teacherId", "");
       }
-      prevGradeIdRef.current = selectedGradeId;
-    }
-  }, [selectedGradeId, setValue]);
+    },
+    group?.gradeId || "",
+    group?.id
+  );
 
-  useEffect(() => {
-    if (selectedSubjectId && selectedSubjectId !== prevSubjectIdRef.current) {
-      if (prevSubjectIdRef.current !== "") {
+  // Cascading resets: when subjectId changes, reset teacherId
+  useResetOnChange(
+    selectedSubjectId,
+    (_current, prev) => {
+      if (prev !== "") {
         setValue("teacherId", "");
       }
-      prevSubjectIdRef.current = selectedSubjectId;
-    }
-  }, [selectedSubjectId, setValue]);
+    },
+    group?.subjectId || "",
+    group?.id
+  );
 
   // Reset form when modal opens with new group or empty
   useEffect(() => {
+    if (!isOpen) return;
+
     if (group) {
       reset({
         name: group.name,
@@ -166,31 +157,6 @@ export function GroupForm({
             onClose();
           }
         },
-      });
-    }
-  };
-
-  const handleAddScheduleItem = () => {
-    let hour24 = parseInt(tempHour);
-    const minuteVal = parseInt(tempMinute);
-
-    if (tempPeriod === "PM" && hour24 < 12) {
-      hour24 += 12;
-    } else if (tempPeriod === "AM" && hour24 === 12) {
-      hour24 = 0;
-    }
-
-    // Check if duplicate schedule exists
-    const hasDuplicate = fields.some(
-      (item) =>
-        item.day === tempDay && item.hour === hour24 && item.minute === minuteVal
-    );
-
-    if (!hasDuplicate) {
-      append({
-        day: tempDay as DayOfWeek,
-        hour: hour24,
-        minute: minuteVal,
       });
     }
   };
@@ -291,88 +257,12 @@ export function GroupForm({
       </div>
 
       {/* Schedule Picker Section */}
-      <div className="border border-border rounded-xl p-4 space-y-4 bg-secondary/20">
-        <h3 className="text-sm font-bold text-foreground">
-          جدول المواعيد الأسبوعية للمجموعة
-        </h3>
-
-        {/* Temporary inputs to build a schedule item */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-          <FormSelect
-            label="اليوم"
-            value={tempDay}
-            onValueChange={setTempDay}
-            options={DAYS_OPTIONS}
-          />
-
-          <FormSelect
-            label="الساعة"
-            value={tempHour}
-            onValueChange={setTempHour}
-            options={HOUR_OPTIONS}
-          />
-
-          <FormSelect
-            label="الدقيقة"
-            value={tempMinute}
-            onValueChange={setTempMinute}
-            options={MINUTE_OPTIONS}
-          />
-
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <FormSelect
-                label="الفترة"
-                value={tempPeriod}
-                onValueChange={setTempPeriod}
-                options={PERIOD_OPTIONS}
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAddScheduleItem}
-              className="h-11 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-              title="إضافة موعد"
-            >
-              <Plus className="size-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Selected schedule list */}
-        {fields.length > 0 ? (
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-            {fields.map((item, index) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-1.5 bg-card border border-border px-3 py-1.5 rounded-lg text-xs font-bold text-foreground shadow-none"
-              >
-                <span>
-                  {DAY_NAMES_AR[item.day]} {formatTime(item.hour, item.minute)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="text-destructive hover:bg-destructive/10 p-1 rounded-md transition-colors cursor-pointer"
-                >
-                  <Trash2 className="size-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-xs text-muted-foreground py-2">
-            لم يتم تحديد أي مواعيد بعد. يرجى إضافة موعد واحد على الأقل.
-          </div>
-        )}
-
-        {errors.schedule && (
-          <p className="text-xs text-destructive font-semibold pt-1">
-            {errors.schedule.message}
-          </p>
-        )}
-      </div>
+      <WeeklySchedulePicker
+        schedule={fields}
+        onAdd={append}
+        onRemove={remove}
+        error={errors.schedule?.message}
+      />
 
       {/* Action Buttons */}
       <FormActions

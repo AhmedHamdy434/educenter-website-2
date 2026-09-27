@@ -5,9 +5,6 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   icon?: LucideIcon;
-  actionLabel?: string;
-  actionIcon?: LucideIcon;
-  onAction?: () => void;
   actionButton?: {
     label: string;
     icon?: LucideIcon;
@@ -20,15 +17,12 @@ export function PageHeader({
   title,
   description,
   icon: TitleIcon,
-  actionLabel,
-  actionIcon: ActionIcon,
-  onAction,
   actionButton,
   children,
 }: PageHeaderProps) {
-  const finalLabel = actionButton?.label || actionLabel;
-  const FinalIcon = actionButton?.icon || ActionIcon;
-  const finalOnClick = actionButton?.onClick || onAction;
+  const finalLabel = actionButton?.label;
+  const FinalIcon = actionButton?.icon;
+  const finalOnClick = actionButton?.onClick;
 
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border pb-5">
@@ -43,7 +37,9 @@ export function PageHeader({
             {title}
           </h1>
           {description && (
-            <p className="mt-1 text-sm text-muted-foreground font-medium">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground font-medium">
+              {description}
+            </p>
           )}
         </div>
       </div>
@@ -57,7 +53,9 @@ export function PageHeader({
             size="brandMd"
             className="flex items-center gap-2 font-bold shadow-none"
           >
-            {FinalIcon && <FinalIcon className="size-4 shrink-0 stroke-[2.25]" />}
+            {FinalIcon && (
+              <FinalIcon className="size-4 shrink-0 stroke-[2.25]" />
+            )}
             <span>{finalLabel}</span>
           </Button>
         )}

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 import { ChevronDown, X, Check, Search, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { cn } from "@/lib/utils";
 
 export interface FormMultiSelectOption {
@@ -43,20 +44,7 @@ export function FormMultiSelect<TFieldValues extends FieldValues = FieldValues>(
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
   const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(searchQuery.toLowerCase())

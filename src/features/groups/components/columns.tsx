@@ -2,9 +2,8 @@ import Link from "next/link";
 import { type Group } from "../types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Trash2 } from "lucide-react";
+import { RowActions } from "@/components/common/RowActions";
 import { DAY_NAMES_AR, formatTime } from "@/utils/time";
 
 interface ColumnsProps {
@@ -116,25 +115,12 @@ export function getGroupColumns({
       id: "actions",
       header: "الإجراءات",
       cell: ({ row }: { row: { original: Group } }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => onEdit(row.original)}
-            variant="brandOutline"
-            size="sm"
-            className="h-8 rounded-lg"
-          >
-            تعديل
-          </Button>
-          <Button
-            onClick={() => onDelete(row.original)}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-lg"
-            disabled={deletingId === row.original.id}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
+        <RowActions
+          onEdit={() => onEdit(row.original)}
+          onDelete={() => onDelete(row.original)}
+          isDeleting={deletingId === row.original.id}
+          deleteVariant="icon"
+        />
       ),
     },
   ];
