@@ -8,6 +8,7 @@ import {
 import { type SubjectFormValues } from "../schemas/subject-schema";
 import { subjectsKeys } from "../utils/queryKeys";
 import { importFileAction } from "@/lib/export/export-actions";
+import { gradesKeys } from "@/features/grades/utils/queryKeys";
 
 export function useToggleSubjectMutation() {
   const queryClient = useQueryClient();
@@ -31,6 +32,7 @@ export function useCreateSubjectMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
+        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
@@ -68,6 +70,7 @@ export function useDeleteSubjectMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
+        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
@@ -98,8 +101,8 @@ export function useImportSubjectsMutation() {
     onSuccess: (result, variables) => {
       if (!variables.dryRun && result.success) {
         queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
+        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
 }
-
