@@ -45,6 +45,15 @@ export async function toggleSubjectStatusAction(
   });
 }
 
+export async function deleteSubjectAction(
+  id: string,
+): Promise<ApiResponse<void>> {
+  return serverApiClient<void>({
+    url: `/subjects/${id}`,
+    method: "DELETE",
+  });
+}
+
 export async function getSubjectsOptions(
   gradeId?: string,
 ): Promise<ApiResponse<{ id: string; name: string; grade: { name: string } }[]>> {

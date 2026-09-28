@@ -28,6 +28,11 @@ export const studentSchema = z.object({
   gradeId: z
     .string()
     .min(1, { message: "يجب اختيار المرحلة الدراسية" }),
+  code: z
+    .string()
+    .max(50, { message: "كود الطالب لا يمكن أن يتجاوز 50 حرفًا" })
+    .optional()
+    .or(z.literal("")),
 });
 
 export type StudentFormValues = z.infer<typeof studentSchema>;

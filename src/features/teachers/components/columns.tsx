@@ -1,19 +1,23 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { type Teacher } from "../types";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { RowActions } from "@/components/common/RowActions";
 
 interface ColumnsProps {
   onEdit: (teacher: Teacher) => void;
+  onDelete: (teacher: Teacher) => void;
   onToggleStatus: (id: string) => void;
   togglingId: string | null;
+  deletingId: string | null;
 }
 
 export function getTeacherColumns({
   onEdit,
+  onDelete,
   onToggleStatus,
   togglingId,
+  deletingId,
 }: ColumnsProps): ColumnDef<Teacher>[] {
   return [
     {
@@ -83,14 +87,12 @@ export function getTeacherColumns({
       id: "actions",
       header: "الإجراءات",
       cell: ({ row }) => (
-        <Button
-          onClick={() => onEdit(row.original)}
-          variant="brandOutline"
-          size="sm"
-          className="h-8 rounded-lg font-semibold"
-        >
-          تعديل
-        </Button>
+        <RowActions
+          onEdit={() => onEdit(row.original)}
+          onDelete={() => onDelete(row.original)}
+          isDeleting={deletingId === row.original.id}
+          deleteVariant="button"
+        />
       ),
     },
   ];

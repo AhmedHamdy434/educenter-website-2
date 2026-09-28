@@ -3,6 +3,7 @@ import {
   createSubjectAction,
   updateSubjectAction,
   toggleSubjectStatusAction,
+  deleteSubjectAction,
 } from "../actions/subjects-actions";
 import { type SubjectFormValues } from "../schemas/subject-schema";
 import { subjectsKeys } from "../utils/queryKeys";
@@ -49,6 +50,20 @@ export function useUpdateSubjectMutation() {
         name: values.name,
         description: values.description,
       });
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
+      }
+    },
+  });
+}
+
+export function useDeleteSubjectMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      return deleteSubjectAction(id);
     },
     onSuccess: (result) => {
       if (result.success) {

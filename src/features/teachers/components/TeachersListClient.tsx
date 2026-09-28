@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { TeacherForm } from "./TeacherForm";
 import { useTeachersQuery } from "../hooks/queries";
 import {
   useToggleTeacherMutation,
+  useDeleteTeacherMutation,
   useImportTeachersMutation,
 } from "../hooks/mutations";
 import { useSubjectsOptionsQuery } from "@/features/subjects/hooks/queries";
@@ -71,8 +73,15 @@ export function TeachersListClient() {
   const { data, isLoading } = useTeachersQuery(queryParams);
   const teachers = useMemo(() => data?.data ?? [], [data?.data]);
 
+  const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
+
   // Mutations
   const toggleMutation = useToggleTeacherMutation();
+  const {
+    mutateAsync: deleteTeacher,
+    isPending: deletePending,
+    variables: deletingId,
+  } = useDeleteTeacherMutation();
   const { mutateAsync: importTeachers } = useImportTeachersMutation();
 
   const togglingId = toggleMutation.isPending
@@ -80,14 +89,24 @@ export function TeachersListClient() {
     : null;
   const toggleStatus = toggleMutation.mutate;
 
+  const handleConfirmDelete = async () => {
+    if (!teacherToDelete) return;
+    const res = await deleteTeacher(teacherToDelete.id);
+    if (res.success) {
+      setTeacherToDelete(null);
+    }
+  };
+
   const columns = useMemo(
     () =>
       getTeacherColumns({
         onEdit: openEdit,
+        onDelete: setTeacherToDelete,
         onToggleStatus: toggleStatus,
         togglingId,
+        deletingId: deletePending ? (deletingId ?? null) : null,
       }),
-    [openEdit, toggleStatus, togglingId],
+    [openEdit, toggleStatus, togglingId, deletePending, deletingId],
   );
 
   // Toolbar filters configuration
@@ -158,6 +177,18 @@ export function TeachersListClient() {
           isSubjectsLoading={isSubjectsLoading}
         />
       </SharedModal>
+
+      {/* 4. Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!teacherToDelete}
+        onClose={() => setTeacherToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="تأكيد حذف المدرس"
+        description={`هل أنت متأكد من رغبتك في حذف المدرس "${teacherToDelete?.user.fullName}"؟ سيتم حذف حسابه نهائياً.`}
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        isLoading={deletePending}
+      />
     </div>
   );
 }

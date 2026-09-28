@@ -119,7 +119,7 @@ export function getGroupColumns({
           onEdit={() => onEdit(row.original)}
           onDelete={() => onDelete(row.original)}
           isDeleting={deletingId === row.original.id}
-          deleteVariant="icon"
+          deleteVariant="button"
         />
       ),
     },

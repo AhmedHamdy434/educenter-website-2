@@ -45,6 +45,7 @@ export function StudentForm({
       parentPhone: "",
       notes: "",
       gradeId: "",
+      code: "",
     },
   });
 
@@ -91,6 +92,7 @@ export function StudentForm({
         parentPhone: student.parentPhone,
         notes: student.notes || "",
         gradeId,
+        code: student.code || "",
       });
     } else {
       reset({
@@ -101,6 +103,7 @@ export function StudentForm({
         parentPhone: "",
         notes: "",
         gradeId: "",
+        code: "",
       });
     }
   }, [student, reset, isOpen]);
@@ -120,6 +123,16 @@ export function StudentForm({
         />
 
         <FormInput
+          label="كود الطالب (اختياري)"
+          id="code"
+          placeholder="مثال: STU-100230 أو اتركه للتوليد التلقائي"
+          error={errors.code?.message}
+          {...register("code")}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormInput
           label="البريد الإلكتروني"
           id="email"
           type="email"
@@ -127,9 +140,7 @@ export function StudentForm({
           error={errors.email?.message}
           {...register("email")}
         />
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
           label={student ? "كلمة المرور الجديدة (اختياري)" : "كلمة المرور"}
           id="password"
@@ -138,7 +149,9 @@ export function StudentForm({
           error={errors.password?.message}
           {...register("password")}
         />
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
           label="رقم الهاتف"
           id="phone"
@@ -146,9 +159,7 @@ export function StudentForm({
           error={errors.phone?.message}
           {...register("phone")}
         />
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
           label="رقم هاتف ولي الأمر"
           id="parentPhone"
@@ -156,7 +167,9 @@ export function StudentForm({
           error={errors.parentPhone?.message}
           {...register("parentPhone")}
         />
+      </div>
 
+      <div>
         <FormSelect
           label="المرحلة الدراسية"
           name="gradeId"

@@ -10,6 +10,7 @@ export interface StudentEnrollment {
 
 export interface Student {
   id: string;
+  code?: string;
   parentPhone: string;
   notes?: string;
   createdAt: string;
@@ -35,6 +36,7 @@ export interface CreateStudentDTO {
   parentPhone: string;
   notes?: string;
   gradeId: string;
+  code?: string;
 }
 
 export interface UpdateStudentDTO {
@@ -46,6 +48,7 @@ export interface UpdateStudentDTO {
   parentPhone?: string;
   notes?: string;
   gradeId?: string;
+  code?: string;
   isActive?: boolean;
 }
 

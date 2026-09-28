@@ -44,3 +44,12 @@ export async function toggleTeacherStatusAction(
     method: "PATCH",
   });
 }
+
+export async function deleteTeacherAction(
+  id: string,
+): Promise<ApiResponse<void>> {
+  return serverApiClient<void>({
+    url: `/teachers/${id}`,
+    method: "DELETE",
+  });
+}

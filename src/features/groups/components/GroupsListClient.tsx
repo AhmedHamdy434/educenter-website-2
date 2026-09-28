@@ -186,7 +186,7 @@ export function GroupsListClient() {
         onConfirm={handleConfirmDelete}
         title="حذف المجموعة الدراسية"
         description={`هل أنت متأكد من حذف المجموعة الدراسية "${groupToDelete?.name}"؟ سيتم حذف جميع السجلات المرتبطة بها نهائياً.`}
-        confirmLabel="نعم، احذف"
+        confirmLabel="حذف"
         cancelLabel="إلغاء"
         isLoading={deletePending}
       />

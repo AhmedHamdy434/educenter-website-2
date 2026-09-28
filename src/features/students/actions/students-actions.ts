@@ -46,6 +46,15 @@ export async function toggleStudentStatusAction(
   });
 }
 
+export async function deleteStudentAction(
+  id: string,
+): Promise<ApiResponse<void>> {
+  return serverApiClient<void>({
+    url: `/students/${id}`,
+    method: "DELETE",
+  });
+}
+
 export async function getStudentPaymentsAction(
   studentId: string,
 ): Promise<ApiResponse<StudentPayment[]>> {

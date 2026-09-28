@@ -3,6 +3,7 @@ import {
   createTeacherAction,
   updateTeacherAction,
   toggleTeacherStatusAction,
+  deleteTeacherAction,
 } from "../actions/teachers-actions";
 import { importFileAction } from "@/lib/export/export-actions";
 import { type TeacherFormValues } from "../schemas/teacher-schema";
@@ -60,6 +61,20 @@ export function useUpdateTeacherMutation() {
         bio: values.bio || undefined,
         subjectIds: values.subjectIds,
       });
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: teachersKeys.all });
+      }
+    },
+  });
+}
+
+export function useDeleteTeacherMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      return deleteTeacherAction(id);
     },
     onSuccess: (result) => {
       if (result.success) {

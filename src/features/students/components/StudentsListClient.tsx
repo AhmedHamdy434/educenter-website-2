@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { StudentForm } from "./StudentForm";
 import { StudentPaymentsModal } from "./StudentPaymentsModal";
@@ -13,6 +14,7 @@ import { ParentLinkModal } from "./ParentLinkModal";
 import { useStudentsQuery } from "../hooks/queries";
 import {
   useToggleStudentMutation,
+  useDeleteStudentMutation,
   useImportStudentsMutation,
 } from "../hooks/mutations";
 import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
@@ -28,6 +30,7 @@ import {
 } from "../config/students-toolbar.config";
 
 export function StudentsListClient({}) {
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [paymentHistoryStudent, setPaymentHistoryStudent] =
     useState<Student | null>(null);
   const [magicLinkStudent, setMagicLinkStudent] = useState<Student | null>(
@@ -82,12 +85,25 @@ export function StudentsListClient({}) {
 
   // Mutations
   const toggleMutation = useToggleStudentMutation();
+  const {
+    mutateAsync: deleteStudent,
+    isPending: deletePending,
+    variables: deletingId,
+  } = useDeleteStudentMutation();
   const { mutateAsync: importStudents } = useImportStudentsMutation();
 
   const togglingId = toggleMutation.isPending
     ? (toggleMutation.variables ?? null)
     : null;
   const toggleStatus = toggleMutation.mutate;
+
+  const handleConfirmDelete = async () => {
+    if (!studentToDelete) return;
+    const res = await deleteStudent(studentToDelete.id);
+    if (res.success) {
+      setStudentToDelete(null);
+    }
+  };
 
   const handleGenerateParentLink = useCallback((student: Student) => {
     setMagicLinkStudent(student);
@@ -97,12 +113,21 @@ export function StudentsListClient({}) {
     () =>
       getStudentColumns({
         onEdit: openEdit,
+        onDelete: setStudentToDelete,
         onViewPayments: setPaymentHistoryStudent,
         onToggleStatus: toggleStatus,
         onGenerateParentLink: handleGenerateParentLink,
         togglingId,
+        deletingId: deletePending ? (deletingId ?? null) : null,
       }),
-    [openEdit, toggleStatus, handleGenerateParentLink, togglingId],
+    [
+      openEdit,
+      toggleStatus,
+      handleGenerateParentLink,
+      togglingId,
+      deletePending,
+      deletingId,
+    ],
   );
 
   // Toolbar filters configuration
@@ -187,6 +212,18 @@ export function StudentsListClient({}) {
         isOpen={!!magicLinkStudent}
         onClose={() => setMagicLinkStudent(null)}
         student={magicLinkStudent}
+      />
+
+      {/* 6. Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!studentToDelete}
+        onClose={() => setStudentToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="تأكيد حذف الطالب"
+        description={`هل أنت متأكد من رغبتك في حذف الطالب "${studentToDelete?.user.fullName}"؟ سيتم حذف جميع البيانات والاشتراكات المرتبطة به نهائياً.`}
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        isLoading={deletePending}
       />
     </div>
   );

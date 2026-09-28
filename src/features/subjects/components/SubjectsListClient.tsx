@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus, BookOpen } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { SubjectForm } from "./SubjectForm";
 import { useSubjectsQuery } from "../hooks/queries";
 import {
   useToggleSubjectMutation,
+  useDeleteSubjectMutation,
   useImportSubjectsMutation,
 } from "../hooks/mutations";
 import { getSubjectColumns } from "./columns";
@@ -68,22 +70,39 @@ export function SubjectsListClient() {
   // Data fetching
   const { data, isLoading } = useSubjectsQuery(queryParams);
 
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
   // Mutations
   const {
     mutate: toggleStatus,
     isPending: togglePending,
     variables: togglingId,
   } = useToggleSubjectMutation();
+  const {
+    mutateAsync: deleteSubject,
+    isPending: deletePending,
+    variables: deletingId,
+  } = useDeleteSubjectMutation();
   const { mutateAsync: importSubjects } = useImportSubjectsMutation();
+
+  const handleConfirmDelete = async () => {
+    if (!subjectToDelete) return;
+    const res = await deleteSubject(subjectToDelete.id);
+    if (res.success) {
+      setSubjectToDelete(null);
+    }
+  };
 
   const columns = useMemo(
     () =>
       getSubjectColumns({
         onEdit: openEdit,
+        onDelete: setSubjectToDelete,
         onToggleStatus: toggleStatus,
         togglingId: togglePending ? (togglingId ?? null) : null,
+        deletingId: deletePending ? (deletingId ?? null) : null,
       }),
-    [openEdit, toggleStatus, togglingId, togglePending],
+    [openEdit, toggleStatus, togglingId, togglePending, deletePending, deletingId],
   );
 
   const filtersConfig = useMemo(
@@ -146,6 +165,18 @@ export function SubjectsListClient() {
           isGradesLoading={gradesLoading}
         />
       </SharedModal>
+
+      {/* 4. Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!subjectToDelete}
+        onClose={() => setSubjectToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="تأكيد حذف المادة الدراسية"
+        description={`هل أنت متأكد من رغبتك في حذف المادة الدراسية "${subjectToDelete?.name}"؟ سيتم حذف جميع السجلات المرتبطة بها نهائياً.`}
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        isLoading={deletePending}
+      />
     </div>
   );
 }

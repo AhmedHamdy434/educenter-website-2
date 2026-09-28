@@ -3,6 +3,7 @@ import {
   createStudentAction,
   updateStudentAction,
   toggleStudentStatusAction,
+  deleteStudentAction,
 } from "../actions/students-actions";
 import { importFileAction } from "@/lib/export/export-actions";
 import { type StudentFormValues } from "../schemas/student-schema";
@@ -33,6 +34,7 @@ export function useCreateStudentMutation() {
         parentPhone: values.parentPhone,
         notes: values.notes || undefined,
         gradeId: values.gradeId,
+        code: values.code?.trim() || undefined,
       });
     },
     onSuccess: (result) => {
@@ -61,7 +63,22 @@ export function useUpdateStudentMutation() {
         parentPhone: values.parentPhone,
         notes: values.notes || undefined,
         gradeId: values.gradeId,
+        code: values.code?.trim() || undefined,
       });
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: studentsKeys.all });
+      }
+    },
+  });
+}
+
+export function useDeleteStudentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      return deleteStudentAction(id);
     },
     onSuccess: (result) => {
       if (result.success) {

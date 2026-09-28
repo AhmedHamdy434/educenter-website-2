@@ -1,19 +1,23 @@
 import { type Subject } from "../types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { RowActions } from "@/components/common/RowActions";
 
 interface ColumnsProps {
   onEdit: (subject: Subject) => void;
+  onDelete: (subject: Subject) => void;
   onToggleStatus: (id: string) => void;
   togglingId: string | null;
+  deletingId: string | null;
 }
 
 export function getSubjectColumns({
   onEdit,
+  onDelete,
   onToggleStatus,
   togglingId,
+  deletingId,
 }: ColumnsProps): ColumnDef<Subject>[] {
   return [
     {
@@ -90,14 +94,12 @@ export function getSubjectColumns({
       id: "actions",
       header: "الإجراءات",
       cell: ({ row }: { row: { original: Subject } }) => (
-        <Button
-          onClick={() => onEdit(row.original)}
-          variant="brandOutline"
-          size="sm"
-          className="h-8 rounded-lg font-semibold"
-        >
-          تعديل
-        </Button>
+        <RowActions
+          onEdit={() => onEdit(row.original)}
+          onDelete={() => onDelete(row.original)}
+          isDeleting={deletingId === row.original.id}
+          deleteVariant="button"
+        />
       ),
     },
   ];
