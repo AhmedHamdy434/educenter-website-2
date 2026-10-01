@@ -66,6 +66,7 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **Tech Stack**: Always combine `react-hook-form` + `@hookform/resolvers/zod` + `zod`.
 *   **Location**: Validation schemas must live in `features/<feature>/schemas/<name>-schema.ts`.
 *   **Inputs**: Prefer uncontrolled inputs utilizing `register` for maximum render performance.
+*   **Separation of Dependent Grade/Subject Selectors**: Grade (`gradeId`) and Subject (`subjectId` / `subjectIds`) selectors in forms and toolbars must always be partitioned into separate, dependent dropdowns. Users must select the grade first, which dynamically loads the subject options for that grade and disables the subject selector until a grade is chosen. For entities tied to a single grade (e.g. Groups), switching grades triggers a cascading reset via `@/hooks/useResetOnChange`. For entities supporting multi-grade subjects (e.g. Teachers), the grade selector acts as an active filter, allowing subjects from multiple grades to accumulate with their grade tags displayed underneath, submitting `subjectIds: string[]`.
 
 ---
 

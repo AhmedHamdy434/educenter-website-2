@@ -15,6 +15,7 @@ import {
   useDeleteTeacherMutation,
   useImportTeachersMutation,
 } from "../hooks/mutations";
+import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
 import { useSubjectsOptionsQuery } from "@/features/subjects/hooks/queries";
 import { getTeacherColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
@@ -33,6 +34,7 @@ export function TeachersListClient() {
     limit,
     search,
     active = "",
+    gradeId = "",
     subjectId = "",
     sortBy,
     sortOrder,
@@ -46,19 +48,18 @@ export function TeachersListClient() {
     limit,
     search,
     active: active || undefined,
+    gradeId: gradeId || undefined,
     subjectId: subjectId || undefined,
     sortBy,
     sortOrder,
   };
 
-  // Subjects options query for dynamic updates & loading state
-  const { data: fetchedSubjectsOptions, isLoading: isSubjectsLoading } =
-    useSubjectsOptionsQuery();
+  const isGradeSelected = Boolean(gradeId);
 
-  const subjectsOptions = useMemo(
-    () => fetchedSubjectsOptions ?? [],
-    [fetchedSubjectsOptions],
-  );
+  // Options queries
+  const { data: gradesOptions, isLoading: isGradesLoading } = useGradesOptionsQuery();
+  const { data: fetchedSubjectsOptions, isLoading: isSubjectsLoading } =
+    useSubjectsOptionsQuery(gradeId || undefined, isGradeSelected);
 
   // Modal state & selected teacher
   const {
@@ -69,32 +70,30 @@ export function TeachersListClient() {
     close: closeModal,
   } = useCrudModal<Teacher>();
 
-  // Data fetching
-  const { data, isLoading } = useTeachersQuery(queryParams);
-  const teachers = useMemo(() => data?.data ?? [], [data?.data]);
 
+  // Data fetching & mutations
+  const { data, isLoading } = useTeachersQuery(queryParams);
   const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
 
-  // Mutations
   const toggleMutation = useToggleTeacherMutation();
-  const {
-    mutateAsync: deleteTeacher,
-    isPending: deletePending,
-    variables: deletingId,
-  } = useDeleteTeacherMutation();
+  const { mutateAsync: deleteTeacher, isPending: deletePending, variables: deletingId } =
+    useDeleteTeacherMutation();
   const { mutateAsync: importTeachers } = useImportTeachersMutation();
 
-  const togglingId = toggleMutation.isPending
-    ? (toggleMutation.variables ?? null)
-    : null;
-  const toggleStatus = toggleMutation.mutate;
+  const togglingId = toggleMutation.isPending ? (toggleMutation.variables ?? null) : null;
 
   const handleConfirmDelete = async () => {
     if (!teacherToDelete) return;
     const res = await deleteTeacher(teacherToDelete.id);
-    if (res.success) {
-      setTeacherToDelete(null);
+    if (res.success) setTeacherToDelete(null);
+  };
+
+  // Cascading reset: changing gradeId also clears subjectId
+  const handleFilterChange = (updates: Partial<TeacherFilters> & { page?: number }) => {
+    if ("gradeId" in updates && updates.gradeId !== gradeId) {
+      updates.subjectId = undefined;
     }
+    updateQuery(updates);
   };
 
   const columns = useMemo(
@@ -102,28 +101,24 @@ export function TeachersListClient() {
       getTeacherColumns({
         onEdit: openEdit,
         onDelete: setTeacherToDelete,
-        onToggleStatus: toggleStatus,
+        onToggleStatus: toggleMutation.mutate,
         togglingId,
         deletingId: deletePending ? (deletingId ?? null) : null,
       }),
-    [openEdit, toggleStatus, togglingId, deletePending, deletingId],
+    [openEdit, toggleMutation.mutate, togglingId, deletePending, deletingId],
   );
 
-  // Toolbar filters configuration
   const filtersConfig = useMemo(
-    () => getTeacherFiltersConfig(subjectsOptions, isSubjectsLoading),
-    [subjectsOptions, isSubjectsLoading],
+    () =>
+      getTeacherFiltersConfig(
+        gradesOptions ?? [],
+        isGradeSelected ? (fetchedSubjectsOptions ?? []) : [],
+        isGradesLoading,
+        isSubjectsLoading,
+        isGradeSelected,
+      ),
+    [gradesOptions, fetchedSubjectsOptions, isGradesLoading, isSubjectsLoading, isGradeSelected],
   );
-
-  const filterValues = useMemo(
-    () => ({
-      active,
-      subjectId,
-    }),
-    [active, subjectId],
-  );
-
-
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
@@ -143,8 +138,8 @@ export function TeachersListClient() {
         <TableToolbar
           searchPlaceholder="ابحث عن مدرس..."
           filters={filtersConfig}
-          filterValues={filterValues}
-          onFilterChange={updateQuery}
+          filterValues={{ active, gradeId, subjectId }}
+          onFilterChange={handleFilterChange}
           excelConfig={teacherExcelConfig}
           pdfConfig={teacherPdfConfig}
           totalRecords={data?.meta?.total ?? 0}
@@ -154,7 +149,7 @@ export function TeachersListClient() {
 
         <SharedTable
           columns={columns}
-          data={teachers}
+          data={data?.data ?? []}
           isLoading={isLoading}
           meta={data?.meta}
           sorting={sorting}
@@ -173,8 +168,8 @@ export function TeachersListClient() {
           isOpen={isModalOpen}
           onClose={closeModal}
           teacher={selectedTeacher}
-          subjectsOptions={subjectsOptions}
-          isSubjectsLoading={isSubjectsLoading}
+          gradesOptions={gradesOptions ?? []}
+          isGradesLoading={isGradesLoading}
         />
       </SharedModal>
 

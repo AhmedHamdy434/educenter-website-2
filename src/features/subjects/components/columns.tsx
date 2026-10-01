@@ -21,13 +21,6 @@ export function getSubjectColumns({
 }: ColumnsProps): ColumnDef<Subject>[] {
   return [
     {
-      id: "index",
-      header: "#",
-      cell: ({ row }: { row: { index: number } }) => (
-        <Badge variant="subtle">{row.index + 1}</Badge>
-      ),
-    },
-    {
       accessorKey: "name",
       header: "اسم المادة الدراسية",
       enableSorting: true,
@@ -41,9 +34,9 @@ export function getSubjectColumns({
       accessorKey: "grade.name",
       header: "المرحلة الدراسية",
       cell: ({ row }: { row: { original: Subject } }) => (
-        <span className="font-medium text-primary bg-secondary px-2.5 py-1 rounded-md text-xs border border-border">
+        <Badge variant="subtle">
           {row.original.grade?.name || "غير محددة"}
-        </span>
+        </Badge>
       ),
     },
     {

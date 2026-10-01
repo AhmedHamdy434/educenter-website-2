@@ -27,6 +27,8 @@ import {
 import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
 
 export function SubjectsListClient() {
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
   // Filters, sorting, search from URL
   const {
     page,
@@ -51,12 +53,8 @@ export function SubjectsListClient() {
     sortOrder,
   };
 
-  const { data: gradesOptionsData, isLoading: gradesLoading } =
+  const { data: gradesOptions, isLoading: gradesLoading } =
     useGradesOptionsQuery();
-  const gradesOptions = useMemo(
-    () => gradesOptionsData ?? [],
-    [gradesOptionsData],
-  );
 
   // Modal state & selected subject
   const {
@@ -70,24 +68,14 @@ export function SubjectsListClient() {
   // Data fetching
   const { data, isLoading } = useSubjectsQuery(queryParams);
 
-  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
-
   // Mutations
-  const {
-    mutate: toggleStatus,
-    isPending: togglePending,
-    variables: togglingId,
-  } = useToggleSubjectMutation();
-  const {
-    mutateAsync: deleteSubject,
-    isPending: deletePending,
-    variables: deletingId,
-  } = useDeleteSubjectMutation();
+  const toggleMutation = useToggleSubjectMutation();
+  const deleteMutation = useDeleteSubjectMutation();
   const { mutateAsync: importSubjects } = useImportSubjectsMutation();
 
   const handleConfirmDelete = async () => {
     if (!subjectToDelete) return;
-    const res = await deleteSubject(subjectToDelete.id);
+    const res = await deleteMutation.mutateAsync(subjectToDelete.id);
     if (res.success) {
       setSubjectToDelete(null);
     }
@@ -98,11 +86,18 @@ export function SubjectsListClient() {
       getSubjectColumns({
         onEdit: openEdit,
         onDelete: setSubjectToDelete,
-        onToggleStatus: toggleStatus,
-        togglingId: togglePending ? (togglingId ?? null) : null,
-        deletingId: deletePending ? (deletingId ?? null) : null,
+        onToggleStatus: toggleMutation.mutate,
+        togglingId: toggleMutation.isPending ? (toggleMutation.variables ?? null) : null,
+        deletingId: deleteMutation.isPending ? (deleteMutation.variables ?? null) : null,
       }),
-    [openEdit, toggleStatus, togglingId, togglePending, deletePending, deletingId],
+    [
+      openEdit,
+      toggleMutation.mutate,
+      toggleMutation.isPending,
+      toggleMutation.variables,
+      deleteMutation.isPending,
+      deleteMutation.variables,
+    ],
   );
 
   const filtersConfig = useMemo(
@@ -140,7 +135,7 @@ export function SubjectsListClient() {
 
         <SharedTable
           columns={columns}
-          data={data?.data || []}
+          data={data?.data ?? []}
           isLoading={isLoading}
           meta={data?.meta}
           sorting={sorting}
@@ -161,7 +156,7 @@ export function SubjectsListClient() {
           isOpen={isModalOpen}
           onClose={closeModal}
           subject={selectedSubject}
-          gradesOptions={gradesOptions}
+          gradesOptions={gradesOptions ?? []}
           isGradesLoading={gradesLoading}
         />
       </SharedModal>
@@ -175,7 +170,7 @@ export function SubjectsListClient() {
         description={`هل أنت متأكد من رغبتك في حذف المادة الدراسية "${subjectToDelete?.name}"؟ سيتم حذف جميع السجلات المرتبطة بها نهائياً.`}
         confirmLabel="حذف"
         cancelLabel="إلغاء"
-        isLoading={deletePending}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

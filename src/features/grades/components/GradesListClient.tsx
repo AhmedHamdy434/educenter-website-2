@@ -62,21 +62,13 @@ export function GradesListClient() {
   const { data, isLoading } = useGradesQuery(queryParams);
 
   // Mutations
-  const {
-    mutate: toggleStatus,
-    isPending: togglePending,
-    variables: togglingId,
-  } = useToggleGradeMutation();
-  const {
-    mutateAsync: deleteGrade,
-    isPending: deletePending,
-    variables: deletingId,
-  } = useDeleteGradeMutation();
+  const toggleMutation = useToggleGradeMutation();
+  const deleteMutation = useDeleteGradeMutation();
   const { mutateAsync: importGrades } = useImportGradesMutation();
 
   const handleConfirmDelete = async () => {
     if (!gradeToDelete) return;
-    const res = await deleteGrade(gradeToDelete.id);
+    const res = await deleteMutation.mutateAsync(gradeToDelete.id);
     if (res.success) {
       setGradeToDelete(null);
     }
@@ -87,17 +79,17 @@ export function GradesListClient() {
       getGradeColumns({
         onEdit: openEdit,
         onDelete: setGradeToDelete,
-        onToggleStatus: toggleStatus,
-        togglingId: togglePending ? togglingId : null,
-        deletingId: deletePending ? deletingId : null,
+        onToggleStatus: toggleMutation.mutate,
+        togglingId: toggleMutation.isPending ? (toggleMutation.variables ?? null) : null,
+        deletingId: deleteMutation.isPending ? (deleteMutation.variables ?? null) : null,
       }),
     [
       openEdit,
-      toggleStatus,
-      togglingId,
-      togglePending,
-      deletingId,
-      deletePending,
+      toggleMutation.mutate,
+      toggleMutation.isPending,
+      toggleMutation.variables,
+      deleteMutation.isPending,
+      deleteMutation.variables,
     ],
   );
 
@@ -136,7 +128,7 @@ export function GradesListClient() {
 
         <SharedTable
           columns={columns}
-          data={data?.data || []}
+          data={data?.data ?? []}
           isLoading={isLoading}
           meta={data?.meta}
           sorting={sorting}
@@ -169,7 +161,7 @@ export function GradesListClient() {
         description={`هل أنت متأكد من رغبتك في حذف المرحلة الدراسية "${gradeToDelete?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
         confirmLabel="حذف"
         cancelLabel="إلغاء"
-        isLoading={deletePending}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

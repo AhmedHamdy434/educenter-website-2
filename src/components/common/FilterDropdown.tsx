@@ -39,14 +39,16 @@ export function FilterDropdown({
   const isDisabled = disabled || isLoading;
   const defaultPlaceholder = isLoading
     ? "جاري التحميل..."
-    : (allOptionLabel || placeholder || "الكل");
+    : !disabled && options.length === 0
+      ? "لا يوجد"
+      : (allOptionLabel || placeholder || "الكل");
   const selectedOption = options.find((opt) => opt.value === value);
 
   // Close dropdown on outside click
   useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
   return (
-    <div className={cn("relative min-w-[140px]", className)} ref={dropdownRef}>
+    <div className={cn("relative min-w-35", className)} ref={dropdownRef}>
       {label && (
         <span className="mb-1 block text-xs font-semibold text-muted-foreground">
           {label}
@@ -83,35 +85,67 @@ export function FilterDropdown({
 
       {/* Options Dropdown */}
       {isOpen && !isDisabled && (
-        <div className="absolute z-50 mt-1.5 w-full min-w-[160px] rounded-xl border border-border bg-card p-1 shadow-lg animate-in fade-in-50 zoom-in-95 duration-100">
+        <div className="absolute z-50 mt-1.5 w-full min-w-40 rounded-xl border border-border bg-card p-1 shadow-lg animate-in fade-in-50 zoom-in-95 duration-100">
           <ul role="listbox" className="space-y-0.5 max-h-60 overflow-y-auto">
-            {options.map((option) => {
-              const isSelected = option.value === value;
-              return (
-                <li key={option.value}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    onClick={() => {
-                      onChange(option.value);
-                      setIsOpen(false);
-                    }}
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-lg px-3 py-2 text-right text-xs font-semibold transition-colors cursor-pointer",
-                      isSelected
-                        ? "bg-secondary text-primary font-bold"
-                        : "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <span>{option.label}</span>
-                    {isSelected && (
-                      <Check className="size-3.5 text-primary shrink-0" />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
+            {options.length === 0 ? (
+              <li className="px-3 py-2 text-center text-xs text-muted-foreground select-none">
+                لا يوجد
+              </li>
+            ) : (
+              <>
+                {allOptionLabel && !options.some((opt) => opt.value === "") && (
+                  <li>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={!value}
+                      onClick={() => {
+                        onChange("");
+                        setIsOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-right text-xs font-semibold transition-colors cursor-pointer",
+                        !value
+                          ? "bg-secondary text-primary font-bold"
+                          : "text-foreground hover:bg-muted"
+                      )}
+                    >
+                      <span>{allOptionLabel}</span>
+                      {!value && (
+                        <Check className="size-3.5 text-primary shrink-0" />
+                      )}
+                    </button>
+                  </li>
+                )}
+                {options.map((option) => {
+                  const isSelected = option.value === value;
+                  return (
+                    <li key={option.value}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => {
+                          onChange(option.value);
+                          setIsOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-right text-xs font-semibold transition-colors cursor-pointer",
+                          isSelected
+                            ? "bg-secondary text-primary font-bold"
+                            : "text-foreground hover:bg-muted"
+                        )}
+                      >
+                        <span>{option.label}</span>
+                        {isSelected && (
+                          <Check className="size-3.5 text-primary shrink-0" />
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </>
+            )}
           </ul>
         </div>
       )}

@@ -1,39 +1,48 @@
 "use client";
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/common/form-input";
 import { FormTextarea } from "@/components/common/form-textarea";
 import { FormActions } from "@/components/common/FormActions";
-import { FormMultiSelect } from "@/components/common/form-multi-select";
-import { teacherSchema, type TeacherFormValues } from "../schemas/teacher-schema";
+import { type SelectOption } from "@/components/common/form-select";
+import {
+  teacherSchema,
+  type TeacherFormValues,
+} from "../schemas/teacher-schema";
 import { type Teacher } from "../types";
 import {
   useCreateTeacherMutation,
   useUpdateTeacherMutation,
 } from "../hooks/mutations";
+import { SubjectPicker, type SelectedSubject } from "./SubjectPicker";
 
 interface TeacherFormProps {
   isOpen: boolean;
   onClose: () => void;
   teacher?: Teacher | null;
-  subjectsOptions: { value: string; label: string }[];
-  isSubjectsLoading?: boolean;
+  gradesOptions: SelectOption[];
+  isGradesLoading?: boolean;
 }
 
 export function TeacherForm({
   isOpen,
   onClose,
   teacher,
-  subjectsOptions,
-  isSubjectsLoading,
+  gradesOptions,
+  isGradesLoading,
 }: TeacherFormProps) {
+  const [selectedSubjects, setSelectedSubjects] = useState<SelectedSubject[]>(
+    [],
+  );
+
   const {
     register,
     handleSubmit,
-    control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<TeacherFormValues>({
     resolver: zodResolver(teacherSchema),
@@ -52,43 +61,67 @@ export function TeacherForm({
   const { mutateAsync: updateTeacher, isPending: isUpdatePending } =
     useUpdateTeacherMutation();
 
-  const handleFormSubmit = async (values: TeacherFormValues) => {
-    if (!!teacher) {
-      await updateTeacher(
-        { id: teacher.id, values },
-        {
-          onSuccess: (res) => {
-            if (res.success) {
-              onClose();
-            }
-          },
-        },
-      );
-    } else {
-      await createTeacher(values, {
-        onSuccess: (res) => {
-          if (res.success) {
-            onClose();
-          }
-        },
-      });
-    }
+  const syncSubjectIds = (subjects: SelectedSubject[]) => {
+    setValue(
+      "subjectIds",
+      subjects.map((s) => s.id),
+      { shouldValidate: true },
+    );
   };
 
-  // Populate form values if editing
+  const handleAddSubject = (subject: SelectedSubject) => {
+    const updated = [...selectedSubjects, subject];
+    setSelectedSubjects(updated);
+    syncSubjectIds(updated);
+  };
+
+  const handleRemoveSubject = (id: string) => {
+    const updated = selectedSubjects.filter((s) => s.id !== id);
+    setSelectedSubjects(updated);
+    syncSubjectIds(updated);
+  };
+
+  const handleClearAll = () => {
+    setSelectedSubjects([]);
+    setValue("subjectIds", [], { shouldValidate: true });
+  };
+
+  const handleFormSubmit = async (values: TeacherFormValues) => {
+    const mutation = teacher
+      ? updateTeacher({ id: teacher.id, values })
+      : createTeacher(values);
+
+    const res = await mutation;
+    if (res.success) onClose();
+  };
+
+  // Populate/reset form on open
   useEffect(() => {
     if (!isOpen) return;
 
     if (teacher) {
+      const initialSubjects: SelectedSubject[] = (teacher.subjects || []).map(
+        (s) => ({
+          id: s.subject.id,
+          name: s.subject.name,
+          gradeName:
+            s.subject.grade?.name ||
+            gradesOptions.find((g) => g.value === s.subject.gradeId)?.label ||
+            "",
+        }),
+      );
+
+      setSelectedSubjects(initialSubjects);
       reset({
         fullName: teacher.user.fullName,
         email: teacher.user.email,
-        password: "", // Leave blank when editing
+        password: "",
         phone: teacher.user.phone || "",
         bio: teacher.bio || "",
-        subjectIds: teacher.subjects.map((s) => s.subject.id),
+        subjectIds: initialSubjects.map((s) => s.id),
       });
     } else {
+      setSelectedSubjects([]);
       reset({
         fullName: "",
         email: "",
@@ -98,12 +131,13 @@ export function TeacherForm({
         subjectIds: [],
       });
     }
-  }, [teacher, reset, isOpen]);
+  }, [teacher, reset, isOpen, gradesOptions]);
 
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-4 text-right"
+      dir="rtl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
@@ -113,7 +147,6 @@ export function TeacherForm({
           error={errors.fullName?.message}
           {...register("fullName")}
         />
-
         <FormInput
           label="البريد الإلكتروني"
           id="email"
@@ -133,7 +166,6 @@ export function TeacherForm({
           error={errors.password?.message}
           {...register("password")}
         />
-
         <FormInput
           label="رقم الهاتف"
           id="phone"
@@ -143,15 +175,15 @@ export function TeacherForm({
         />
       </div>
 
-      {/* Subjects Selection using Custom Multi-Select Dropdown */}
-      <FormMultiSelect
-        label="المواد الدراسية التي يدرسها"
-        name="subjectIds"
-        control={control}
-        options={subjectsOptions}
-        isLoading={isSubjectsLoading}
-        placeholder="اختر المواد الدراسية..."
+      <SubjectPicker
+        gradesOptions={gradesOptions}
+        isGradesLoading={isGradesLoading}
+        selectedSubjects={selectedSubjects}
+        onAdd={handleAddSubject}
+        onRemove={handleRemoveSubject}
+        onClearAll={handleClearAll}
         error={errors.subjectIds?.message}
+        isOpen={isOpen}
       />
 
       <FormTextarea
@@ -162,7 +194,6 @@ export function TeacherForm({
         {...register("bio")}
       />
 
-      {/* Action Buttons */}
       <FormActions
         onCancel={onClose}
         isSubmitting={isCreatePending || isUpdatePending}

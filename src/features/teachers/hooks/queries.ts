@@ -2,8 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getTeachers } from "../actions/teachers-actions";
 import { teachersKeys } from "../utils/queryKeys";
 import { QueryParams } from "@/types";
+import { type TeacherFilters } from "../types";
 
-export function useTeachersQuery(params: QueryParams & { subjectId?: string }) {
+export function useTeachersQuery(
+  params: QueryParams & TeacherFilters,
+) {
   return useQuery({
     queryKey: teachersKeys.list(params),
     queryFn: async () => {
@@ -11,6 +14,7 @@ export function useTeachersQuery(params: QueryParams & { subjectId?: string }) {
     },
   });
 }
+
 
 export function useTeachersOptionsQuery(subjectId?: string, enabled = true) {
   return useQuery({

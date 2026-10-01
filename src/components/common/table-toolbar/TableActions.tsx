@@ -126,7 +126,7 @@ export function TableActions({
   return (
     <div className="flex items-center gap-2">
       {/* Desktop Buttons */}
-      <div className="hidden sm:flex sm:items-center sm:gap-2">
+      <div className="hidden lg:flex lg:items-center lg:gap-2">
         {actionItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -151,7 +151,7 @@ export function TableActions({
       </div>
 
       {/* Mobile Actions Dropdown */}
-      <div className="relative sm:hidden" ref={mobileMenuRef}>
+      <div className="relative lg:hidden" ref={mobileMenuRef}>
         <Button
           type="button"
           variant="outline"
@@ -167,7 +167,7 @@ export function TableActions({
 
         {isMobileMenuOpen && (
           <div
-            className="absolute left-0 mt-1.5 w-44 rounded-lg border border-border bg-card p-1 shadow-lg z-20 space-y-0.5 text-right"
+            className="absolute right-0 mt-1.5 w-44 rounded-lg border border-border bg-card p-1 shadow-lg z-20 space-y-0.5 text-right"
             dir="rtl"
           >
             {actionItems.map((item) => {

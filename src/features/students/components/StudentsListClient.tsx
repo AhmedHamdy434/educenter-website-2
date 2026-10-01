@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
@@ -22,14 +22,13 @@ import { getStudentColumns } from "./columns";
 import { useCrudModal } from "@/hooks/useCrudModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { type Student, type StudentFilters } from "../types";
-
 import {
   getStudentFiltersConfig,
   studentExcelConfig,
   studentPdfConfig,
 } from "../config/students-toolbar.config";
 
-export function StudentsListClient({}) {
+export function StudentsListClient() {
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [paymentHistoryStudent, setPaymentHistoryStudent] =
     useState<Student | null>(null);
@@ -62,13 +61,8 @@ export function StudentsListClient({}) {
   };
 
   // Grades options query for dynamic updates & loading state
-  const { data: fetchedGradesOptions, isLoading: isGradesLoading } =
+  const { data: gradesOptions, isLoading: isGradesLoading } =
     useGradesOptionsQuery();
-
-  const gradesOptions = useMemo(
-    () => fetchedGradesOptions ?? [],
-    [fetchedGradesOptions],
-  );
 
   // Modal state & selected student
   const {
@@ -81,33 +75,19 @@ export function StudentsListClient({}) {
 
   // Data fetching
   const { data, isLoading } = useStudentsQuery(queryParams);
-  const students = useMemo(() => data?.data ?? [], [data?.data]);
 
   // Mutations
   const toggleMutation = useToggleStudentMutation();
-  const {
-    mutateAsync: deleteStudent,
-    isPending: deletePending,
-    variables: deletingId,
-  } = useDeleteStudentMutation();
+  const deleteMutation = useDeleteStudentMutation();
   const { mutateAsync: importStudents } = useImportStudentsMutation();
-
-  const togglingId = toggleMutation.isPending
-    ? (toggleMutation.variables ?? null)
-    : null;
-  const toggleStatus = toggleMutation.mutate;
 
   const handleConfirmDelete = async () => {
     if (!studentToDelete) return;
-    const res = await deleteStudent(studentToDelete.id);
+    const res = await deleteMutation.mutateAsync(studentToDelete.id);
     if (res.success) {
       setStudentToDelete(null);
     }
   };
-
-  const handleGenerateParentLink = useCallback((student: Student) => {
-    setMagicLinkStudent(student);
-  }, []);
 
   const columns = useMemo(
     () =>
@@ -115,18 +95,18 @@ export function StudentsListClient({}) {
         onEdit: openEdit,
         onDelete: setStudentToDelete,
         onViewPayments: setPaymentHistoryStudent,
-        onToggleStatus: toggleStatus,
-        onGenerateParentLink: handleGenerateParentLink,
-        togglingId,
-        deletingId: deletePending ? (deletingId ?? null) : null,
+        onToggleStatus: toggleMutation.mutate,
+        onGenerateParentLink: setMagicLinkStudent,
+        togglingId: toggleMutation.isPending ? (toggleMutation.variables ?? null) : null,
+        deletingId: deleteMutation.isPending ? (deleteMutation.variables ?? null) : null,
       }),
     [
       openEdit,
-      toggleStatus,
-      handleGenerateParentLink,
-      togglingId,
-      deletePending,
-      deletingId,
+      toggleMutation.mutate,
+      toggleMutation.isPending,
+      toggleMutation.variables,
+      deleteMutation.isPending,
+      deleteMutation.variables,
     ],
   );
 
@@ -134,14 +114,6 @@ export function StudentsListClient({}) {
   const filtersConfig = useMemo(
     () => getStudentFiltersConfig(gradesOptions, isGradesLoading),
     [gradesOptions, isGradesLoading],
-  );
-
-  const filterValues = useMemo(
-    () => ({
-      active,
-      gradeId,
-    }),
-    [active, gradeId],
   );
 
   return (
@@ -162,7 +134,7 @@ export function StudentsListClient({}) {
         <TableToolbar
           searchPlaceholder="ابحث عن طالب..."
           filters={filtersConfig}
-          filterValues={filterValues}
+          filterValues={{ active, gradeId }}
           onFilterChange={updateQuery}
           excelConfig={studentExcelConfig}
           pdfConfig={studentPdfConfig}
@@ -173,7 +145,7 @@ export function StudentsListClient({}) {
 
         <SharedTable
           columns={columns}
-          data={students}
+          data={data?.data ?? []}
           isLoading={isLoading}
           meta={data?.meta}
           sorting={sorting}
@@ -192,7 +164,7 @@ export function StudentsListClient({}) {
           isOpen={isModalOpen}
           onClose={closeModal}
           student={selectedStudent}
-          gradesOptions={gradesOptions}
+          gradesOptions={gradesOptions ?? []}
           isGradesLoading={isGradesLoading}
         />
       </SharedModal>
@@ -223,7 +195,7 @@ export function StudentsListClient({}) {
         description={`هل أنت متأكد من رغبتك في حذف الطالب "${studentToDelete?.user.fullName}"؟ سيتم حذف جميع البيانات والاشتراكات المرتبطة به نهائياً.`}
         confirmLabel="حذف"
         cancelLabel="إلغاء"
-        isLoading={deletePending}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

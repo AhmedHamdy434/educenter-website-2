@@ -7,18 +7,31 @@ import { STATUSES } from "@/constants/dropdown-options";
 import { type SelectOption } from "@/components/common/form-select";
 
 export function getTeacherFiltersConfig(
+  gradesOptions: SelectOption[] = [],
   subjectsOptions: SelectOption[] = [],
+  gradesLoading?: boolean,
   subjectsLoading?: boolean,
-): FilterConfig<"active" | "subjectId">[] {
+  isGradeSelected: boolean = false,
+): FilterConfig<"active" | "gradeId" | "subjectId">[] {
   return [
+    {
+      key: "gradeId",
+      type: "select",
+      label: "المرحلة الدراسية",
+      placeholder: "اختر المرحلة",
+      allOptionLabel: "كل المراحل",
+      options: gradesOptions,
+      isLoading: gradesLoading,
+    },
     {
       key: "subjectId",
       type: "select",
       label: "المادة الدراسية",
-      placeholder: "اختر المادة",
-      allOptionLabel: "كل المواد",
-      options: subjectsOptions,
+      placeholder: isGradeSelected ? "اختر المادة" : "اختر المرحلة أولاً",
+      allOptionLabel: isGradeSelected ? "كل المواد" : "اختر المرحلة أولاً",
+      options: isGradeSelected ? subjectsOptions : [],
       isLoading: subjectsLoading,
+      disabled: !isGradeSelected,
     },
     {
       key: "active",

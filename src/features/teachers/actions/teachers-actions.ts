@@ -5,7 +5,7 @@ import { type Teacher, type CreateTeacherDTO, type UpdateTeacherDTO } from "../t
 import { type ApiResponse, QueryParams } from "@/types";
 
 export async function getTeachers(
-  params: QueryParams & { subjectId?: string },
+  params: QueryParams & { subjectId?: string; gradeId?: string },
 ): Promise<ApiResponse<Teacher[]>> {
   return serverApiClient<Teacher[]>({
     url: "/teachers",
@@ -14,6 +14,7 @@ export async function getTeachers(
     cache: "no-store",
   });
 }
+
 
 export async function createTeacherAction(
   data: CreateTeacherDTO,

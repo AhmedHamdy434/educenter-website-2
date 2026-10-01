@@ -22,7 +22,9 @@ export function useSubjectsOptionsQuery(gradeId?: string, enabled = true) {
       if (!res.success) throw new Error(res.message);
       return (res.data || []).map((s) => ({
         value: s.id,
-        label: `${s.name} (${s.grade.name})`,
+        label: s.grade?.name ? `${s.name} (${s.grade.name})` : s.name,
+        name: s.name,
+        gradeName: s.grade?.name || "",
       }));
     },
     enabled: enabled && (gradeId === undefined || !!gradeId),

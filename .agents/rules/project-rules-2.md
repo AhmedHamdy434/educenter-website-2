@@ -61,6 +61,7 @@ This document defines the mandatory engineering standards for authentication, ro
 *   [ ] Verified that list pages (`page.tsx`) do not pass server `initialData` to client list containers, delegating list fetching entirely to React Query?
 *   [ ] Used `@/hooks/useOnClickOutside` instead of manual window/document listeners?
 *   [ ] Used `@/hooks/useResetOnChange` for cascading field resets instead of manual `useEffect` + `useRef` boilerplate?
+*   [ ] Separated Grade and Subject selectors in forms/toolbars so subjects are strictly dependent on the selected grade via `useResetOnChange`?
 *   [ ] Used `@/components/common/RowActions` for table edit/delete actions?
 *   [ ] Included `if (!isOpen) return;` early return in modal form reset `useEffect`?
 *   [ ] Called `handleResponseToast()` for user notifications?
@@ -122,6 +123,7 @@ Must manage item creation and editing using React Hook Form + Zod:
 - **Strict Schema Alignment (No Ghost Fields)**: Form fields, Zod schemas, and DTO payloads must strictly match existing backend DTOs and Prisma database models. Never introduce unsupported fields (e.g. ad-hoc `salary` or `specialization`) without full-stack backend and database support.
 - **Early Return on Close**: The reset `useEffect` must start with `if (!isOpen) return;` to avoid redundant state updates and re-renders when the modal is closed.
 - **Cascading Field Resets**: When form fields have dependent relationships (e.g. `gradeId -> subjectId -> teacherId`), use `@/hooks/useResetOnChange` instead of inline `useEffect` + `useRef` boilerplate.
+- **Separation of Dependent Grade & Subject Selectors**: Whenever subjects are selectable (e.g. in Group forms, Teacher forms, or list filters), they must **never** be presented as an unpartitioned flat list combining grade and subject names in one dropdown. Instead, Grade (`gradeId`) must always be selected first via a dedicated `<FormSelect>`, and the Subject selector (`subjectId` or `subjectIds`) must be strictly dependent on the selected grade (`disabled={!selectedGradeId}`, placeholder indicates choosing grade first, queries enabled only when `selectedGradeId` is chosen). In single-grade forms (e.g. Groups), apply cascading reset via `@/hooks/useResetOnChange` on grade change. In multi-grade entities (e.g. Teachers), allow selecting subjects across multiple grades by accumulating chosen subjects with their grade labels in a dedicated chips container underneath and submitting `subjectIds: string[]`.
 - **Sub-Component Extraction**: For complex or multi-state input sections (such as schedule builders, rich editors, or multi-field pickers), extract focused subcomponents (e.g., `<WeeklySchedulePicker>`) to keep form components under 200 lines.
 - Form inputs must leverage standard styling wrapper components:
   - **`<FormInput>`**: Standard text/number inputs.

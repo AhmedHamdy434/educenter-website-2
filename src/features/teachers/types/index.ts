@@ -4,6 +4,10 @@ export interface TeacherSubjectRelation {
     id: string;
     name: string;
     gradeId?: string;
+    grade?: {
+      id: string;
+      name: string;
+    };
   };
 }
 
@@ -47,5 +51,7 @@ export interface UpdateTeacherDTO {
 
 export interface TeacherFilters {
   active?: string;
+  gradeId?: string;
   subjectId?: string;
 }
+

@@ -56,14 +56,14 @@ export function getTeacherColumns({
           return <span className="text-muted-foreground text-xs">لا توجد مواد</span>;
         }
         return (
-          <div className="flex flex-wrap gap-1 max-w-xs justify-start">
+          <div className="flex flex-wrap gap-1  justify-start">
             {subjects.map((s) => (
               <Badge
                 key={s.id}
                 variant="subtle"
                 className="text-primary font-bold text-xs"
               >
-                {s.subject.name}
+                {s.subject.name}({s.subject.grade?.name})
               </Badge>
             ))}
           </div>

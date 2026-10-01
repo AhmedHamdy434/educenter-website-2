@@ -57,6 +57,15 @@ export function GroupsListClient() {
     sortOrder,
   };
 
+  const handleFilterChange = (
+    updates: Partial<GroupFilters> & { page?: number },
+  ) => {
+    if ("gradeId" in updates && updates.gradeId !== gradeId) {
+      updates.subjectId = undefined;
+    }
+    updateQuery(updates);
+  };
+
   // Modal state & selected group
   const {
     isOpen: isModalOpen,
@@ -72,21 +81,11 @@ export function GroupsListClient() {
     useGradesOptionsQuery();
 
   const { data: subjectsOptions, isLoading: subjectsLoading } =
-    useSubjectsOptionsQuery();
+    useSubjectsOptionsQuery(gradeId || undefined);
 
   // Mutations
-  const {
-    mutate: toggleStatus,
-    isPending: togglePending,
-    variables: togglingId,
-  } = useToggleGroupStatusMutation();
-
-  const {
-    mutateAsync: deleteGroup,
-    isPending: deletePending,
-    variables: deletingId,
-  } = useDeleteGroupMutation();
-
+  const toggleMutation = useToggleGroupStatusMutation();
+  const deleteMutation = useDeleteGroupMutation();
   const { mutateAsync: importGroups } = useImportGroupsMutation();
 
   const routeParams = useParams<{ centerSlug: string }>();
@@ -94,7 +93,7 @@ export function GroupsListClient() {
 
   const handleConfirmDelete = async () => {
     if (!groupToDelete) return;
-    const res = await deleteGroup(groupToDelete.id);
+    const res = await deleteMutation.mutateAsync(groupToDelete.id);
     if (res.success) {
       setGroupToDelete(null);
     }
@@ -105,25 +104,31 @@ export function GroupsListClient() {
       getGroupColumns({
         onEdit: openEdit,
         onDelete: setGroupToDelete,
-        onToggleStatus: toggleStatus,
-        togglingId: togglePending ? (togglingId ?? null) : null,
-        deletingId: deletePending ? (deletingId ?? null) : null,
+        onToggleStatus: toggleMutation.mutate,
+        togglingId: toggleMutation.isPending ? (toggleMutation.variables ?? null) : null,
+        deletingId: deleteMutation.isPending ? (deleteMutation.variables ?? null) : null,
         centerSlug,
       }),
     [
       openEdit,
-      toggleStatus,
-      togglingId,
-      togglePending,
-      deletingId,
-      deletePending,
+      toggleMutation.mutate,
+      toggleMutation.isPending,
+      toggleMutation.variables,
+      deleteMutation.isPending,
+      deleteMutation.variables,
       centerSlug,
     ],
   );
 
   const filtersConfig = useMemo(
-    () => getGroupFiltersConfig(gradesOptions, subjectsOptions, gradesLoading,subjectsLoading),
-    [gradesLoading, gradesOptions, subjectsLoading, subjectsOptions],
+    () =>
+      getGroupFiltersConfig(
+        gradesOptions,
+        subjectsOptions,
+        gradesLoading,
+        subjectsLoading,
+      ),
+    [gradesOptions, subjectsOptions, gradesLoading, subjectsLoading],
   );
 
   return (
@@ -146,7 +151,7 @@ export function GroupsListClient() {
           searchPlaceholder="ابحث عن مجموعة..."
           filters={filtersConfig}
           filterValues={{ active, gradeId, subjectId }}
-          onFilterChange={updateQuery}
+          onFilterChange={handleFilterChange}
           excelConfig={groupExcelConfig}
           pdfConfig={groupPdfConfig}
           totalRecords={data?.meta?.total ?? 0}
@@ -156,7 +161,7 @@ export function GroupsListClient() {
 
         <SharedTable
           columns={columns}
-          data={data?.data || []}
+          data={data?.data ?? []}
           isLoading={isLoading}
           meta={data?.meta}
           sorting={sorting}
@@ -188,7 +193,7 @@ export function GroupsListClient() {
         description={`هل أنت متأكد من حذف المجموعة الدراسية "${groupToDelete?.name}"؟ سيتم حذف جميع السجلات المرتبطة بها نهائياً.`}
         confirmLabel="حذف"
         cancelLabel="إلغاء"
-        isLoading={deletePending}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );
