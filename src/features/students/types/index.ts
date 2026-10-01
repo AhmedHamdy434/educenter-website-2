@@ -2,6 +2,7 @@ export interface StudentEnrollment {
   id: string;
   isActive: boolean;
   enrollmentDate?: string;
+  gradeId?: string;
   grade: {
     id: string;
     name: string;

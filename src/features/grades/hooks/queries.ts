@@ -15,7 +15,7 @@ export function useGradesOptionsQuery(enabled = true) {
   return useQuery({
     queryKey: gradesKeys.options(),
     queryFn: async () => {
-      const res = await getGrades({ limit: 100, active: "true" });
+      const res = await getGrades({ limit: 100 });
       return toSelectOptions(res.data);
     },
     enabled,

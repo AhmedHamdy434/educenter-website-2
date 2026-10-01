@@ -9,6 +9,7 @@ import { User, UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { ROLE_TRANSLATIONS } from "@/constants";
 import { dashboardRoutes } from "../constants/routes-config";
+import Image from "next/image";
 
 interface SidebarProps {
   role: UserRole;
@@ -41,7 +42,9 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
       {/* Brand Header Area - Distinct Solid Color Block (#0E211C) */}
       <div className="flex h-20 items-center gap-3 px-6 bg-[#0E211C] border-b border-sidebar-border/80">
         <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-amber-400 border border-white/15 shadow-inner">
-          <GraduationCap className="size-5 relative z-10 stroke-[2.25]" />
+          {user.center?.logo ? 
+          <Image width={80} height={80} className="size-5 relative z-10 stroke-[2.25]" src={user.center.logo} alt={centerSlug} /> 
+          : <GraduationCap className="size-5 relative z-10 stroke-[2.25]" />}
           <BookOpen className="size-3.5 absolute bottom-1 left-1 opacity-50" />
         </div>
         <div className="flex flex-col">

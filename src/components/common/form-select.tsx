@@ -71,6 +71,7 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
       value={currentVal}
       defaultValue={defaultValue}
       onValueChange={handleValChange}
+       key={`${currentVal}-${options.length}`}
       disabled={isDisabled}
       name={name}
       dir="rtl"

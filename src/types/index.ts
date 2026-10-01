@@ -45,6 +45,7 @@ export interface User {
     slug: string;
     name: string;
     id: string;
+    logo?: string;
   };
 }
 
@@ -90,4 +91,4 @@ declare module "@tanstack/react-query" {
       errorMessage?: string;
     };
   }
-}
+}

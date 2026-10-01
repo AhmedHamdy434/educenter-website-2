@@ -56,8 +56,11 @@ export function getStudentColumns({
     {
       id: "grade",
       header: "المرحلة الدراسية",
+      enableSorting: true,
       cell: ({ row }) => {
-        const activeEnrollment = row.original.enrollments?.find((e) => e.isActive);
+        const activeEnrollment = row.original.enrollments?.find(
+          (e) => e.isActive,
+        );
         return (
           <Badge variant="subtle" className="text-primary font-bold">
             {activeEnrollment?.grade.name || "غير مسجل"}
@@ -69,9 +72,11 @@ export function getStudentColumns({
       id: "phone",
       accessorKey: "user.phone",
       header: "الهاتف",
-      enableSorting: true,
       cell: ({ row }) => (
-        <span className="text-muted-foreground font-mono text-xs block" dir="ltr">
+        <span
+          className="text-muted-foreground font-mono text-xs block"
+          dir="ltr"
+        >
           {row.original.user.phone}
         </span>
       ),
@@ -80,9 +85,11 @@ export function getStudentColumns({
       id: "parentPhone",
       accessorKey: "parentPhone",
       header: "هاتف ولي الأمر",
-      enableSorting: true,
       cell: ({ row }) => (
-        <span className="text-muted-foreground font-mono text-xs block" dir="ltr">
+        <span
+          className="text-muted-foreground font-mono text-xs block"
+          dir="ltr"
+        >
           {row.original.parentPhone}
         </span>
       ),
