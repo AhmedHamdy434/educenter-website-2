@@ -1,82 +1,58 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Plus, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SharedModal } from "@/components/common/SharedModal";
 import { TableSearch } from "@/components/common/TableSearch";
 import { Loading } from "@/components/common/Loading";
 import { FormDatePicker } from "@/components/common/form-date-picker";
-import { getStudents } from "@/features/students/actions/students-actions";
+import { getTodayDateString } from "@/utils/time";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useAvailableStudentsForGroup } from "../../hooks/queries";
+import { useAddStudentsToGroupMutation } from "../../hooks/mutations";
 
 interface AddStudentsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  gradeId: string;
-  gradeName: string;
-  enrolledStudentIds: Set<string>;
-  onAddStudents: (studentIds: string[], subscriptionStartDate?: string) => Promise<void>;
-  isAddPending: boolean;
+  groupId: string;
 }
 
 export function AddStudentsModal({
   isOpen,
   onClose,
-  gradeId,
-  gradeName,
-  enrolledStudentIds,
-  onAddStudents,
-  isAddPending,
+  groupId,
 }: AddStudentsModalProps) {
-  const getTodayDateString = () => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
   const [modalSearch, setModalSearch] = useState("");
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
-  const [subscriptionStartDate, setSubscriptionStartDate] = useState(getTodayDateString);
+  const [subscriptionStartDate, setSubscriptionStartDate] =
+    useState(getTodayDateString());
   const [dateError, setDateError] = useState("");
 
+  const debounceSearch = useDebounce(modalSearch);
   // Fetch candidates (students in the same grade) when modal is opened
-  const { data: candidatesResponse, isLoading: isCandidatesLoading } = useQuery({
-    queryKey: ["students", "options", { gradeId }],
-    queryFn: () => getStudents({ gradeId, limit: 100 }),
-    enabled: isOpen && !!gradeId,
-  });
+  const { data, isLoading: isCandidatesLoading } = useAvailableStudentsForGroup(
+    groupId,
+    { search: debounceSearch },
+    isOpen,
+  );
 
-  const candidatesData = candidatesResponse?.data;
+    const { mutateAsync: addStudents, isPending: isAddPending } =
+    useAddStudentsToGroupMutation();
 
-  // Filter out students who are already enrolled in this group
-  const candidates = useMemo(() => {
-    const list = candidatesData || [];
-    return list.filter((s) => !enrolledStudentIds.has(s.id));
-  }, [candidatesData, enrolledStudentIds]);
-
-  // Client-side search for candidates inside the modal
-  const filteredCandidates = useMemo(() => {
-    return candidates.filter(
-      (c) =>
-        c.user.fullName.toLowerCase().includes(modalSearch.toLowerCase()) ||
-        c.user.phone.includes(modalSearch)
-    );
-  }, [candidates, modalSearch]);
+  const candidates = data?.data || [];
 
   const toggleSelectStudent = (id: string) => {
     setSelectedStudentIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
   const toggleSelectAllCandidates = () => {
-    if (selectedStudentIds.length === filteredCandidates.length) {
+    if (selectedStudentIds.length === candidates?.length) {
       setSelectedStudentIds([]);
     } else {
-      setSelectedStudentIds(filteredCandidates.map((c) => c.id));
+      setSelectedStudentIds(candidates?.map((c) => c.id));
     }
   };
 
@@ -94,7 +70,7 @@ export function AddStudentsModal({
       setDateError("تاريخ بدء الاشتراك مطلوب");
       return;
     }
-    await onAddStudents(selectedStudentIds, subscriptionStartDate);
+    await addStudents({id:groupId, studentIds: selectedStudentIds, subscriptionStartDate},{onSuccess: handleClose,});
     setSelectedStudentIds([]);
     setSubscriptionStartDate(getTodayDateString());
     setDateError("");
@@ -107,11 +83,7 @@ export function AddStudentsModal({
       onClose={handleClose}
       title="إدراج طلاب في المجموعة الدراسية"
     >
-      <div className="space-y-4 text-right" dir="rtl">
-        <p className="text-xs text-muted-foreground">
-          يتم عرض الطلاب النشطين المسجلين في مرحلة <strong className="text-foreground">{gradeName}</strong> والذين لم يتم تسجيلهم في هذه المجموعة بعد.
-        </p>
-
+      <div className="space-y-4">
         <div className="w-full">
           <TableSearch
             placeholder="ابحث عن طالب بالاسم أو الهاتف..."
@@ -135,7 +107,7 @@ export function AddStudentsModal({
         {/* Candidates list content */}
         {isCandidatesLoading ? (
           <Loading message="جاري تحميل قائمة الطلاب..." />
-        ) : filteredCandidates.length > 0 ? (
+        ) : candidates.length > 0 ? (
           <div className="space-y-3">
             {/* Select All checkbox bar */}
             <div className="flex items-center justify-between bg-secondary/50 px-3 py-2 rounded-lg border border-border text-xs font-bold text-foreground">
@@ -144,14 +116,17 @@ export function AddStudentsModal({
                   type="checkbox"
                   id="select-all"
                   checked={
-                    selectedStudentIds.length === filteredCandidates.length &&
-                    filteredCandidates.length > 0
+                    selectedStudentIds.length === candidates.length &&
+                    candidates.length > 0
                   }
                   onChange={toggleSelectAllCandidates}
                   className="size-4 rounded border-border text-primary focus:ring-primary accent-primary cursor-pointer"
                 />
-                <label htmlFor="select-all" className="cursor-pointer select-none">
-                  تحديد الكل ({filteredCandidates.length})
+                <label
+                  htmlFor="select-all"
+                  className="cursor-pointer select-none"
+                >
+                  تحديد الكل ({candidates.length})
                 </label>
               </div>
               <span>تم اختيار {selectedStudentIds.length} طالب</span>
@@ -159,7 +134,7 @@ export function AddStudentsModal({
 
             {/* Scrollable list */}
             <div className="max-h-60 overflow-y-auto border border-border rounded-xl divide-y divide-border pr-1 -mr-1">
-              {filteredCandidates.map((c) => (
+              {candidates.map((c) => (
                 <div
                   key={c.id}
                   onClick={() => toggleSelectStudent(c.id)}
@@ -172,8 +147,12 @@ export function AddStudentsModal({
                     className="size-4 rounded border-border text-primary focus:ring-primary accent-primary cursor-pointer shrink-0"
                   />
                   <div className="flex flex-col text-sm flex-1">
-                    <span className="font-bold text-foreground">{c.user.fullName}</span>
-                    <span className="text-xs text-muted-foreground font-mono">{c.user.phone}</span>
+                    <span className="font-bold text-foreground">
+                      {c.user.fullName}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {c.user.phone}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -182,7 +161,9 @@ export function AddStudentsModal({
         ) : (
           <div className="text-center py-8 text-muted-foreground bg-secondary/20 border border-border rounded-xl">
             <Users className="size-10 mx-auto text-muted-foreground/30 mb-2" />
-            <p className="font-bold text-foreground text-xs">لا يوجد طلاب متاحين</p>
+            <p className="font-bold text-foreground text-xs">
+              لا يوجد طلاب متاحين
+            </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
               {modalSearch
                 ? "لا يوجد نتائج مطابقة للبحث."

@@ -1,3 +1,5 @@
+import { QueryParams } from "@/types";
+
 export interface StudentEnrollment {
   id: string;
   isActive: boolean;
@@ -67,5 +69,9 @@ export interface StudentPayment {
 
 export interface StudentFilters {
   active?: string;
+  gradeId?: string;
+}
+
+export interface StudentParams extends QueryParams {
   gradeId?: string;
 }

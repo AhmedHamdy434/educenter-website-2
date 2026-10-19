@@ -81,7 +81,7 @@ export function GroupsListClient() {
     useGradesOptionsQuery();
 
   const { data: subjectsOptions, isLoading: subjectsLoading } =
-    useSubjectsOptionsQuery(gradeId || undefined);
+    useSubjectsOptionsQuery(gradeId);
 
   // Mutations
   const toggleMutation = useToggleGroupStatusMutation();
@@ -127,8 +127,9 @@ export function GroupsListClient() {
         subjectsOptions,
         gradesLoading,
         subjectsLoading,
+        !gradeId,
       ),
-    [gradesOptions, subjectsOptions, gradesLoading, subjectsLoading],
+    [gradesOptions, subjectsOptions, gradesLoading, subjectsLoading, gradeId],
   );
 
   return (

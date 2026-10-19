@@ -23,19 +23,25 @@ export const DAYS_OPTIONS: SelectOption[] = Object.entries(DAY_NAMES_AR).map(
   ([key, val]) => ({
     value: key,
     label: val,
-  })
+  }),
 );
 
-export const HOUR_OPTIONS: SelectOption[] = Array.from({ length: 12 }, (_, i) => {
-  const h = i + 1;
-  return { value: h.toString(), label: h.toString() };
-});
+export const HOUR_OPTIONS: SelectOption[] = Array.from(
+  { length: 12 },
+  (_, i) => {
+    const h = i + 1;
+    return { value: h.toString(), label: h.toString() };
+  },
+);
 
-export const MINUTE_OPTIONS: SelectOption[] = Array.from({ length: 12 }, (_, i) => {
-  const m = i * 5;
-  const mStr = m.toString().padStart(2, "0");
-  return { value: mStr, label: mStr };
-});
+export const MINUTE_OPTIONS: SelectOption[] = Array.from(
+  { length: 12 },
+  (_, i) => {
+    const m = i * 5;
+    const mStr = m.toString().padStart(2, "0");
+    return { value: mStr, label: mStr };
+  },
+);
 
 export const PERIOD_OPTIONS: SelectOption[] = [
   { value: "AM", label: "صباحاً (ص)" },
@@ -71,7 +77,7 @@ export const calculateDaysRemaining = (endDateStr: string): number => {
 };
 
 export const getSubscriptionStatusDetails = (
-  subscription?: { status?: string; endDate?: string } | null
+  subscription?: { status?: string; endDate?: string } | null,
 ) => {
   if (!subscription || !subscription.endDate) {
     return {
@@ -90,7 +96,6 @@ export const getSubscriptionStatusDetails = (
     daysRemaining: Math.max(diffDays, 0),
     isExpired: expired,
     isNearExpiry: nearExpiry,
-
   };
 };
 
@@ -117,4 +122,10 @@ export const to24Hour = (hour: number | string, period: string): number => {
   return h;
 };
 
-
+export const getTodayDateString = () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};

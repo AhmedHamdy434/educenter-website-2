@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStudents, getStudentPaymentsAction } from "../actions/students-actions";
+import {
+  getStudents,
+  getStudentPaymentsAction,
+} from "../actions/students-actions";
 import { studentsKeys } from "../utils/queryKeys";
-import { QueryParams } from "@/types";
+import { StudentParams } from "../types";
 
-export function useStudentsQuery(
-  params: QueryParams & { gradeId?: string },
-) {
+export function useStudentsQuery(params: StudentParams) {
   return useQuery({
     queryKey: studentsKeys.list(params),
     queryFn: async () => {

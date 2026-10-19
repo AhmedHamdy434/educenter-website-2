@@ -27,6 +27,6 @@ export function useSubjectsOptionsQuery(gradeId?: string, enabled = true) {
         gradeName: s.grade?.name || "",
       }));
     },
-    enabled: enabled && (gradeId === undefined || !!gradeId),
+    enabled: !!gradeId && enabled,
   });
 }

@@ -8,15 +8,10 @@ import {
   type UpdateGroupDTO,
   type GroupStudentPaymentInfo,
   type GroupStudentPaymentDetail,
+  GroupQueryParams,
+  GroupStudent,
 } from "../types";
-import { type ApiResponse, QueryParams } from "@/types";
-
-export interface GroupQueryParams extends QueryParams {
-  active?: string | boolean;
-  gradeId?: string;
-  subjectId?: string;
-  teacherId?: string;
-}
+import { type ApiResponse } from "@/types";
 
 export async function getGroups(
   params: GroupQueryParams,
@@ -76,6 +71,28 @@ export async function toggleGroupStatusAction(
   });
 }
 
+export async function getAvailableStudentsForGroup(
+  groupId: string,
+  params: GroupQueryParams,
+): Promise<ApiResponse<GroupStudent[]>> {
+  return serverApiClient<GroupStudent[]>({
+    url: `/groups/${groupId}/available-students`,
+    method: "GET",
+    params,
+  });
+}
+
+export async function getGroupStudents(
+  groupId: string,
+  params: GroupQueryParams,
+): Promise<ApiResponse<GroupStudent[]>> {
+  return serverApiClient<GroupStudent[]>({
+    url: `/groups/${groupId}/students`,
+    method: "GET",
+    params,
+  });
+}
+
 export async function addStudentsToGroupAction(
   id: string,
   studentIds: string[],
@@ -126,4 +143,3 @@ export async function payGroupStudentMonthAction(
     },
   });
 }
-

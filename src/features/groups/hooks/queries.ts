@@ -3,12 +3,12 @@ import {
   getGroups,
   getGroup,
   getGroupPaymentsAction,
-  type GroupQueryParams,
+  getAvailableStudentsForGroup,
+  getGroupStudents,
 } from "../actions/groups-actions";
 import { groupsKeys } from "../utils/queryKeys";
-import { type Group } from "../types";
+import { type GroupQueryParams, type Group } from "../types";
 import { type ApiResponse } from "@/types";
-
 
 export function useGroupsQuery(params: GroupQueryParams) {
   return useQuery({
@@ -42,6 +42,32 @@ export function useTeacherGroupsQuery(
   });
 }
 
+export function useAvailableStudentsForGroup(
+  groupId: string,
+  params: GroupQueryParams,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: groupsKeys.availableStudents(groupId, params),
+    queryFn: async () => {
+      return getAvailableStudentsForGroup(groupId, params);
+    },
+    enabled: !!groupId && enabled,
+  });
+}
+
+export function useGroupStudentsQuery(
+  groupId: string,
+  params: GroupQueryParams,
+) {
+  return useQuery({
+    queryKey: groupsKeys.students(groupId, params),
+    queryFn: async () => {
+      return getGroupStudents(groupId, params);
+    },
+  });
+}
+
 export function useGroupPaymentsQuery(groupId: string, enabled = true) {
   return useQuery({
     queryKey: groupsKeys.payments(groupId),
@@ -51,4 +77,3 @@ export function useGroupPaymentsQuery(groupId: string, enabled = true) {
     enabled: !!groupId && enabled,
   });
 }
-

@@ -11,6 +11,8 @@ export function getGroupFiltersConfig(
   subjectsOptions: SelectOption[] = [],
   gradesLoading?: boolean,
   subjectsLoading?: boolean,
+  subjectsDisabled?: boolean,
+  
 ): FilterConfig<"active" | "gradeId" | "subjectId">[] {
   return [
     {
@@ -30,6 +32,7 @@ export function getGroupFiltersConfig(
       allOptionLabel: "كل المواد",
       options: subjectsOptions,
       isLoading: subjectsLoading,
+      disabled: subjectsDisabled,
     },
     {
       key: "active",

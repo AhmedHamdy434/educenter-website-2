@@ -1,3 +1,4 @@
+import { QueryParams, User } from "@/types";
 import { type DayOfWeek } from "@/utils/time";
 export type { DayOfWeek };
 
@@ -132,6 +133,11 @@ export interface GroupStudentPaymentInfo {
   unpaidMonths: string[];
 }
 
+export interface GroupStudent {
+  id: string;
+  user:User
+}
+
 export interface GroupFilters {
   active?: string;
   gradeId?: string;
@@ -139,3 +145,9 @@ export interface GroupFilters {
   teacherId?: string;
 }
 
+export interface GroupQueryParams extends QueryParams {
+  active?: string | boolean;
+  gradeId?: string;
+  subjectId?: string;
+  teacherId?: string;
+}
