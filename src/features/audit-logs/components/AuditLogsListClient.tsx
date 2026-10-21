@@ -50,15 +50,13 @@ export function AuditLogsListClient({ initialData }: AuditLogsListClientProps) {
   const { data, isLoading } = useAuditLogsQuery(queryParams, initialData);
 
   const logs = data?.data || [];
-  const total = data?.meta?.total || logs.length;
-  const totalPages = data?.meta?.totalPages || 1;
 
   const columns = useMemo(
     () =>
       getAuditLogColumns({
         onViewDetails: (log) => setSelectedLog(log),
       }),
-    []
+    [],
   );
 
   return (
@@ -80,10 +78,7 @@ export function AuditLogsListClient({ initialData }: AuditLogsListClientProps) {
           columns={columns}
           data={logs}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لا توجد عمليات مسجلة في سجل التدقيق حالياً."
@@ -99,4 +94,3 @@ export function AuditLogsListClient({ initialData }: AuditLogsListClientProps) {
     </div>
   );
 }
-
