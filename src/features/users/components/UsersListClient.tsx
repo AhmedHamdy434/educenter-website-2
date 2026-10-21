@@ -51,8 +51,6 @@ export function UsersListClient({ initialData }: UsersListClientProps) {
   const { data, isLoading } = useUsersQuery(queryParams, initialData);
 
   const users = data?.data || [];
-  const total = data?.meta?.total || users.length;
-  const totalPages = data?.meta?.totalPages || 1;
 
   const updateStatusMutation = useUpdateUserStatusMutation();
   const togglingId = updateStatusMutation.isPending
@@ -122,10 +120,7 @@ export function UsersListClient({ initialData }: UsersListClientProps) {
           columns={columns}
           data={users}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي مستخدمين مطابقين لمعايير البحث."

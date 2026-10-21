@@ -51,8 +51,6 @@ export function NotificationsListClient({
   const { data, isLoading } = useNotificationsQuery(queryParams, initialData);
 
   const notifications = data?.data || [];
-  const total = data?.meta?.total || notifications.length;
-  const totalPages = data?.meta?.totalPages || 1;
 
   const columns = useMemo(() => getNotificationColumns(), []);
 
@@ -94,10 +92,7 @@ export function NotificationsListClient({
           columns={columns}
           data={notifications}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
+          meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
           emptyMessage="لم يتم العثور على أي رسائل مسجلة في السجل حالياً."
