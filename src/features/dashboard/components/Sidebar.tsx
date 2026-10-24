@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { GraduationCap, BookOpen, LogOut, HelpCircle } from "lucide-react";
+import { GraduationCap, LogOut, HelpCircle } from "lucide-react";
 
 import { logoutAction } from "@/features/auth/actions/logout";
 import { User, UserRole } from "@/types";
@@ -20,7 +20,7 @@ interface SidebarProps {
 export function Sidebar({ role, user, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const centerSlug =  user.center?.slug || "";
+  const centerSlug = user.center?.slug || "";
 
   // Filter routes based on user role
   const filteredRoutes = dashboardRoutes.filter((route) =>
@@ -42,10 +42,17 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
       {/* Brand Header Area - Distinct Solid Color Block (#0E211C) */}
       <div className="flex h-20 items-center gap-3 px-6 bg-[#0E211C] border-b border-sidebar-border/80">
         <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-amber-400 border border-white/15 shadow-inner">
-          {user.center?.logo ? 
-          <Image width={80} height={80} className="size-5 relative z-10 stroke-[2.25]" src={user.center.logo} alt={centerSlug} /> 
-          : <GraduationCap className="size-5 relative z-10 stroke-[2.25]" />}
-          <BookOpen className="size-3.5 absolute bottom-1 left-1 opacity-50" />
+          {user.center?.logo ? (
+            <Image
+              width={80}
+              height={80}
+              className="size-5 relative z-10 stroke-[2.25]"
+              src={user.center.logo}
+              alt={centerSlug}
+            />
+          ) : (
+            <GraduationCap className="size-5 relative z-10 stroke-[2.25]" />
+          )}
         </div>
         <div className="flex flex-col">
           <span className="font-sans text-lg font-black tracking-tight text-white">

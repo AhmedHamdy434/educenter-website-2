@@ -1,18 +1,18 @@
 import {
   LayoutDashboard,
   Users,
-  UserCheck,
-  History,
-  MessageSquare,
+  // UserCheck,
+  // History,
+  // MessageSquare,
   GraduationCap,
   Layers,
   BookOpen,
-  ClipboardCheck,
+  // ClipboardCheck,
   CreditCard,
-  Settings,
+  // Settings,
   CalendarCheck,
-  FileText,
-  Award,
+  // FileText,
+  // Award,
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -44,9 +44,9 @@ export const dashboardRoutes: RouteItem[] = [
     roles: [UserRole.OWNER],
   },
   {
-    title: "المجموعات",
-    href: "/owner/groups",
-    icon: Layers,
+    title: "المعلمون",
+    href: "/owner/teachers",
+    icon: GraduationCap,
     roles: [UserRole.OWNER],
   },
   {
@@ -56,47 +56,47 @@ export const dashboardRoutes: RouteItem[] = [
     roles: [UserRole.OWNER],
   },
   {
-    title: "المعلمون",
-    href: "/owner/teachers",
-    icon: GraduationCap,
+    title: "المجموعات",
+    href: "/owner/groups",
+    icon: Layers,
     roles: [UserRole.OWNER],
   },
-  {
-    title: "المستخدمين",
-    href: "/owner/users",
-    icon: UserCheck,
-    roles: [UserRole.OWNER],
-  },
-  {
-    title: "سجل العمليات",
-    href: "/owner/audit-logs",
-    icon: History,
-    roles: [UserRole.OWNER],
-  },
-  {
-    title: "رسائل الواتساب",
-    href: "/owner/notifications",
-    icon: MessageSquare,
-    roles: [UserRole.OWNER],
-  },
-  {
-    title: "الاختبارات",
-    href: "/owner/exams",
-    icon: ClipboardCheck,
-    roles: [UserRole.OWNER],
-  },
-  {
-    title: "الاشتراك والفوترة",
-    href: "/owner/subscription",
-    icon: CreditCard,
-    roles: [UserRole.OWNER],
-  },
-  {
-    title: "الإعدادات",
-    href: "/owner/settings",
-    icon: Settings,
-    roles: [UserRole.OWNER],
-  },
+  // {
+  //   title: "المستخدمين",
+  //   href: "/owner/users",
+  //   icon: UserCheck,
+  //   roles: [UserRole.OWNER],
+  // },
+  // {
+  //   title: "سجل العمليات",
+  //   href: "/owner/audit-logs",
+  //   icon: History,
+  //   roles: [UserRole.OWNER],
+  // },
+  // {
+  //   title: "رسائل الواتساب",
+  //   href: "/owner/notifications",
+  //   icon: MessageSquare,
+  //   roles: [UserRole.OWNER],
+  // },
+  // {
+  //   title: "الاختبارات",
+  //   href: "/owner/exams",
+  //   icon: ClipboardCheck,
+  //   roles: [UserRole.OWNER],
+  // },
+  // {
+  //   title: "الاشتراك والفوترة",
+  //   href: "/owner/subscription",
+  //   icon: CreditCard,
+  //   roles: [UserRole.OWNER],
+  // },
+  // {
+  //   title: "الإعدادات",
+  //   href: "/owner/settings",
+  //   icon: Settings,
+  //   roles: [UserRole.OWNER],
+  // },
 
   // TEACHER Routes
   {
@@ -111,24 +111,24 @@ export const dashboardRoutes: RouteItem[] = [
     icon: Layers,
     roles: [UserRole.TEACHER],
   },
-  {
-    title: "الاختبارات",
-    href: "/teacher/exams",
-    icon: ClipboardCheck,
-    roles: [UserRole.TEACHER],
-  },
-  {
-    title: "الواجبات",
-    href: "/teacher/assignments",
-    icon: FileText,
-    roles: [UserRole.TEACHER],
-  },
-  {
-    title: "الإعدادات",
-    href: "/teacher/settings",
-    icon: Settings,
-    roles: [UserRole.TEACHER],
-  },
+  // {
+  //   title: "الاختبارات",
+  //   href: "/teacher/exams",
+  //   icon: ClipboardCheck,
+  //   roles: [UserRole.TEACHER],
+  // },
+  // {
+  //   title: "الواجبات",
+  //   href: "/teacher/assignments",
+  //   icon: FileText,
+  //   roles: [UserRole.TEACHER],
+  // },
+  // {
+  //   title: "الإعدادات",
+  //   href: "/teacher/settings",
+  //   icon: Settings,
+  //   roles: [UserRole.TEACHER],
+  // },
 
   // STUDENT Routes
   {
@@ -143,24 +143,24 @@ export const dashboardRoutes: RouteItem[] = [
     icon: BookOpen,
     roles: [UserRole.STUDENT],
   },
-  {
-    title: "الواجبات",
-    href: "/student/assignments",
-    icon: FileText,
-    roles: [UserRole.STUDENT],
-  },
-  {
-    title: "الاختبارات",
-    href: "/student/exams",
-    icon: ClipboardCheck,
-    roles: [UserRole.STUDENT],
-  },
-  {
-    title: "النتائج",
-    href: "/student/results",
-    icon: Award,
-    roles: [UserRole.STUDENT],
-  },
+  // {
+  //   title: "الواجبات",
+  //   href: "/student/assignments",
+  //   icon: FileText,
+  //   roles: [UserRole.STUDENT],
+  // },
+  // {
+  //   title: "الاختبارات",
+  //   href: "/student/exams",
+  //   icon: ClipboardCheck,
+  //   roles: [UserRole.STUDENT],
+  // },
+  // {
+  //   title: "النتائج",
+  //   href: "/student/results",
+  //   icon: Award,
+  //   roles: [UserRole.STUDENT],
+  // },
   {
     title: "سجل الحضور والغياب",
     href: "/student/attendance",
@@ -173,10 +173,10 @@ export const dashboardRoutes: RouteItem[] = [
     icon: CreditCard,
     roles: [UserRole.STUDENT],
   },
-  {
-    title: "الإعدادات",
-    href: "/student/settings",
-    icon: Settings,
-    roles: [UserRole.STUDENT],
-  },
+  // {
+  //   title: "الإعدادات",
+  //   href: "/student/settings",
+  //   icon: Settings,
+  //   roles: [UserRole.STUDENT],
+  // },
 ];
