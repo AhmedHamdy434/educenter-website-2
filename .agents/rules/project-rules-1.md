@@ -42,6 +42,7 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **No Server `initialData` in List Pages**: Standard CRUD list pages (`page.tsx` for Students, Grades, Teachers, Subjects, Groups, etc.) must NOT fetch `initialData` on the server to pass down to `<Feature>sListClient`. All entity list data fetching must be handled exclusively by TanStack Query in the client container via `use<Feature>Query(queryParams)`. This avoids stale hydration states, simplifies URL-driven filtering/pagination, and keeps `page.tsx` as lightweight server layouts.
 *   **Leaves Interactivity**: Place `"use client"` only at leaf components requiring browser state or handlers.
 *   **Presentational components**: Keep UI components stateless (accept props, emit callbacks) and store them in `src/components/ui`.
+*   **Entity Detail Page Headers & Skeletons**: Detail pages and header components (e.g. `<...DetailsHeader>`) must never render raw blocking spinners or `<Loading message="..." />` that cause jarring full-page layout shifts. Always implement skeleton loading states using the standardized `<DetailsHeaderSkeleton>` (composed of breadcrumb, title & status badge, description, and action button skeletons) to guarantee zero cumulative layout shift (CLS).
 
 ---
 
@@ -111,6 +112,7 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
     - `get<Feature>FiltersConfig(options, isLoading)` returning typed `FilterConfig<...>[]`.
     - `<feature>ExcelConfig: ToolbarExcelConfig` with `exportEndpoint`, `templateEndpoint`, and localized `fileName`.
     - `<feature>PdfConfig: ToolbarPdfConfig` with `exportEndpoint` and localized `fileName`.
+*   **Standardized Details Header Skeleton (`<DetailsHeaderSkeleton>`)**: Reusable entity details header skeleton located at `@/components/common/DetailsHeaderSkeleton`. Must be consumed by all entity detail views (such as Group, Student, Teacher, Center details) to maintain consistent visual hierarchy, graceful state transitions, and structural stability while queries resolve.
 *   **Utility Reusability Check**: Before using or creating any helper/utility function (e.g., date formatters), verify if it is already present in the shared `src/utils/` directory. If it is not present, implement it inside the shared directory instead of writing a local/duplicate version.
 
 ---

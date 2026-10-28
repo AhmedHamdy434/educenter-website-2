@@ -1,4 +1,4 @@
-import { QueryParams, User } from "@/types";
+import { QueryParams } from "@/types";
 import { type DayOfWeek } from "@/utils/time";
 export type { DayOfWeek };
 
@@ -44,12 +44,14 @@ export interface Group {
   updatedAt: string;
 }
 
-export interface GroupStudent {
+export interface GroupEnrolledStudent {
   id: string;
+  studentId?: string;
   joinedAt: string;
   subscriptionStartDate?: string;
   student: {
     id: string;
+    code?: string;
     parentPhone: string;
     user: {
       id: string;
@@ -58,6 +60,20 @@ export interface GroupStudent {
       phone: string;
       avatar: string | null;
     };
+  };
+}
+
+export type GroupStudent = GroupEnrolledStudent;
+
+export interface AvailableGroupStudent {
+  id: string;
+  parentPhone?: string;
+  user: {
+    id: string;
+    fullName: string;
+    phone: string;
+    email?: string;
+    avatar?: string | null;
   };
 }
 
@@ -117,11 +133,27 @@ export interface GroupStudentPaymentDetail {
   notes: string | null;
 }
 
+export interface GroupPaymentsStats {
+  /** إجمالي الطلاب المسجلين في المجموعة */
+  total: number;
+  /** عدد المسددين للشهر المستهدف (أو كل الأشهر) */
+  paid: number;
+  /** عدد غير المسددين */
+  unpaid: number;
+  /** الإيراد المتوقع (ج.م) */
+  expected: number;
+  /** الإيراد المحصَّل (ج.م) */
+  collected: number;
+  /** قائمة شهور المجموعة بصيغة YYYY-MM-DD */
+  groupMonths: string[];
+}
+
 export interface GroupStudentPaymentInfo {
   groupStudentId: string;
   studentId: string;
   studentInfo: {
     fullName: string;
+    code?: string;
     email: string;
     phone: string;
     avatar: string | null;
@@ -133,9 +165,17 @@ export interface GroupStudentPaymentInfo {
   unpaidMonths: string[];
 }
 
-export interface GroupStudent {
-  id: string;
-  user:User
+export interface GroupPaymentsQueryParams extends QueryParams {
+  month?: string;
+  sortBy?: "name" | "joinedAt" | "subscriptionStartDate" | string;
+  sortOrder?: "asc" | "desc";
+}
+export interface GroupStudentsQueryParams extends QueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export interface GroupFilters {

@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, AlertCircle, ArrowRightLeft } from "lucide-react";
 import { AttendanceStatus, type StudentAttendanceHistoryItem } from "../types";
 
 const STATUS_CONFIG = {
@@ -22,6 +22,12 @@ const STATUS_CONFIG = {
     label: "مستأذن",
     className: "bg-stone-100/80 text-stone-700 border-stone-300/80",
     icon: AlertCircle,
+  },
+  [AttendanceStatus.ATTENDED_ANOTHER_GROUP]: {
+    label: "حضر بمجموعة أخرى",
+    className:
+      "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-800",
+    icon: ArrowRightLeft,
   },
 };
 

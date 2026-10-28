@@ -15,11 +15,15 @@ export function useStudentsQuery(params: StudentParams) {
   });
 }
 
-export function useStudentPaymentsQuery(studentId: string, enabled = true) {
+export function useStudentPaymentsQuery(
+  studentId: string,
+  groupId?: string,
+  enabled = true,
+) {
   return useQuery({
-    queryKey: studentsKeys.payments(studentId),
+    queryKey: studentsKeys.payments(studentId, groupId),
     queryFn: async () => {
-      return getStudentPaymentsAction(studentId);
+      return getStudentPaymentsAction(studentId, groupId);
     },
     enabled: !!studentId && enabled,
   });

@@ -57,13 +57,19 @@ export async function deleteStudentAction(
 
 export async function getStudentPaymentsAction(
   studentId: string,
+  groupId?: string,
 ): Promise<ApiResponse<StudentPayment[]>> {
+  const url = groupId
+    ? `/students/${studentId}/payments?groupId=${groupId}`
+    : `/students/${studentId}/payments`;
   return serverApiClient<StudentPayment[]>({
-    url: `/students/${studentId}/payments`,
+    url,
     method: "GET",
     cache: "no-store",
   });
 }
+
+
 
 export async function generateParentLinkAction(
   studentId: string

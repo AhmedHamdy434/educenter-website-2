@@ -57,13 +57,29 @@ export interface UpdateStudentDTO {
 
 export interface StudentPayment {
   id: string;
+  groupStudentId: string;
   subscriptionDate: string;
-  amount: number;
+  amount: number | string;
   paidAt: string;
   notes: string | null;
-  group: {
+  createdAt?: string;
+  groupStudent?: {
+    id: string;
+    groupId: string;
+    group: {
+      id: string;
+      name: string;
+      monthlyFee: number | string;
+      startDate: string;
+      monthsCount: number;
+    };
+  };
+  group?: {
     id: string;
     name: string;
+    monthlyFee: number | string;
+    startDate: string;
+    monthsCount: number;
   };
 }
 

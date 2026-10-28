@@ -193,6 +193,7 @@ export const serverApiClient = async <T>({
         statusCode: res.status,
         data: (data.data ?? null) as unknown as T,
         ...(data.meta ? { meta: data.meta as ApiResponse<T>["meta"] } : {}),
+      ...(data.stats !== undefined ? { stats: data.stats } : {}),
       };
     }
 

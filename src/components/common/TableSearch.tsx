@@ -52,7 +52,9 @@ export function TableSearch({
   // Update URL search param or call controlledOnChange when debounced search term changes
   useEffect(() => {
     if (isControlled) {
-      controlledOnChange(debouncedSearchTerm);
+      if (debouncedSearchTerm !== (controlledValue ?? "")) {
+        controlledOnChange(debouncedSearchTerm);
+      }
       return;
     }
 
@@ -74,15 +76,7 @@ export function TableSearch({
     const targetUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
 
     router.replace(targetUrl, { scroll: false });
-  }, [
-    debouncedSearchTerm,
-    isControlled,
-    controlledOnChange,
-    paramName,
-    pathname,
-    router,
-    searchParams,
-  ]);
+  }, [debouncedSearchTerm, isControlled, controlledOnChange, paramName, pathname, router, searchParams, controlledValue]);
 
   return (
     <div className={cn("relative w-full", className)}>

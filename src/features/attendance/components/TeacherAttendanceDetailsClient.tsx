@@ -21,10 +21,7 @@ export function TeacherAttendanceDetailsClient({
   const attendanceHref = `/${centerSlug}/teacher/attendance`;
 
   // Load group details with TanStack Query
-  const { data: groupResponse } = useGroupQuery(
-    initialGroupData.data.id,
-    true
-  );
+  const { data: groupResponse } = useGroupQuery(initialGroupData.data.id, true);
 
   const group = groupResponse?.data || initialGroupData.data;
 
@@ -57,7 +54,7 @@ export function TeacherAttendanceDetailsClient({
             <span className="text-border">•</span>
             <span className="flex items-center gap-1 font-medium">
               <Users className="size-3.5" />
-              {group.students.length} طالب مسجل
+              {group._count?.students ?? 0} طالب مسجل
             </span>
             <span className="text-border">•</span>
             <span className="font-medium">المادة: {group.subject.name}</span>
@@ -80,10 +77,7 @@ export function TeacherAttendanceDetailsClient({
 
       {/* Main Content */}
       <div className="bg-card rounded-2xl border border-border shadow-none p-6">
-        <AttendanceTab
-          groupId={group.id}
-          totalStudents={group.students.length}
-        />
+        <AttendanceTab groupId={group.id} />
       </div>
     </div>
   );

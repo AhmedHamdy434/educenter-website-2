@@ -7,7 +7,12 @@ import {
   getGroupStudents,
 } from "../actions/groups-actions";
 import { groupsKeys } from "../utils/queryKeys";
-import { type GroupQueryParams, type Group } from "../types";
+import {
+  type GroupQueryParams,
+  type GroupStudentsQueryParams,
+  type GroupPaymentsQueryParams,
+  type Group,
+} from "../types";
 import { type ApiResponse } from "@/types";
 
 export function useGroupsQuery(params: GroupQueryParams) {
@@ -58,21 +63,27 @@ export function useAvailableStudentsForGroup(
 
 export function useGroupStudentsQuery(
   groupId: string,
-  params: GroupQueryParams,
+  params?: GroupStudentsQueryParams,
+  enabled = true,
 ) {
   return useQuery({
     queryKey: groupsKeys.students(groupId, params),
     queryFn: async () => {
       return getGroupStudents(groupId, params);
     },
+    enabled: !!groupId && enabled,
   });
 }
 
-export function useGroupPaymentsQuery(groupId: string, enabled = true) {
+export function useGroupPaymentsQuery(
+  groupId: string,
+  params?: GroupPaymentsQueryParams,
+  enabled = true,
+) {
   return useQuery({
-    queryKey: groupsKeys.payments(groupId),
+    queryKey: groupsKeys.payments(groupId, params),
     queryFn: async () => {
-      return getGroupPaymentsAction(groupId);
+      return getGroupPaymentsAction(groupId, params);
     },
     enabled: !!groupId && enabled,
   });

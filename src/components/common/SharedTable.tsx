@@ -7,6 +7,7 @@ import {
   ColumnDef,
   SortingState,
   OnChangeFn,
+  Row,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SharedPagination } from "./SharedPagination";
@@ -22,6 +23,9 @@ interface SharedTableProps<TData> {
   onSortingChange?: OnChangeFn<SortingState>;
   meta?: Meta;
   emptyMessage?: string;
+  hidePagination?: boolean;
+  rowClassName?: (row: Row<TData>) => string;
+  getRowId?: (originalRow: TData, index: number) => string;
 }
 
 export function SharedTable<TData>({
@@ -32,11 +36,15 @@ export function SharedTable<TData>({
   onSortingChange,
   meta = { total: 1, page: 1, limit: 10, totalPages: 1 },
   emptyMessage = "لا توجد بيانات لعرضها.",
+  hidePagination = false,
+  rowClassName,
+  getRowId,
 }: SharedTableProps<TData>) {
   const { total, page, limit, totalPages } = meta;
   const table = useReactTable({
     data,
     columns,
+    getRowId,
     state: {
       sorting: sorting ?? [],
     },
@@ -138,7 +146,10 @@ export function SharedTable<TData>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="hover:bg-muted/30 transition-colors"
+                    className={cn(
+                      "hover:bg-muted/30 transition-colors",
+                      rowClassName?.(row),
+                    )}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
@@ -160,7 +171,7 @@ export function SharedTable<TData>({
       </div>
 
       {/* Pagination Controls */}
-      {total > 0 && !isLoading && (
+      {!hidePagination && total > 0 && !isLoading && (
         <SharedPagination
           page={page}
           limit={limit}

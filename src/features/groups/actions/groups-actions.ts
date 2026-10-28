@@ -6,10 +6,14 @@ import {
   type GroupDetails,
   type CreateGroupDTO,
   type UpdateGroupDTO,
-  type GroupStudentPaymentInfo,
   type GroupStudentPaymentDetail,
-  GroupQueryParams,
-  GroupStudent,
+  type GroupStudentPaymentInfo,
+  type GroupPaymentsQueryParams,
+  type GroupPaymentsStats,
+  type GroupQueryParams,
+  type GroupEnrolledStudent,
+  type GroupStudentsQueryParams,
+  type AvailableGroupStudent,
 } from "../types";
 import { type ApiResponse } from "@/types";
 
@@ -24,7 +28,7 @@ export async function getGroups(
   });
 }
 
-export async function getGroup(id: string): Promise<ApiResponse<GroupDetails>> {
+export async function getGroup(id: string): Promise<ApiResponse<Group>> {
   return serverApiClient<GroupDetails>({
     url: `/groups/${id}`,
     method: "GET",
@@ -74,8 +78,8 @@ export async function toggleGroupStatusAction(
 export async function getAvailableStudentsForGroup(
   groupId: string,
   params: GroupQueryParams,
-): Promise<ApiResponse<GroupStudent[]>> {
-  return serverApiClient<GroupStudent[]>({
+): Promise<ApiResponse<AvailableGroupStudent[]>> {
+  return serverApiClient<AvailableGroupStudent[]>({
     url: `/groups/${groupId}/available-students`,
     method: "GET",
     params,
@@ -84,9 +88,9 @@ export async function getAvailableStudentsForGroup(
 
 export async function getGroupStudents(
   groupId: string,
-  params: GroupQueryParams,
-): Promise<ApiResponse<GroupStudent[]>> {
-  return serverApiClient<GroupStudent[]>({
+  params?: GroupStudentsQueryParams,
+): Promise<ApiResponse<GroupEnrolledStudent[]>> {
+  return serverApiClient<GroupEnrolledStudent[]>({
     url: `/groups/${groupId}/students`,
     method: "GET",
     params,
@@ -121,10 +125,12 @@ export async function removeStudentsFromGroupAction(
 
 export async function getGroupPaymentsAction(
   groupId: string,
-): Promise<ApiResponse<GroupStudentPaymentInfo[]>> {
+  params?: GroupPaymentsQueryParams,
+): Promise<ApiResponse<GroupStudentPaymentInfo[]> & { stats?: GroupPaymentsStats }> {
   return serverApiClient<GroupStudentPaymentInfo[]>({
     url: `/groups/${groupId}/payments`,
     method: "GET",
+    params,
     cache: "no-store",
   });
 }

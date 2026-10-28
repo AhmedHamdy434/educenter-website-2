@@ -3,6 +3,7 @@ export enum AttendanceStatus {
   ABSENT = "ABSENT",
   LATE = "LATE",
   EXCUSED = "EXCUSED",
+  ATTENDED_ANOTHER_GROUP = "ATTENDED_ANOTHER_GROUP",
 }
 
 export interface AttendanceSession {
@@ -12,6 +13,7 @@ export interface AttendanceSession {
   date: string;
   createdAt: string;
   updatedAt: string;
+  attendedCount: number;
   _count?: {
     records: number;
   };
@@ -19,11 +21,13 @@ export interface AttendanceSession {
 
 export interface SessionStudent {
   studentId: string;
+  studentCode?: string | null;
   fullName: string;
   phone: string;
   avatar?: string | null;
   status: AttendanceStatus | null;
   absenceReason?: string | null;
+  recordedAt?: string | null;
 }
 
 export interface AttendanceSessionDetails {
@@ -32,7 +36,8 @@ export interface AttendanceSessionDetails {
 }
 
 export interface AttendanceRecordInput {
-  studentId: string;
+  studentId?: string;
+  studentCode?: string;
   status: AttendanceStatus;
   absenceReason?: string;
 }

@@ -63,6 +63,7 @@ This document defines the mandatory engineering standards for authentication, ro
 *   [ ] Used `@/hooks/useResetOnChange` for cascading field resets instead of manual `useEffect` + `useRef` boilerplate?
 *   [ ] Separated Grade and Subject selectors in forms/toolbars so subjects are strictly dependent on the selected grade via `useResetOnChange`?
 *   [ ] Used `@/components/common/RowActions` for table edit/delete actions?
+*   [ ] Used `<DetailsHeaderSkeleton>` for entity detail header loading states instead of blocking spinners?
 *   [ ] Included `if (!isOpen) return;` early return in modal form reset `useEffect`?
 *   [ ] Called `handleResponseToast()` for user notifications?
 *   [ ] Verified code builds cleanly (`npx tsc --noEmit`) and passes `npm run lint`?
@@ -141,3 +142,10 @@ Must define column metadata for rendering inside the table:
 - **Row Actions**: Table edit and delete action buttons must use `<RowActions>` with `deleteVariant: "icon" | "button"` to prevent repeating inline button styling.
 - **Server-Side Export Only**: Do NOT define client-side `meta: { exportHeader, exportValue }` in columns; file exports (Excel/PDF) are handled strictly server-side via backend endpoints.
 - **Stable Callbacks**: Pass direct function references (e.g., `onDelete: setItemToDelete`) to prevent breaking `useMemo` in parent containers.
+
+#### 4. Entity Details Header (`<Feature>DetailsHeader.tsx`)
+Must provide page context, entity identity, breadcrumb trail, and top actions:
+- **Skeleton Over Spinners**: During initial query fetching (`isLoading || !data`), render `<DetailsHeaderSkeleton hasActionButton={...} />` instead of full-page loaders or `<Loading />` spinners to guarantee zero Cumulative Layout Shift (CLS).
+- **Graceful Error Guard**: If item is missing after resolution (`isError || !data`), invoke Next.js `notFound()`.
+- **Breadcrumbs Navigation**: Provide clear contextual hierarchy with RTL-aware Chevron (`rotate-180`).
+- **Semantic Badges**: Render entity status (`isActive`) using deliberate subtle badge variants (`bg-emerald-50/80 text-emerald-800 border-emerald-300/80` or stone neutral).

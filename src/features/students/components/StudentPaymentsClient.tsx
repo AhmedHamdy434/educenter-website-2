@@ -40,9 +40,15 @@ export function StudentPaymentsClient() {
               <tbody className="divide-y divide-border/60 text-foreground">
                 {payments.map((payment) => (
                   <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4 font-bold text-foreground">{payment.group.name}</td>
-                    <td className="p-4 font-bold text-primary">{formatMonthName(payment.subscriptionDate)}</td>
-                    <td className="p-4 font-extrabold text-foreground">{payment.amount.toFixed(2)} ج.م</td>
+                    <td className="p-4 font-bold text-foreground">
+                      {payment.groupStudent?.group?.name || "—"}
+                    </td>
+                    <td className="p-4 font-bold text-primary">
+                      {formatMonthName(payment.subscriptionDate)}
+                    </td>
+                    <td className="p-4 font-extrabold text-foreground">
+                      {Number(payment.amount || 0).toFixed(2)} ج.م
+                    </td>
                     <td className="p-4 font-mono text-muted-foreground text-xs" dir="ltr">
                       {formatFullDate(payment.paidAt)}
                     </td>

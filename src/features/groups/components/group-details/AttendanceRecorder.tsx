@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
-import { Loader2, Save, ArrowRight, UserCheck, XCircle, Clock, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 import { Loading } from "@/components/common/Loading";
 import { useAttendanceSessionDetailsQuery } from "@/features/attendance/hooks/queries";
 import { useSaveAttendanceMutation } from "@/features/attendance/hooks/mutations";
-import { AttendanceStatus } from "@/features/attendance/types";
+import { AttendanceStatus, SessionStudent } from "@/features/attendance/types";
+
+import { AttendanceSessionStats } from "./attendance/AttendanceSessionStats";
+import { AttendanceScannerBar } from "./attendance/AttendanceScannerBar";
+import { AttendancePresentList } from "./attendance/AttendancePresentList";
+import { AttendancePendingList } from "./attendance/AttendancePendingList";
 
 interface AttendanceRecorderProps {
   groupId: string;
@@ -16,230 +18,287 @@ interface AttendanceRecorderProps {
   onBack: () => void;
 }
 
-export function AttendanceRecorder({ groupId, sessionId, onBack }: AttendanceRecorderProps) {
-  // 1. Fetch Session details (includes student list and their status)
-  const { data: response, isLoading } = useAttendanceSessionDetailsQuery(groupId, sessionId);
+interface LocalRecord {
+  status: AttendanceStatus | null;
+  reason: string;
+  localRecordedAt?: string;
+}
+
+export function AttendanceRecorder({
+  groupId,
+  sessionId,
+  onBack,
+}: AttendanceRecorderProps) {
+  // 1. Fetch Session details (includes student list and their saved status)
+  const { data: response, isLoading } = useAttendanceSessionDetailsQuery(
+    groupId,
+    sessionId,
+  );
+
   const saveMutation = useSaveAttendanceMutation();
 
-  // Local state to track modified attendance records on-demand
-  const [records, setRecords] = useState<Record<string, { status: AttendanceStatus; reason: string }>>({});
-
-  const studentList = response?.data?.students || [];
+  const rawStudentList = response?.data?.students;
+  const studentList = useMemo(
+    () => rawStudentList || [],
+    [rawStudentList],
+  );
   const sessionData = response?.data?.session;
 
-  const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
-    setRecords((prev) => {
-      const student = studentList.find((s) => s.studentId === studentId);
-      const currentReason = prev[studentId]?.reason ?? student?.absenceReason ?? "";
-      return {
-        ...prev,
-        [studentId]: {
-          status,
-          reason: status === AttendanceStatus.ABSENT ? currentReason : "",
-        },
-      };
+  // Local state to track modified attendance records locally
+  const [records, setRecords] = useState<Record<string, LocalRecord>>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [highlightedStudentId, setHighlightedStudentId] = useState<
+    string | null
+  >(null);
+  const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Format current Arabic time for display
+  const getCurrentTimeFormatted = () => {
+    return new Date().toLocaleTimeString("ar-EG", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
-  const handleReasonChange = (studentId: string, reason: string) => {
-    setRecords((prev) => {
-      const student = studentList.find((s) => s.studentId === studentId);
-      const currentStatus = prev[studentId]?.status ?? student?.status ?? AttendanceStatus.ABSENT;
-      return {
-        ...prev,
-        [studentId]: {
-          status: currentStatus,
-          reason,
-        },
-      };
-    });
+  // Merge server student list with local modifications
+  const mergedStudents = studentList.map((student) => {
+    const local = records[student.studentId];
+    const status = local !== undefined ? local.status : student.status;
+    const absenceReason =
+      local !== undefined ? local.reason : student.absenceReason || "";
+    const localRecordedAt = local?.localRecordedAt;
+
+    return {
+      ...student,
+      status,
+      absenceReason,
+      localRecordedAt,
+    };
+  });
+
+  // Partition into Present / Recorded and Not Yet Recorded
+  const presentStudents = mergedStudents.filter((s) => s.status !== null);
+  const pendingStudents = mergedStudents.filter((s) => s.status === null);
+
+  // Derived statistics (calculated directly on the fly)
+  const totalStudents = studentList.length;
+  const presentCount = mergedStudents.filter(
+    (s) =>
+      s.status === AttendanceStatus.PRESENT ||
+      s.status === AttendanceStatus.LATE ||
+      s.status === AttendanceStatus.ATTENDED_ANOTHER_GROUP,
+  ).length;
+  const attendedAnotherGroupCount = mergedStudents.filter(
+    (s) => s.status === AttendanceStatus.ATTENDED_ANOTHER_GROUP,
+  ).length;
+  const unrecordedCount = pendingStudents.length;
+  const absentCount = mergedStudents.filter(
+    (s) => s.status === AttendanceStatus.ABSENT,
+  ).length;
+  const excusedCount = mergedStudents.filter(
+    (s) => s.status === AttendanceStatus.EXCUSED,
+  ).length;
+
+  // Flash highlight on newly registered student
+  const triggerHighlight = (studentId: string) => {
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+    }
+    setHighlightedStudentId(studentId);
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightedStudentId(null);
+    }, 2500);
   };
 
-  const handleSave = async () => {
-    const payloadRecords = studentList.map((s) => {
-      const record = records[s.studentId];
-      const status = record ? record.status : (s.status || AttendanceStatus.PRESENT);
-      const reason = record ? record.reason : (s.absenceReason || "");
+  // 100% Local Attendance Recording (Scanner, Search, Quick Present) - No network request!
+  const handleRecordStudent = (
+    student: SessionStudent,
+    targetStatus: AttendanceStatus = AttendanceStatus.PRESENT,
+  ) => {
+    const timeStr = getCurrentTimeFormatted();
+
+    // Immediate local state update
+    setRecords((prev) => ({
+      ...prev,
+      [student.studentId]: {
+        status: targetStatus,
+        reason: "",
+        localRecordedAt: timeStr,
+      },
+    }));
+    setHasUnsavedChanges(true);
+    triggerHighlight(student.studentId);
+    toast.success(`تم تحضير الطالب: ${student.fullName}`);
+  };
+
+  // Status Change for already recorded students - Local only!
+  const handleStatusChange = useCallback(
+    (studentId: string, status: AttendanceStatus) => {
+      setRecords((prev) => {
+        const student = studentList.find((s) => s.studentId === studentId);
+        const currentReason =
+          prev[studentId]?.reason ?? student?.absenceReason ?? "";
+        const reason =
+          status === AttendanceStatus.ABSENT ||
+          status === AttendanceStatus.ATTENDED_ANOTHER_GROUP
+            ? currentReason
+            : "";
+
+        return {
+          ...prev,
+          [studentId]: {
+            status,
+            reason,
+            localRecordedAt:
+              prev[studentId]?.localRecordedAt || getCurrentTimeFormatted(),
+          },
+        };
+      });
+      setHasUnsavedChanges(true);
+    },
+    [studentList],
+  );
+
+  // Reason Change for ABSENT status - Local only!
+  const handleReasonChange = useCallback(
+    (studentId: string, reason: string) => {
+      setRecords((prev) => {
+        const current = prev[studentId];
+        const student = studentList.find((s) => s.studentId === studentId);
+        const status =
+          current?.status ?? student?.status ?? AttendanceStatus.ABSENT;
+
+        return {
+          ...prev,
+          [studentId]: {
+            status,
+            reason,
+            localRecordedAt: current?.localRecordedAt,
+          },
+        };
+      });
+      setHasUnsavedChanges(true);
+    },
+    [studentList],
+  );
+
+  // Undo / Reset a student back to pending - Local only!
+  const handleResetStudent = useCallback((studentId: string) => {
+    setRecords((prev) => ({
+      ...prev,
+      [studentId]: {
+        status: null,
+        reason: "",
+      },
+    }));
+    setHasUnsavedChanges(true);
+    toast.info("تمت إزالة الطالب من قائمة الحاضرين محلياً");
+  }, []);
+
+  // Save all records to backend (Complete Roster Batch Commit)
+  const handleSaveAll = async () => {
+    if (studentList.length === 0) {
+      toast.warning("لا يوجد طلاب في هذه المجموعة لحفظ حضورهم.");
+      return;
+    }
+
+    // Build the complete list for all students:
+    // Any student who was not scanned or marked gets marked as ABSENT
+    const payloadRecords = studentList.map((student) => {
+      const local = records[student.studentId];
+      const effectiveStatus =
+        local?.status ?? student.status ?? AttendanceStatus.ABSENT;
+      const reason = local?.reason ?? student.absenceReason ?? "";
+
       return {
-        studentId: s.studentId,
-        status,
-        absenceReason: status === AttendanceStatus.ABSENT ? reason : undefined,
+        studentId: student.studentId,
+        status: effectiveStatus,
+        absenceReason:
+          effectiveStatus === AttendanceStatus.ABSENT ||
+          effectiveStatus === AttendanceStatus.ATTENDED_ANOTHER_GROUP
+            ? reason || undefined
+            : undefined,
       };
     });
 
-    await saveMutation.mutateAsync({
-      groupId,
-      sessionId,
-      data: { records: payloadRecords },
-    });
+    await saveMutation.mutateAsync(
+      {
+        groupId,
+        sessionId,
+        data: { records: payloadRecords },
+      },
+      {
+        onSuccess: (res) => {
+          if (res.success) {
+            setRecords({});
+            setHasUnsavedChanges(false);
+          }
+        },
+      },
+    );
   };
 
   if (isLoading) {
-    return <Loading message="جاري تحميل قائمة الطلاب..." />;
+    return <Loading message="جاري تحميل كشف طلاب الحصة..." />;
   }
 
   return (
     <div className="space-y-6 text-right animate-fade-in" dir="rtl">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
-        <div className="space-y-1">
-          <h2 className="text-lg font-bold text-foreground">تسجيل حضور حصة اليوم</h2>
-          <p className="text-xs text-muted-foreground">
-            التاريخ: {sessionData ? new Date(sessionData.date).toLocaleDateString("ar-EG", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }) : ""}
-          </p>
-        </div>
+      {/* 1. Header & Dynamic Progress Stats */}
+      <AttendanceSessionStats
+        sessionDate={sessionData?.date}
+        totalStudents={totalStudents}
+        presentCount={presentCount}
+        unrecordedCount={unrecordedCount}
+        absentCount={absentCount}
+        excusedCount={excusedCount}
+        attendedAnotherGroupCount={attendedAnotherGroupCount}
+        isSaving={saveMutation.isPending}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onBack={onBack}
+        onSaveAll={handleSaveAll}
+      />
 
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="h-9 px-4 rounded-lg flex items-center gap-2 border-border text-foreground hover:bg-muted font-medium"
-        >
-          <ArrowRight className="size-4" />
-          <span>رجوع للسجل</span>
-        </Button>
-      </div>
+      {totalStudents > 0 ? (
+        <>
+          {/* 2. Fast Attendance Bar: Barcode / QR Scanner + Manual Search */}
+          <AttendanceScannerBar
+            students={mergedStudents}
+            isProcessing={false}
+            onStudentRecorded={(student) =>
+              handleRecordStudent(student, AttendanceStatus.PRESENT)
+            }
+          />
 
-      {/* Student List cards */}
-      {studentList.length > 0 ? (
-        <div className="space-y-4">
-          <div className="hidden lg:grid grid-cols-12 gap-4 px-6 text-xs font-bold text-muted-foreground border-b border-border pb-2">
-            <span className="col-span-4">اسم الطالب</span>
-            <span className="col-span-5 text-center">حالة الحضور والغياب</span>
-            <span className="col-span-3">ملاحظات / سبب الغياب</span>
-          </div>
+          {/* 3. Section A: Present / Recorded Students */}
+          <AttendancePresentList
+            students={presentStudents}
+            highlightedStudentId={highlightedStudentId}
+            onStatusChange={handleStatusChange}
+            onReasonChange={handleReasonChange}
+            onResetStudent={handleResetStudent}
+          />
 
-          <div className="space-y-3">
-            {studentList.map((student) => {
-              const currentRecord = records[student.studentId];
-              const currentStatus = currentRecord ? currentRecord.status : (student.status || AttendanceStatus.PRESENT);
-              const currentReason = currentRecord ? currentRecord.reason : (student.absenceReason || "");
-              const isAbsent = currentStatus === AttendanceStatus.ABSENT;
-
-              return (
-                <Card
-                  key={student.studentId}
-                  className="p-4 lg:py-3.5 lg:px-6 grid grid-cols-1 lg:grid-cols-12 gap-4 items-center border border-border bg-card hover:border-primary/40 transition-colors shadow-none rounded-xl"
-                >
-                  {/* Name and Info */}
-                  <div className="col-span-1 lg:col-span-4 flex items-center gap-3">
-                    <div className="size-9 rounded-full bg-secondary text-primary border border-border flex items-center justify-center font-bold text-xs shrink-0">
-                      {student.fullName.substring(0, 2)}
-                    </div>
-                    <div className="flex flex-col overflow-hidden">
-                      <span className="font-bold text-foreground text-sm truncate">{student.fullName}</span>
-                      <span className="text-[10px] text-muted-foreground font-mono" dir="ltr">{student.phone}</span>
-                    </div>
-                  </div>
-
-                  {/* Segmented Status Selector with Outlined Badges */}
-                  <div className="col-span-1 lg:col-span-5 flex justify-center">
-                    <div className="grid grid-cols-4 gap-1 bg-secondary/50 border border-border p-1 rounded-xl w-full max-w-md">
-                      {/* PRESENT */}
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(student.studentId, AttendanceStatus.PRESENT)}
-                        className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                          currentStatus === AttendanceStatus.PRESENT
-                            ? "bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-none font-extrabold"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <UserCheck className="size-3.5" />
-                        <span>حاضر</span>
-                      </button>
-
-                      {/* LATE */}
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(student.studentId, AttendanceStatus.LATE)}
-                        className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                          currentStatus === AttendanceStatus.LATE
-                            ? "bg-amber-50 text-amber-800 border border-amber-300 shadow-none font-extrabold"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <Clock className="size-3.5" />
-                        <span>متأخر</span>
-                      </button>
-
-                      {/* ABSENT */}
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(student.studentId, AttendanceStatus.ABSENT)}
-                        className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                          currentStatus === AttendanceStatus.ABSENT
-                            ? "bg-rose-50 text-rose-800 border border-rose-300 shadow-none font-extrabold"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <XCircle className="size-3.5" />
-                        <span>غائب</span>
-                      </button>
-
-                      {/* EXCUSED */}
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(student.studentId, AttendanceStatus.EXCUSED)}
-                        className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                          currentStatus === AttendanceStatus.EXCUSED
-                            ? "bg-stone-100 text-stone-800 border border-stone-300 shadow-none font-extrabold"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <AlertCircle className="size-3.5" />
-                        <span>مستأذن</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Absence Reason */}
-                  <div className="col-span-1 lg:col-span-3">
-                    {isAbsent ? (
-                      <Input
-                        placeholder="اكتب سبب الغياب..."
-                        value={currentReason}
-                        onChange={(e) => handleReasonChange(student.studentId, e.target.value)}
-                        className="h-8 rounded-lg text-xs border-rose-200 focus:border-rose-400 focus:ring-rose-400/10 bg-rose-50/20 placeholder:text-muted-foreground"
-                      />
-                    ) : (
-                      <span className="text-[11px] text-muted-foreground/60 italic block pr-2">لا يوجد ملاحظات</span>
-                    )}
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Action button */}
-          <div className="flex justify-end pt-4 border-t border-border">
-            <Button
-              onClick={handleSave}
-              disabled={saveMutation.isPending}
-              variant="brand"
-              className="h-10 px-8 rounded-xl flex items-center gap-2 font-bold shadow-none cursor-pointer"
-            >
-              {saveMutation.isPending ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  جاري حفظ الكشف...
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" />
-                  حفظ كشف حضور الطلاب
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+          {/* 4. Section B: Not Yet Recorded Students */}
+          <AttendancePendingList
+            students={pendingStudents}
+            isProcessingId={null}
+            onQuickPresent={(student) =>
+              handleRecordStudent(student, AttendanceStatus.PRESENT)
+            }
+            onQuickStatusChange={(student, status) =>
+              handleRecordStudent(student, status)
+            }
+          />
+        </>
       ) : (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="font-semibold">لا يوجد طلاب مسجلون في هذه المجموعة الدراسية بعد.</p>
+        <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-secondary/20">
+          <p className="font-bold text-foreground text-sm">
+            لا يوجد طلاب مقيدون في هذه المجموعة الدراسية بعد.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            أضف طلاباً للمجموعة لتتمكن من تسجيل الحضور والغياب.
+          </p>
         </div>
       )}
     </div>

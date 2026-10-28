@@ -1,4 +1,8 @@
-import { GroupQueryParams } from "../types";
+import {
+  GroupQueryParams,
+  GroupStudentsQueryParams,
+  GroupPaymentsQueryParams,
+} from "../types";
 
 export const groupsKeys = {
   all: ["groups"] as const,
@@ -8,7 +12,10 @@ export const groupsKeys = {
     ["groups", "teacher", params] as const,
   availableStudents: (groupId: string, params: GroupQueryParams) =>
     ["groups", "available-students", groupId, params] as const,
-  students: (groupId: string, params: GroupQueryParams) =>
-    ["groups", "students", groupId, params] as const,
-  payments: (groupId: string) => ["groups", "payments", groupId] as const,
+  students: (
+    groupId: string,
+    params?: GroupStudentsQueryParams | GroupQueryParams,
+  ) => ["groups", "students", groupId, params] as const,
+  payments: (groupId: string, params?: GroupPaymentsQueryParams) =>
+    ["groups", "payments", groupId, params] as const,
 };

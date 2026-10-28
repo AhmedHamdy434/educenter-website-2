@@ -11,6 +11,7 @@ import { loginAction } from "../actions/login";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/common/form-input";
 import { FadeIn } from "@/components/common/motion-wrapper";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const router = useRouter();
@@ -41,6 +42,8 @@ export function LoginForm() {
           `/${result.data?.user?.center?.slug}/${result.data?.user.role?.toLowerCase()}`,
         );
       }
+    } else {
+      toast.error(result?.message || "حدث خطأ غير متوقع");
     }
   };
 
