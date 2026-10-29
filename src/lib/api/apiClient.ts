@@ -202,6 +202,7 @@ export const serverApiClient = async <T>({
       message: (data.message as string) || "",
       data: (data.data !== undefined ? data.data : data) as T,
       ...(data.meta ? { meta: data.meta as ApiResponse<T>["meta"] } : {}),
+      ...(data.stats !== undefined ? { stats: data.stats } : {}),
     };
   } catch (error) {
     if (

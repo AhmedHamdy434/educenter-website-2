@@ -106,11 +106,22 @@ export function getGroupPaymentsColumns({
       enableSorting: false,
       cell: ({ row }) => {
         const item = row.original;
-        const isRequired = item.requiredMonths?.includes(activeMonth);
-        const paymentRecord = item.paidMonths?.find(
-          (p) => p.subscriptionDate === activeMonth,
-        );
-        const isPaid = !!paymentRecord;
+        const normalizedTarget = activeMonth ? activeMonth.slice(0, 7) : "";
+        const isRequired = item.currentMonth !== undefined
+          ? item.currentMonth.isRequired
+          : activeMonth
+          ? !!item.requiredMonths?.some((m) => m.slice(0, 7) === normalizedTarget)
+          : false;
+
+        const isPaid = item.currentMonth !== undefined
+          ? item.currentMonth.isPaid
+          : activeMonth
+          ? !!item.paidMonths?.some((p) => p.subscriptionDate.slice(0, 7) === normalizedTarget)
+          : false;
+
+        if (!activeMonth) {
+          return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+        }
 
         if (!isRequired) {
           return (
@@ -158,16 +169,23 @@ export function getGroupPaymentsColumns({
       enableSorting: false,
       cell: ({ row }) => {
         const item = row.original;
-        const paymentRecord = item.paidMonths?.find(
-          (p) => p.subscriptionDate === activeMonth,
-        );
+        const normalizedTarget = activeMonth ? activeMonth.slice(0, 7) : "";
+        const paymentNotes = item.currentMonth !== undefined
+          ? item.currentMonth.payment?.notes
+          : activeMonth
+          ? item.paidMonths?.find((p) => p.subscriptionDate.slice(0, 7) === normalizedTarget)?.notes
+          : undefined;
+
+        if (!activeMonth) {
+          return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+        }
 
         return (
           <div
             className="text-center text-xs text-muted-foreground max-w-36 truncate mx-auto"
-            title={paymentRecord?.notes || ""}
+            title={paymentNotes || ""}
           >
-            {paymentRecord?.notes || "—"}
+            {paymentNotes || "—"}
           </div>
         );
       },
@@ -178,17 +196,29 @@ export function getGroupPaymentsColumns({
       enableSorting: false,
       cell: ({ row }) => {
         const item = row.original;
-        const isRequired = item.requiredMonths?.includes(activeMonth);
-        const paymentRecord = item.paidMonths?.find(
-          (p) => p.subscriptionDate === activeMonth,
-        );
-        const isPaid = !!paymentRecord;
+        const normalizedTarget = activeMonth ? activeMonth.slice(0, 7) : "";
+        const isRequired = item.currentMonth !== undefined
+          ? item.currentMonth.isRequired
+          : activeMonth
+          ? !!item.requiredMonths?.some((m) => m.slice(0, 7) === normalizedTarget)
+          : false;
+
+        const isPaid = item.currentMonth !== undefined
+          ? item.currentMonth.isPaid
+          : activeMonth
+          ? !!item.paidMonths?.some((p) => p.subscriptionDate.slice(0, 7) === normalizedTarget)
+          : false;
+
+        if (!activeMonth) {
+          return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+        }
 
         if (isRequired && !isPaid) {
           return (
             <div className="flex justify-center">
               <Button
                 onClick={() => onRecordPayment(item)}
+                disabled={!activeMonth}
                 variant="brand"
                 size="sm"
                 className="h-8 px-3 rounded-lg text-xs flex items-center gap-1 font-bold shadow-none cursor-pointer"

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   getGroups,
   getGroup,
@@ -86,5 +86,6 @@ export function useGroupPaymentsQuery(
       return getGroupPaymentsAction(groupId, params);
     },
     enabled: !!groupId && enabled,
+    placeholderData: keepPreviousData,
   });
 }

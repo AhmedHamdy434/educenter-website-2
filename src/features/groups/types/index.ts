@@ -1,4 +1,4 @@
-import { QueryParams } from "@/types";
+import { QueryParams, ApiResponse } from "@/types";
 import { type DayOfWeek } from "@/utils/time";
 export type { DayOfWeek };
 
@@ -146,6 +146,14 @@ export interface GroupPaymentsStats {
   collected: number;
   /** قائمة شهور المجموعة بصيغة YYYY-MM-DD */
   groupMonths: string[];
+  /** الشهر المستهدف النشط */
+  activeMonth?: string;
+}
+
+export interface GroupStudentCurrentMonth {
+  isRequired: boolean;
+  isPaid: boolean;
+  payment?: GroupStudentPaymentDetail | null;
 }
 
 export interface GroupStudentPaymentInfo {
@@ -163,7 +171,12 @@ export interface GroupStudentPaymentInfo {
   requiredMonths: string[];
   paidMonths: GroupStudentPaymentDetail[];
   unpaidMonths: string[];
+  currentMonth?: GroupStudentCurrentMonth;
 }
+
+export type GroupPaymentsResponse = ApiResponse<GroupStudentPaymentInfo[]> & {
+  stats?: GroupPaymentsStats;
+};
 
 export interface GroupPaymentsQueryParams extends QueryParams {
   month?: string;

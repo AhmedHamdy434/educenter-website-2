@@ -52,7 +52,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
       page,
       limit,
       search,
-      month,
+      month: month || undefined,
       sortBy: sortBy as GroupPaymentsQueryParams["sortBy"],
       sortOrder,
     }),
@@ -65,7 +65,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
   const stats = paymentsRes?.stats;
 
   const availableMonths = useMemo(
-    () => stats?.groupMonths ?? [],
+    () => (stats?.groupMonths ?? []) as string[],
     [stats?.groupMonths],
   );
 
@@ -76,7 +76,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
     return availableMonths.includes(todayStr) ? todayStr : availableMonths[0];
   }, [availableMonths]);
 
-  const activeMonth = month || defaultMonth;
+  const activeMonth = month || stats?.activeMonth || defaultMonth;
 
   const payments = paymentsRes?.data || [];
   const meta = paymentsRes?.meta;
@@ -122,7 +122,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
   };
 
   const handleMonthChange = (newMonth: string) => {
-    updateQuery({ month: newMonth || undefined });
+    updateQuery({ month: newMonth || undefined, page: 1 });
   };
 
   // تعريف أعمدة الـ SharedTable
@@ -138,7 +138,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
   );
 
   return (
-    <div className="space-y-6 text-right" dir="rtl">
+    <div className="space-y-6 text-right">
       {/* 1. Header Toolbar: Month Filter + Backend TableSearch */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex items-center gap-3 w-full sm:w-auto">

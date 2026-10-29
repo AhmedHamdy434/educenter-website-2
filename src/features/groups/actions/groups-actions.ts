@@ -9,7 +9,7 @@ import {
   type GroupStudentPaymentDetail,
   type GroupStudentPaymentInfo,
   type GroupPaymentsQueryParams,
-  type GroupPaymentsStats,
+  type GroupPaymentsResponse,
   type GroupQueryParams,
   type GroupEnrolledStudent,
   type GroupStudentsQueryParams,
@@ -126,7 +126,7 @@ export async function removeStudentsFromGroupAction(
 export async function getGroupPaymentsAction(
   groupId: string,
   params?: GroupPaymentsQueryParams,
-): Promise<ApiResponse<GroupStudentPaymentInfo[]> & { stats?: GroupPaymentsStats }> {
+): Promise<GroupPaymentsResponse> {
   return serverApiClient<GroupStudentPaymentInfo[]>({
     url: `/groups/${groupId}/payments`,
     method: "GET",

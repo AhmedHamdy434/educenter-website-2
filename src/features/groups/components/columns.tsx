@@ -50,20 +50,10 @@ export function getGroupColumns({
     {
       accessorKey: "subject.name",
       header: "المادة",
-      cell: ({ row }: { row: { original: Group } }) => (
-        <span className="font-semibold text-foreground">
-          {row.original.subject?.name || "غير محدد"}
-        </span>
-      ),
     },
     {
       accessorKey: "teacher.user.fullName",
       header: "المعلم",
-      cell: ({ row }: { row: { original: Group } }) => (
-        <span className="text-muted-foreground font-medium text-sm">
-          {row.original.teacher?.user?.fullName || "غير محدد"}
-        </span>
-      ),
     },
     {
       id: "studentsCount",
@@ -84,7 +74,9 @@ export function getGroupColumns({
       cell: ({ row }: { row: { original: Group } }) => {
         const schedule = row.original.schedule || [];
         if (schedule.length === 0)
-          return <span className="text-muted-foreground text-xs">غير محدد</span>;
+          return (
+            <span className="text-muted-foreground text-xs">غير محدد</span>
+          );
         return (
           <div className="flex flex-wrap gap-1 max-w-xs justify-start">
             {schedule.map((item, idx) => (

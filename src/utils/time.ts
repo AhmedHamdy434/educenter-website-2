@@ -101,6 +101,16 @@ export const getSubscriptionStatusDetails = (
 
 export const formatMonthName = (monthStr: string): string => {
   if (!monthStr) return "";
+  const parts = monthStr.split("-");
+  if (parts.length >= 2) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const date = new Date(year, month, 1);
+    return date.toLocaleDateString("ar-EG", {
+      year: "numeric",
+      month: "long",
+    });
+  }
   const date = new Date(monthStr);
   return date.toLocaleDateString("ar-EG", {
     year: "numeric",
