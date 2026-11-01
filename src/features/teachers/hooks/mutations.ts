@@ -8,8 +8,8 @@ import {
 import { importFileAction } from "@/lib/export/export-actions";
 import { type TeacherFormValues } from "../schemas/teacher-schema";
 import { teachersKeys } from "../utils/queryKeys";
-import { gradesKeys } from "@/features/grades/utils/queryKeys";
-import { subjectsKeys } from "@/features/subjects/utils/queryKeys";
+import { groupsKeys } from "@/features/groups/utils/queryKeys";
+import { scheduleKeys } from "@/features/schedule/utils/queryKeys";
 
 export function useToggleTeacherMutation() {
   const queryClient = useQueryClient();
@@ -40,8 +40,6 @@ export function useCreateTeacherMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: teachersKeys.all });
-        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
-        queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
       }
     },
   });
@@ -69,6 +67,8 @@ export function useUpdateTeacherMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: teachersKeys.all });
+        queryClient.invalidateQueries({ queryKey: groupsKeys.all });
+        queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
       }
     },
   });
@@ -83,8 +83,6 @@ export function useDeleteTeacherMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: teachersKeys.all });
-        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
-        queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
       }
     },
   });
@@ -115,8 +113,6 @@ export function useImportTeachersMutation() {
     onSuccess: (result, variables) => {
       if (!variables.dryRun && result.success) {
         queryClient.invalidateQueries({ queryKey: teachersKeys.all });
-        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
-        queryClient.invalidateQueries({ queryKey: subjectsKeys.all });
       }
     },
   });

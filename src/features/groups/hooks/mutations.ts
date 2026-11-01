@@ -10,6 +10,7 @@ import {
 } from "../actions/groups-actions";
 import { type GroupFormValues } from "../schemas/group-schema";
 import { groupsKeys } from "../utils/queryKeys";
+import { scheduleKeys } from "@/features/schedule/utils/queryKeys";
 import { importFileAction } from "@/lib/export/export-actions";
 
 export function useToggleGroupStatusMutation() {
@@ -19,6 +20,7 @@ export function useToggleGroupStatusMutation() {
     mutationFn: async (id: string) => toggleGroupStatusAction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupsKeys.all });
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
     },
   });
 }
@@ -42,6 +44,7 @@ export function useCreateGroupMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
+        queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
       }
     },
   });
@@ -72,6 +75,7 @@ export function useUpdateGroupMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
+        queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
       }
     },
   });
@@ -84,6 +88,7 @@ export function useDeleteGroupMutation() {
     mutationFn: async (id: string) => deleteGroupAction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupsKeys.all });
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
     },
   });
 }
@@ -173,6 +178,7 @@ export function useImportGroupsMutation() {
     onSuccess: (result, variables) => {
       if (!variables.dryRun && result.success) {
         queryClient.invalidateQueries({ queryKey: groupsKeys.all });
+        queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
       }
     },
   });

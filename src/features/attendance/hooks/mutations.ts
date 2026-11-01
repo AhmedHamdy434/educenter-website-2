@@ -4,6 +4,7 @@ import {
   saveAttendanceAction,
 } from "../actions/attendance-actions";
 import { attendanceKeys } from "./queries";
+import { scheduleKeys } from "@/features/schedule/utils/queryKeys";
 import { type SaveAttendanceDTO } from "../types";
 
 export function useStartAttendanceSessionMutation() {
@@ -15,6 +16,9 @@ export function useStartAttendanceSessionMutation() {
       if (result.success) {
         queryClient.invalidateQueries({
           queryKey: attendanceKeys.groupSessions(groupId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: scheduleKeys.all,
         });
       }
     },
@@ -36,7 +40,7 @@ export function useSaveAttendanceMutation() {
     }) => saveAttendanceAction(groupId, sessionId, data),
     onSuccess: (result, variables) => {
       if (result.success) {
-        // Invalidate session details, session history list and group reports
+        // Invalidate session details, session history list, group reports, and all attendance queries
         queryClient.invalidateQueries({
           queryKey: attendanceKeys.sessionDetails(variables.groupId, variables.sessionId),
         });
@@ -45,6 +49,12 @@ export function useSaveAttendanceMutation() {
         });
         queryClient.invalidateQueries({
           queryKey: attendanceKeys.groupReport(variables.groupId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: attendanceKeys.all,
+        });
+        queryClient.invalidateQueries({
+          queryKey: scheduleKeys.all,
         });
       }
     },

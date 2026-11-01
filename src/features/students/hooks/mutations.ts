@@ -8,7 +8,6 @@ import {
 import { importFileAction } from "@/lib/export/export-actions";
 import { type StudentFormValues } from "../schemas/student-schema";
 import { studentsKeys } from "../utils/queryKeys";
-import { gradesKeys } from "@/features/grades/utils/queryKeys";
 
 export function useToggleStudentMutation() {
   const queryClient = useQueryClient();
@@ -41,7 +40,6 @@ export function useCreateStudentMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: studentsKeys.all });
-        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
@@ -85,7 +83,6 @@ export function useDeleteStudentMutation() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: studentsKeys.all });
-        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
@@ -116,7 +113,6 @@ export function useImportStudentsMutation() {
     onSuccess: (result, variables) => {
       if (!variables.dryRun && result.success) {
         queryClient.invalidateQueries({ queryKey: studentsKeys.all });
-        queryClient.invalidateQueries({ queryKey: gradesKeys.all });
       }
     },
   });
