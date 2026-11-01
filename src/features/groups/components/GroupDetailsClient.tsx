@@ -4,6 +4,7 @@ import { AttendanceTab } from "./group-details/AttendanceTab";
 import { AttendanceReportsTab } from "./group-details/AttendanceReportsTab";
 import { GroupPaymentsTab } from "./group-details/GroupPaymentsTab";
 import GroupDetailsTabs from "./group-details/GroupDetailsTabs";
+import { GroupExtraSessionsTab } from "@/features/extra-sessions/components/GroupExtraSessionsTab";
 import { getGroupTab } from "../config/group-tabs";
 
 interface GroupDetailsClientProps {
@@ -27,7 +28,7 @@ export function GroupDetailsClient({
       />
 
       <div className="space-y-6">
-        <GroupDetailsTabs />
+        <GroupDetailsTabs isOwner={isOwner} />
 
         {/* Active Tab Content */}
         <div className="min-h-100">
@@ -45,6 +46,10 @@ export function GroupDetailsClient({
           )}
 
           {activeTab === "payments" && <GroupPaymentsTab groupId={groupId} />}
+
+          {activeTab === "extra-sessions" && isOwner && (
+            <GroupExtraSessionsTab groupId={groupId} />
+          )}
         </div>
       </div>
     </div>

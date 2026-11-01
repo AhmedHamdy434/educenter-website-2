@@ -25,7 +25,7 @@ export async function loginAction(
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 60 * 60 * 24, // 1 day (24 hours - strictly matches backend JWT lifespan)
+        maxAge: 60 * 60 * 24 * 30, // 1 month (30 days - strictly matches backend JWT lifespan)
         path: "/",
       });
 
@@ -34,7 +34,7 @@ export async function loginAction(
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
-          maxAge: 60 * 60 * 24,
+          maxAge: 60 * 60 * 24 * 30,
           path: "/",
         });
       }

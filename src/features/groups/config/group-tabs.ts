@@ -3,6 +3,7 @@ export const GROUP_TABS = [
   "attendance",
   "reports",
   "payments",
+  "extra-sessions",
 ] as const;
 
 export type GroupTab = (typeof GROUP_TABS)[number];

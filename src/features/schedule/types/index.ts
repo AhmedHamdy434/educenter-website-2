@@ -90,4 +90,5 @@ export interface ScheduleFilterState {
   subjectId?: string;
   groupId?: string;
   status: AttendanceStatusFilter;
+  extraOnly?: boolean;
 }

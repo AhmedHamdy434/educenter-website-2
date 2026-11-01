@@ -18,6 +18,10 @@ export function CalendarSessionCard({ session }: CalendarSessionCardProps) {
     if (session.isGroupInactive) {
       return "opacity-75 border-dashed border-red-300 bg-red-50/40 dark:bg-red-950/20 hover:border-red-400";
     }
+    // 2. حصة إضافية (أمبر هادئ)
+    if (session.isExtraSession) {
+      return "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20 hover:border-amber-400";
+    }
     // 3. حصة مكتملة الحضور (أخضر هادئ)
     if (session.attendanceStatus === "COMPLETED") {
       return "border-emerald-300/80 bg-emerald-50/50 dark:bg-emerald-950/25 hover:border-emerald-400 shadow-xs";

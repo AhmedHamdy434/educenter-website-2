@@ -1,7 +1,8 @@
 "use client";
 
-import { Filter, RotateCcw } from "lucide-react";
+import { Filter, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { FilterDropdown } from "@/components/common/FilterDropdown";
 import { useGradesOptionsQuery } from "@/features/grades/hooks/queries";
 import { useSubjectsOptionsQuery } from "@/features/subjects/hooks/queries";
@@ -53,7 +54,8 @@ export function ScheduleFilters({
     !!filters.gradeId ||
     !!filters.subjectId ||
     !!filters.groupId ||
-    filters.status !== "ALL";
+    filters.status !== "ALL" ||
+    !!filters.extraOnly;
 
   return (
     <div
@@ -61,9 +63,25 @@ export function ScheduleFilters({
       dir="rtl"
     >
       <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/50">
-        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-          <Filter className="size-3.5 text-primary" />
-          <span>تصفية الحصص</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+            <Filter className="size-3.5 text-primary" />
+            <span>تصفية الحصص</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onFilterChange({ extraOnly: !filters.extraOnly })}
+            className={cn(
+              "h-7 px-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 border",
+              filters.extraOnly
+                ? "border-amber-400 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 shadow-xs"
+                : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary/40",
+            )}
+          >
+            <Sparkles className="size-3 text-amber-600" />
+            <span>إضافية فقط</span>
+          </button>
         </div>
 
         {hasActiveFilters && (

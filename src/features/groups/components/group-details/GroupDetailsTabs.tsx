@@ -1,14 +1,21 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { CalendarCheck2, CreditCard, TrendingUp, Users } from "lucide-react";
+import { CalendarCheck2, CreditCard, TrendingUp, Users, Sparkles } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-export default function GroupDetailsTabs() {
+interface GroupDetailsTabsProps {
+  isOwner?: boolean;
+}
+
+export default function GroupDetailsTabs({ isOwner = true }: GroupDetailsTabsProps) {
   const tabs = [
     { id: "students", label: "الطلاب المسجلون", Icon: Users },
     { id: "attendance", label: "تحضير الحضور والغياب", Icon: CalendarCheck2 },
     { id: "reports", label: "تقارير نسب الحضور", Icon: TrendingUp },
     { id: "payments", label: "الاشتراكات والمدفوعات", Icon: CreditCard },
+    ...(isOwner
+      ? [{ id: "extra-sessions", label: "الحصص الإضافية", Icon: Sparkles }]
+      : []),
   ];
   const router = useRouter();
   const pathname = usePathname();

@@ -29,6 +29,7 @@ export function ScheduleViewClient() {
     subjectId: undefined,
     groupId: undefined,
     status: "ALL",
+    extraOnly: false,
   };
   // 1. Month state (defaults to Cairo current month or URL query param)
   const [month, setMonth] = useState<string>(getCairoCurrentMonth());
@@ -76,13 +77,17 @@ export function ScheduleViewClient() {
     return upcomingResponse?.data?.sessions || [];
   }, [viewMode, calendarResponse, upcomingResponse]);
 
-  // 5. Apply Client-side status filter
+  // 5. Apply Client-side status and extraOnly filter
   const filteredSessions = useMemo(() => {
-    if (filters.status === "ALL") {
-      return rawSessions;
+    let list = rawSessions;
+    if (filters.status !== "ALL") {
+      list = list.filter((s) => s.attendanceStatus === filters.status);
     }
-    return rawSessions.filter((s) => s.attendanceStatus === filters.status);
-  }, [rawSessions, filters.status]);
+    if (filters.extraOnly) {
+      list = list.filter((s) => s.isExtraSession);
+    }
+    return list;
+  }, [rawSessions, filters.status, filters.extraOnly]);
 
   const isLoading =
     viewMode === "calendar" ? isCalendarLoading : isUpcomingLoading;

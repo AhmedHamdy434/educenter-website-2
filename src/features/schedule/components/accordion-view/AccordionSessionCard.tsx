@@ -19,9 +19,10 @@ export function AccordionSessionCard({ session }: AccordionSessionCardProps) {
         'p-4 rounded-xl border transition-all text-right bg-card flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-none hover:shadow-xs',
         session.isGroupInactive
           ? 'opacity-70 border-dashed border-red-200'
+          : session.isExtraSession
+          ? 'border-amber-300 bg-amber-50/20 dark:bg-amber-950/10'
           : 'border-border',
       )}
-      dir="rtl"
     >
       {/* Right Column: Time & Group Info */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
