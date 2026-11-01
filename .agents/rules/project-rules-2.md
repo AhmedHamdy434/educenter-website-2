@@ -27,7 +27,7 @@ This document defines the mandatory engineering standards for authentication, ro
     - OTP Forgot Password flow: `POST /auth/forgot-password` (10-min OTP countdown) and `POST /auth/reset-password`.
 *   **Subscription Grace Period & Read-Only Protection**:
     - Capture `X-Subscription-Warning` response header and display grace period banner to `OWNER` **only** (never to `TEACHER` or `STUDENT`).
-    - When expired, disable mutating buttons (Add, Edit, Delete, Toggle) with an explanatory Arabic tooltip.
+    - When expired, disable mutating buttons (Add, Edit, Delete, Toggle, Start Session) with an explanatory Arabic tooltip.
 *   **Parent Magic Link Portal (`/p/:token`)**:
     - Staff (`OWNER`, `TEACHER`) generate 30-day tokens via `POST /p/generate/:studentId`.
     - Public mobile-responsive view without login requirement.

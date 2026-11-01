@@ -61,6 +61,12 @@ export const dashboardRoutes: RouteItem[] = [
     icon: Layers,
     roles: [UserRole.OWNER],
   },
+  {
+    title: "جدول الحصص",
+    href: "/owner/schedule",
+    icon: CalendarCheck,
+    roles: [UserRole.OWNER],
+  },
   // {
   //   title: "المستخدمين",
   //   href: "/owner/users",

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { GraduationCap, LogOut, HelpCircle } from "lucide-react";
+import { GraduationCap, LogOut } from "lucide-react";
 
 import { logoutAction } from "@/features/auth/actions/logout";
 import { User, UserRole } from "@/types";
@@ -118,10 +118,10 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
         </ul>
 
         {/* Divider */}
-        <hr className="my-5 border-sidebar-border" />
+        {/* <hr className="my-5 border-sidebar-border" /> */}
 
         {/* Secondary Support Link */}
-        <ul>
+        {/* <ul>
           <li>
             <Link
               href={`/${centerSlug}/support`}
@@ -134,7 +134,7 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
               <span>الدعم الفني</span>
             </Link>
           </li>
-        </ul>
+        </ul> */}
       </nav>
 
       {/* User Card & Logout - Grounded Solid Contrast Base */}

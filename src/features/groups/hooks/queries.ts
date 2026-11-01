@@ -15,12 +15,13 @@ import {
 } from "../types";
 import { type ApiResponse } from "@/types";
 
-export function useGroupsQuery(params: GroupQueryParams) {
+export function useGroupsQuery(params: GroupQueryParams, enabled = true) {
   return useQuery({
     queryKey: groupsKeys.list(params),
     queryFn: async () => {
       return getGroups(params);
     },
+    enabled,
   });
 }
 

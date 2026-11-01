@@ -164,6 +164,10 @@ The `OWNER` has full administrative and financial authority over their center:
 * **Center Users Directory (`/[centerSlug]/owner/users`)**:
   - `GET /users`: Comprehensive user registry with search, role filters (`TEACHER`, `STUDENT`), phone numbers, and status toggle.
   - `PATCH /users/:id`: Toggle user active status via body `{ isActive: boolean }`.
+* **Schedule & Calendar Hub (`/[centerSlug]/owner/schedule`)**:
+  - `GET /schedule/calendar`: Dynamic monthly calendar view (`YYYY-MM`) displaying all center sessions, group/grade/subject labels, teacher badges, attendance statuses (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`), and extra sessions (`isExtraSession`).
+  - `GET /schedule/upcoming`: Filterable accordion view grouped by dates with status filter tabs (`ALL`, `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`), grade/teacher/subject selectors, and quick-action attendance buttons.
+  - Interactive direct entry to class attendance recordings (`/[centerSlug]/owner/schedule/attendance/:groupId/:sessionId?`).
 * **Audit Logs (`/[centerSlug]/owner/audit-logs`)**:
   - `GET /audit-logs`: Chronological security and operations log (timestamp, actor user/ID, action, entity, IP address, details payload).
 * **WhatsApp Dispatch Logs (`/[centerSlug]/owner/notifications`)**:
@@ -249,6 +253,8 @@ A zero-friction, public mobile-responsive web view for parents that does not req
 | `/[centerSlug]/owner/students` | `OWNER` | `(center-owner)/owner/students/page.tsx` (`StudentsListClient`) | `getStudents`, `createStudentAction`, `updateStudentAction`, `generateParentLinkAction` | **Integrated** |
 | `/[centerSlug]/owner/groups` | `OWNER` | `(center-owner)/owner/groups/page.tsx` (`GroupsListClient`) | `getGroups`, `createGroupAction`, `updateGroupAction`, `toggleGroupStatusAction` | **Integrated** |
 | `/[centerSlug]/owner/groups/[id]` | `OWNER` | `(center-owner)/owner/groups/[id]/page.tsx` (`GroupDetailsClient`) | `getGroupDetails`, `addStudentsToGroupAction`, `saveAttendanceAction`, `payMonthAction` | **Integrated** |
+| `/[centerSlug]/owner/schedule` | `OWNER` | `(center-owner)/owner/schedule/page.tsx` (`ScheduleViewClient`) | `getCalendarScheduleAction`, `getUpcomingScheduleAction` | **Integrated** |
+| `/[centerSlug]/owner/schedule/attendance/[groupId]` | `OWNER` | `(center-owner)/owner/schedule/attendance/[groupId]/page.tsx` (`ScheduleAttendanceClient`) | `getGroupAttendanceSessionsQuery`, `saveAttendanceAction` | **Integrated** |
 | `/[centerSlug]/owner/exams` | `OWNER` | `(center-owner)/owner/exams/page.tsx` | Overview & manage exams | **Integrated** |
 | `/[centerSlug]/owner/subscription` | `OWNER` | `(center-owner)/owner/subscription/page.tsx` (`SubscriptionClient`) | `getSubscriptionOverviewAction` | **Integrated** |
 | `/[centerSlug]/owner/settings` | `OWNER` | `(center-owner)/owner/settings/page.tsx` | `getCenterSettingsAction`, `updateCenterSettingsAction` | **Shell** |
