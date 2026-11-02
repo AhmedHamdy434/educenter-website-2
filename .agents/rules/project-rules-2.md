@@ -14,10 +14,10 @@ This document defines the mandatory engineering standards for authentication, ro
     - Valid application roles: `OWNER` (Center Owner), `TEACHER` (Class Instructor), `STUDENT` (Enrolled Pupil), and public guest parent viewers.
     - Note: System Admins / Center Managers (`ADMIN` / Super Admin) use their own separate standalone dashboard application and are not routed here.
     - `OWNER` navigates `/[centerSlug]/owner` (includes appointing center managers via `/users`, managing catalog, groups, and center subscription).
-    - `TEACHER` navigates `/[centerSlug]/teacher` (scoped strictly to assigned groups, attendance recording, tuition status of taught students, and magic link generation).
+    - `TEACHER` navigates `/[centerSlug]/teacher` (scoped strictly to assigned groups, attendance recording, and tuition status of taught students).
     - `STUDENT` navigates `/[centerSlug]/student` (strictly isolated read-only personal progress, attendance history, and payment logs).
 *   **Route Redirection (`proxy.ts`)**:
-    - Public allowed routes: `/`, `/login`, `/forgot-password`, `/reset-password`, `/change-password`, and `/p/*` (Parent Magic Link Portal).
+    - Public allowed routes: `/`, `/login`, `/forgot-password`, `/reset-password`, `/change-password`, and `/subscription-required`.
     - Protected application routes are scoped by center slug: `/[centerSlug]/owner`, `/[centerSlug]/teacher`, `/[centerSlug]/student`.
     - Unauthenticated requests to protected routes redirect to `/login`.
     - Authenticated users accessing `/login` are routed to their role-specific dashboard (`/[centerSlug]/owner`, `/[centerSlug]/teacher`, `/[centerSlug]/student`).
@@ -28,9 +28,6 @@ This document defines the mandatory engineering standards for authentication, ro
 *   **Subscription Grace Period & Read-Only Protection**:
     - Capture `X-Subscription-Warning` response header and display grace period banner to `OWNER` **only** (never to `TEACHER` or `STUDENT`).
     - When expired, disable mutating buttons (Add, Edit, Delete, Toggle, Start Session) with an explanatory Arabic tooltip.
-*   **Parent Magic Link Portal (`/p/:token`)**:
-    - Staff (`OWNER`, `TEACHER`) generate 30-day tokens via `POST /p/generate/:studentId`.
-    - Public mobile-responsive view without login requirement.
 
 ---
 

@@ -51,8 +51,7 @@ export function proxy(request: NextRequest) {
     pathname === "/forgot-password" ||
     pathname === "/reset-password" ||
     pathname === "/change-password" ||
-    pathname === "/subscription-required" ||
-    pathname.startsWith("/p/");
+    pathname === "/subscription-required";
 
   // 1. If user is NOT logged in
   if (!token) {

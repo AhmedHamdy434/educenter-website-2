@@ -49,6 +49,7 @@ export interface ScheduleSessionItem {
   studentsCount: number;
   recordedCount: number;
   isExtraSession: boolean;
+  extraSessionId?: string;
   isGroupInactive: boolean;
 }
 

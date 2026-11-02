@@ -10,7 +10,6 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { StudentForm } from "./StudentForm";
 import { StudentPaymentsModal } from "./StudentPaymentsModal";
-import { ParentLinkModal } from "./ParentLinkModal";
 import { useStudentsQuery } from "../hooks/queries";
 import {
   useToggleStudentMutation,
@@ -32,9 +31,6 @@ export function StudentsListClient() {
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [paymentHistoryStudent, setPaymentHistoryStudent] =
     useState<Student | null>(null);
-  const [magicLinkStudent, setMagicLinkStudent] = useState<Student | null>(
-    null,
-  );
 
   // Pagination, search, sort, and filter state from URL
   const {
@@ -96,7 +92,6 @@ export function StudentsListClient() {
         onDelete: setStudentToDelete,
         onViewPayments: setPaymentHistoryStudent,
         onToggleStatus: toggleMutation.mutate,
-        onGenerateParentLink: setMagicLinkStudent,
         togglingId: toggleMutation.isPending ? (toggleMutation.variables ?? null) : null,
         deletingId: deleteMutation.isPending ? (deleteMutation.variables ?? null) : null,
       }),
@@ -179,14 +174,7 @@ export function StudentsListClient() {
         />
       )}
 
-      {/* 5. Parent Magic Link Modal */}
-      <ParentLinkModal
-        isOpen={!!magicLinkStudent}
-        onClose={() => setMagicLinkStudent(null)}
-        student={magicLinkStudent}
-      />
-
-      {/* 6. Delete Confirmation Dialog */}
+      {/* 5. Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={!!studentToDelete}
         onClose={() => setStudentToDelete(null)}

@@ -82,7 +82,7 @@ export function getStudentAttendanceColumns() {
       cell: ({ row }: { row: { original: StudentAttendanceHistoryItem } }) => (
         <span className="text-xs text-muted-foreground">
           {row.original.absenceReason || (
-            <span className="text-muted-foreground/40 italic">لا توجد ملاحظات</span>
+            <span className="text-muted-foreground/40 italic"> - </span>
           )}
         </span>
       ),

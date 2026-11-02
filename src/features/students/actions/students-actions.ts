@@ -69,14 +69,3 @@ export async function getStudentPaymentsAction(
   });
 }
 
-
-
-export async function generateParentLinkAction(
-  studentId: string
-): Promise<ApiResponse<{ token: string; url?: string; expiresAt?: string }>> {
-  return serverApiClient<{ token: string; url?: string; expiresAt?: string }>({
-    url: `/p/generate/${studentId}`,
-    method: "POST",
-  });
-}
-

@@ -10,6 +10,7 @@ export interface AttendanceSession {
   id: string;
   groupId: string;
   centerId: string;
+  extraSessionId?: string | null;
   date: string;
   createdAt: string;
   updatedAt: string;
@@ -23,11 +24,18 @@ export interface SessionStudent {
   studentId: string;
   studentCode?: string | null;
   fullName: string;
-  phone: string;
+  phone: string | null;
   avatar?: string | null;
   status: AttendanceStatus | null;
   absenceReason?: string | null;
   recordedAt?: string | null;
+  extraSessionInfo?: {
+    amountDue: number;
+    paid: number | null;
+    isWaived: boolean;
+    paidAt: string | null;
+    notes: string | null;
+  };
 }
 
 export interface AttendanceSessionDetails {
@@ -40,6 +48,9 @@ export interface AttendanceRecordInput {
   studentCode?: string;
   status: AttendanceStatus;
   absenceReason?: string;
+  paid?: number;
+  isWaived?: boolean;
+  paymentNotes?: string;
 }
 
 export interface SaveAttendanceDTO {

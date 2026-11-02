@@ -16,6 +16,13 @@ interface AttendancePresentListProps {
   onStatusChange: (studentId: string, status: AttendanceStatus) => void;
   onReasonChange: (studentId: string, reason: string) => void;
   onResetStudent: (studentId: string) => void;
+  isExtraSession?: boolean;
+  onPaymentChange?: (
+    studentId: string,
+    paid?: number,
+    isWaived?: boolean,
+    notes?: string,
+  ) => void;
 }
 
 export function AttendancePresentList({
@@ -24,6 +31,8 @@ export function AttendancePresentList({
   onStatusChange,
   onReasonChange,
   onResetStudent,
+  isExtraSession = false,
+  onPaymentChange,
 }: AttendancePresentListProps) {
   const columns = useMemo(
     () =>
@@ -31,8 +40,16 @@ export function AttendancePresentList({
         onStatusChange,
         onReasonChange,
         onResetStudent,
+        isExtraSession,
+        onPaymentChange,
       }),
-    [onStatusChange, onReasonChange, onResetStudent],
+    [
+      onStatusChange,
+      onReasonChange,
+      onResetStudent,
+      isExtraSession,
+      onPaymentChange,
+    ],
   );
 
   return (

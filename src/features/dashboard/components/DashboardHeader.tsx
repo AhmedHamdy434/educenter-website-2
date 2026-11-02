@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Bell, Search, User as UserIcon } from "lucide-react";
+import { Menu, Search, User as UserIcon } from "lucide-react";
 import { User } from "@/types";
 import { ROLE_TRANSLATIONS } from "@/constants";
 
@@ -40,23 +40,8 @@ export function DashboardHeader({ user, onMenuToggle }: DashboardHeaderProps) {
         </div>
       </div>
 
-      {/* Left Side: Notifications & User profile */}
+      {/* Left Side: User profile */}
       <div className="flex items-center gap-4">
-        {/* Notifications Button */}
-        <button
-          aria-label="التنبيهات"
-          className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground/75 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Bell className="size-5" />
-          <span className="absolute top-1.5 left-1.5 flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"></span>
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent"></span>
-          </span>
-        </button>
-
-        {/* Vertical Divider */}
-        <div className="h-6 w-px bg-border" />
-
         {/* User profile dropdown trigger/avatar */}
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary border border-border font-bold">

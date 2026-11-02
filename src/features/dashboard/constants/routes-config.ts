@@ -2,8 +2,6 @@ import {
   LayoutDashboard,
   Users,
   // UserCheck,
-  // History,
-  // MessageSquare,
   GraduationCap,
   Layers,
   BookOpen,
@@ -71,18 +69,6 @@ export const dashboardRoutes: RouteItem[] = [
   //   title: "المستخدمين",
   //   href: "/owner/users",
   //   icon: UserCheck,
-  //   roles: [UserRole.OWNER],
-  // },
-  // {
-  //   title: "سجل العمليات",
-  //   href: "/owner/audit-logs",
-  //   icon: History,
-  //   roles: [UserRole.OWNER],
-  // },
-  // {
-  //   title: "رسائل الواتساب",
-  //   href: "/owner/notifications",
-  //   icon: MessageSquare,
   //   roles: [UserRole.OWNER],
   // },
   // {

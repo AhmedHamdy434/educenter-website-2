@@ -10,6 +10,7 @@ interface GroupPaymentsColumnsOptions {
   page?: number;
   limit?: number;
   activeMonth: string;
+  isExpired?: boolean;
   onRecordPayment: (student: GroupStudentPaymentInfo) => void;
 }
 
@@ -17,6 +18,7 @@ export function getGroupPaymentsColumns({
   page = 1,
   limit = 10,
   activeMonth,
+  isExpired = false,
   onRecordPayment,
 }: GroupPaymentsColumnsOptions): ColumnDef<GroupStudentPaymentInfo>[] {
   return [
@@ -218,10 +220,15 @@ export function getGroupPaymentsColumns({
             <div className="flex justify-center">
               <Button
                 onClick={() => onRecordPayment(item)}
-                disabled={!activeMonth}
+                disabled={!activeMonth || isExpired}
                 variant="brand"
                 size="sm"
-                className="h-8 px-3 rounded-lg text-xs flex items-center gap-1 font-bold shadow-none cursor-pointer"
+                title={
+                  isExpired
+                    ? "انتهت فترة اشتراك المركز. التجديد مطلوب لتسجيل المدفوعات"
+                    : undefined
+                }
+                className="h-8 px-3 rounded-lg text-xs flex items-center gap-1 font-bold shadow-none cursor-pointer disabled:cursor-not-allowed"
               >
                 <Landmark className="size-3.5" />
                 <span>تسجيل الدفع</span>

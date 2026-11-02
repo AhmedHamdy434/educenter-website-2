@@ -138,8 +138,8 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
   }
 
   return (
-    <div className="animate-fade-in space-y-6 text-right">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="animate-fade-in space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label="نسبة الحضور الإجمالية"
           value={report.attendanceRate}

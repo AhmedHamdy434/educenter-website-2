@@ -26,7 +26,7 @@ export function SessionActionButton({
   const centerSlug = params?.centerSlug;
 
   const [isStarting, setIsStarting] = useState(false);
-  const startSessionMutation = useStartAttendanceSessionMutation();
+  const startSessionMutation = useStartAttendanceSessionMutation(session.extraSessionId);
   const isExpired = useSubscriptionStore((state) => state.isExpired);
 
   const todayStr = getCairoTodayString();

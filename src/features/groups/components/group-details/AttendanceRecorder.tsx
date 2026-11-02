@@ -2,10 +2,14 @@
 
 import { useState, useRef, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Loading } from "@/components/common/Loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAttendanceSessionDetailsQuery } from "@/features/attendance/hooks/queries";
 import { useSaveAttendanceMutation } from "@/features/attendance/hooks/mutations";
-import { AttendanceStatus, SessionStudent } from "@/features/attendance/types";
+import {
+  AttendanceStatus,
+  SessionStudent,
+  AttendanceRecordInput,
+} from "@/features/attendance/types";
 
 import { AttendanceSessionStats } from "./attendance/AttendanceSessionStats";
 import { AttendanceScannerBar } from "./attendance/AttendanceScannerBar";
@@ -22,6 +26,9 @@ interface LocalRecord {
   status: AttendanceStatus | null;
   reason: string;
   localRecordedAt?: string;
+  paid?: number;
+  isWaived?: boolean;
+  paymentNotes?: string;
 }
 
 export function AttendanceRecorder({
@@ -38,11 +45,9 @@ export function AttendanceRecorder({
   const saveMutation = useSaveAttendanceMutation();
 
   const rawStudentList = response?.data?.students;
-  const studentList = useMemo(
-    () => rawStudentList || [],
-    [rawStudentList],
-  );
+  const studentList = useMemo(() => rawStudentList || [], [rawStudentList]);
   const sessionData = response?.data?.session;
+  const isExtraSession = Boolean(sessionData?.extraSessionId);
 
   // Local state to track modified attendance records locally
   const [records, setRecords] = useState<Record<string, LocalRecord>>({});
@@ -67,12 +72,18 @@ export function AttendanceRecorder({
     const absenceReason =
       local !== undefined ? local.reason : student.absenceReason || "";
     const localRecordedAt = local?.localRecordedAt;
+    const localPaid = local?.paid;
+    const localIsWaived = local?.isWaived;
+    const localPaymentNotes = local?.paymentNotes;
 
     return {
       ...student,
       status,
       absenceReason,
       localRecordedAt,
+      localPaid,
+      localIsWaived,
+      localPaymentNotes,
     };
   });
 
@@ -117,13 +128,42 @@ export function AttendanceRecorder({
   ) => {
     const timeStr = getCurrentTimeFormatted();
 
+    let initialPaid =
+      records[student.studentId]?.paid ??
+      (student.extraSessionInfo?.paid !== null &&
+      student.extraSessionInfo?.paid !== undefined
+        ? Number(student.extraSessionInfo.paid)
+        : undefined);
+    const initialWaived =
+      records[student.studentId]?.isWaived ??
+      student.extraSessionInfo?.isWaived ??
+      false;
+    const initialPaymentNotes =
+      records[student.studentId]?.paymentNotes ??
+      (student.extraSessionInfo?.notes || undefined);
+
+    // If extra session and targetStatus is PRESENT or LATE: suggest amountDue if not paid and not waived
+    if (
+      isExtraSession &&
+      (targetStatus === AttendanceStatus.PRESENT ||
+        targetStatus === AttendanceStatus.LATE)
+    ) {
+      const amountDue = student.extraSessionInfo?.amountDue ?? 0;
+      if (initialPaid === undefined && !initialWaived) {
+        initialPaid = amountDue;
+      }
+    }
+
     // Immediate local state update
     setRecords((prev) => ({
       ...prev,
       [student.studentId]: {
         status: targetStatus,
-        reason: "",
+        reason: prev[student.studentId]?.reason || "",
         localRecordedAt: timeStr,
+        paid: initialPaid,
+        isWaived: initialWaived,
+        paymentNotes: initialPaymentNotes,
       },
     }));
     setHasUnsavedChanges(true);
@@ -144,6 +184,31 @@ export function AttendanceRecorder({
             ? currentReason
             : "";
 
+        let paid =
+          prev[studentId]?.paid ??
+          (student?.extraSessionInfo?.paid !== null &&
+          student?.extraSessionInfo?.paid !== undefined
+            ? Number(student?.extraSessionInfo.paid)
+            : undefined);
+        const isWaived =
+          prev[studentId]?.isWaived ??
+          student?.extraSessionInfo?.isWaived ??
+          false;
+        const paymentNotes =
+          prev[studentId]?.paymentNotes ??
+          (student?.extraSessionInfo?.notes || undefined);
+
+        if (
+          isExtraSession &&
+          (status === AttendanceStatus.PRESENT ||
+            status === AttendanceStatus.LATE)
+        ) {
+          const amountDue = student?.extraSessionInfo?.amountDue ?? 0;
+          if (paid === undefined && !isWaived) {
+            paid = amountDue;
+          }
+        }
+
         return {
           ...prev,
           [studentId]: {
@@ -151,12 +216,15 @@ export function AttendanceRecorder({
             reason,
             localRecordedAt:
               prev[studentId]?.localRecordedAt || getCurrentTimeFormatted(),
+            paid,
+            isWaived,
+            paymentNotes,
           },
         };
       });
       setHasUnsavedChanges(true);
     },
-    [studentList],
+    [studentList, isExtraSession],
   );
 
   // Reason Change for ABSENT status - Local only!
@@ -174,6 +242,41 @@ export function AttendanceRecorder({
             status,
             reason,
             localRecordedAt: current?.localRecordedAt,
+            paid: current?.paid,
+            isWaived: current?.isWaived,
+            paymentNotes: current?.paymentNotes,
+          },
+        };
+      });
+      setHasUnsavedChanges(true);
+    },
+    [studentList],
+  );
+
+  // Payment Change for extra sessions - Local only!
+  const handlePaymentChange = useCallback(
+    (
+      studentId: string,
+      paid?: number,
+      isWaived?: boolean,
+      paymentNotes?: string,
+    ) => {
+      setRecords((prev) => {
+        const current = prev[studentId];
+        const student = studentList.find((s) => s.studentId === studentId);
+        const status =
+          current?.status ?? student?.status ?? AttendanceStatus.PRESENT;
+
+        return {
+          ...prev,
+          [studentId]: {
+            ...current,
+            status,
+            reason: current?.reason ?? student?.absenceReason ?? "",
+            paid: paid !== undefined ? paid : current?.paid,
+            isWaived: isWaived !== undefined ? isWaived : current?.isWaived,
+            paymentNotes:
+              paymentNotes !== undefined ? paymentNotes : current?.paymentNotes,
           },
         };
       });
@@ -189,6 +292,9 @@ export function AttendanceRecorder({
       [studentId]: {
         status: null,
         reason: "",
+        paid: undefined,
+        isWaived: undefined,
+        paymentNotes: undefined,
       },
     }));
     setHasUnsavedChanges(true);
@@ -204,22 +310,44 @@ export function AttendanceRecorder({
 
     // Build the complete list for all students:
     // Any student who was not scanned or marked gets marked as ABSENT
-    const payloadRecords = studentList.map((student) => {
-      const local = records[student.studentId];
-      const effectiveStatus =
-        local?.status ?? student.status ?? AttendanceStatus.ABSENT;
-      const reason = local?.reason ?? student.absenceReason ?? "";
+    const payloadRecords: AttendanceRecordInput[] = studentList.map(
+      (student) => {
+        const local = records[student.studentId];
+        const effectiveStatus =
+          local?.status ?? student.status ?? AttendanceStatus.ABSENT;
+        const reason = local?.reason ?? student.absenceReason ?? "";
 
-      return {
-        studentId: student.studentId,
-        status: effectiveStatus,
-        absenceReason:
-          effectiveStatus === AttendanceStatus.ABSENT ||
-          effectiveStatus === AttendanceStatus.ATTENDED_ANOTHER_GROUP
-            ? reason || undefined
-            : undefined,
-      };
-    });
+        const record: AttendanceRecordInput = {
+          studentId: student.studentId,
+          status: effectiveStatus,
+          absenceReason: reason,
+        };
+
+        if (isExtraSession) {
+          const paid =
+            local?.paid !== undefined
+              ? local.paid
+              : student.extraSessionInfo?.paid !== null &&
+                  student.extraSessionInfo?.paid !== undefined
+                ? Number(student.extraSessionInfo.paid)
+                : undefined;
+          const isWaived =
+            local?.isWaived !== undefined
+              ? local.isWaived
+              : student.extraSessionInfo?.isWaived;
+          const paymentNotes =
+            local?.paymentNotes !== undefined
+              ? local.paymentNotes
+              : (student.extraSessionInfo?.notes || undefined);
+
+          if (paid !== undefined) record.paid = paid;
+          if (isWaived !== undefined) record.isWaived = isWaived;
+          if (paymentNotes !== undefined) record.paymentNotes = paymentNotes;
+        }
+
+        return record;
+      },
+    );
 
     await saveMutation.mutateAsync(
       {
@@ -239,7 +367,56 @@ export function AttendanceRecorder({
   };
 
   if (isLoading) {
-    return <Loading message="جاري تحميل كشف طلاب الحصة..." />;
+    return (
+      <div className="space-y-6 text-right animate-fade-in" dir="rtl">
+        {/* Header Skeleton */}
+        <div className="flex flex-col justify-between gap-4 border-b border-border pb-4 sm:flex-row sm:items-center">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48 rounded-md" />
+            <Skeleton className="h-4 w-32 rounded-md" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-28 rounded-lg" />
+            <Skeleton className="h-9 w-24 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-xl" />
+          ))}
+        </div>
+
+        {/* Scanner Bar Skeleton */}
+        <Skeleton className="h-14 w-full rounded-xl" />
+
+        {/* Table Rows Skeleton */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-5 w-40 rounded-md" />
+            <Skeleton className="h-5 w-12 rounded-md" />
+          </div>
+          <div className="border border-border rounded-xl p-4 space-y-3 bg-secondary/10">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-4 py-2 border-b border-border/50 last:border-none"
+              >
+                <div className="flex items-center gap-3">
+                  <Skeleton className="size-8.5 rounded-full" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32 rounded-md" />
+                    <Skeleton className="h-3 w-20 rounded-md" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-44 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -277,6 +454,8 @@ export function AttendanceRecorder({
             onStatusChange={handleStatusChange}
             onReasonChange={handleReasonChange}
             onResetStudent={handleResetStudent}
+            isExtraSession={isExtraSession}
+            onPaymentChange={handlePaymentChange}
           />
 
           {/* 4. Section B: Not Yet Recorded Students */}

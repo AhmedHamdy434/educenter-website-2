@@ -5,9 +5,7 @@ import { Users } from "lucide-react";
 import { TableSearch } from "@/components/common/TableSearch";
 import { SharedTable } from "@/components/common/SharedTable";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { ParentLinkModal } from "@/features/students/components/ParentLinkModal";
 import { StudentPaymentsModal } from "@/features/students/components/StudentPaymentsModal";
-import { type Student } from "@/features/students/types";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { useGroupStudentsQuery } from "../../hooks/queries";
 import { useRemoveStudentsFromGroupMutation } from "../../hooks/mutations";
@@ -42,9 +40,6 @@ export function EnrolledStudentsList({
 
 
   // 5. حالات المودالات المحلية
-  const [magicLinkStudent, setMagicLinkStudent] = useState<Student | null>(
-    null,
-  );
   const [selectedStudentForRemove, setSelectedStudentForRemove] = useState<{
     id: string;
     name: string;
@@ -87,10 +82,6 @@ export function EnrolledStudentsList({
     [],
   );
 
-  const handleOpenParentLink = useCallback((student: Student) => {
-    setMagicLinkStudent(student);
-  }, []);
-
   // 7. تعريف الأعمدة واستقرار المراجع
   const columns = useMemo(
     () =>
@@ -98,7 +89,6 @@ export function EnrolledStudentsList({
         page,
         limit,
         showRemoveButton,
-        onGenerateParentLink: handleOpenParentLink,
         onViewPayments: handleViewPayments,
         onRemoveStudent: handleOpenRemoveDialog,
       }),
@@ -106,7 +96,6 @@ export function EnrolledStudentsList({
       page,
       limit,
       showRemoveButton,
-      handleOpenParentLink,
       handleViewPayments,
       handleOpenRemoveDialog,
     ],
@@ -148,13 +137,6 @@ export function EnrolledStudentsList({
               ? "لا يوجد طلاب يطابقون معايير البحث."
               : "لم يتم تسجيل أي طلاب في هذه المجموعة بعد."
           }
-        />
-
-        {/* مودال رابط ولي الأمر السحري */}
-        <ParentLinkModal
-          isOpen={!!magicLinkStudent}
-          onClose={() => setMagicLinkStudent(null)}
-          student={magicLinkStudent}
         />
 
         {/* حوار تأكيد إلغاء تسجيل الطالب */}

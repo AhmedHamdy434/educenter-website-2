@@ -19,6 +19,7 @@ import { StatCard } from "@/components/common/StatCard";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { useGroupPaymentsQuery } from "../../hooks/queries";
 import { usePayGroupStudentMonthMutation } from "../../hooks/mutations";
+import { useSubscriptionStore } from "@/features/subscription/state/useSubscriptionStore";
 import {
   type GroupStudentPaymentInfo,
   type GroupPaymentsQueryParams,
@@ -82,6 +83,9 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
   const meta = paymentsRes?.meta;
   const totalRecords = meta?.total ?? 0;
 
+  // حالة اشتراك المركز
+  const isExpired = useSubscriptionStore((state) => state.isExpired);
+
   // حالة مودال تسجيل الدفع
   const [selectedStudent, setSelectedStudent] =
     useState<GroupStudentPaymentInfo | null>(null);
@@ -92,10 +96,11 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
 
   const handleOpenRecordModal = useCallback(
     (student: GroupStudentPaymentInfo) => {
+      if (isExpired) return;
       setSelectedStudent(student);
       setNotes("");
     },
-    [],
+    [isExpired],
   );
 
   const handleCloseRecordModal = useCallback(() => {
@@ -104,7 +109,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
   }, []);
 
   const handleRecordPayment = async () => {
-    if (!selectedStudent || !activeMonth) return;
+    if (isExpired || !selectedStudent || !activeMonth) return;
     await recordPayment(
       {
         groupStudentId: selectedStudent.groupStudentId,
@@ -132,16 +137,17 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
         page,
         limit,
         activeMonth,
+        isExpired,
         onRecordPayment: handleOpenRecordModal,
       }),
-    [page, limit, activeMonth, handleOpenRecordModal],
+    [page, limit, activeMonth, isExpired, handleOpenRecordModal],
   );
 
   return (
-    <div className="space-y-6 text-right">
+    <div className="space-y-6">
       {/* 1. Header Toolbar: Month Filter + Backend TableSearch */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Calendar className="size-5 text-primary shrink-0" />
           <label className="text-sm font-bold text-foreground shrink-0">
             الشهر المستهدف:
@@ -154,17 +160,17 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
               value: m,
               label: formatMonthName(m),
             }))}
-            className="w-full sm:w-56"
+            className="w-full lg:w-56"
           />
         </div>
 
-        <div className="w-full sm:w-72">
+        <div className="w-full md:w-72">
           <TableSearch placeholder="ابحث باسم الطالب، الهاتف أو الكود..." />
         </div>
       </div>
 
       {/* 2. Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard
           label="إجمالي الطلاب"
           value={stats?.total ?? 0}

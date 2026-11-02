@@ -3,15 +3,22 @@ import {
   startOrGetSessionAction,
   saveAttendanceAction,
 } from "../actions/attendance-actions";
+import { startExtraSessionAttendanceAction } from "@/features/extra-sessions/actions/extra-sessions-actions";
+import { extraSessionsKeys } from "@/features/extra-sessions/utils/queryKeys";
 import { attendanceKeys } from "./queries";
 import { scheduleKeys } from "@/features/schedule/utils/queryKeys";
 import { type SaveAttendanceDTO } from "../types";
 
-export function useStartAttendanceSessionMutation() {
+export function useStartAttendanceSessionMutation(extraSessionId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (groupId: string) => startOrGetSessionAction(groupId),
+    mutationFn: async (groupId: string) => {
+      if (extraSessionId) {
+        return startExtraSessionAttendanceAction(extraSessionId);
+      }
+      return startOrGetSessionAction(groupId);
+    },
     onSuccess: (result, groupId) => {
       if (result.success) {
         queryClient.invalidateQueries({
@@ -20,6 +27,11 @@ export function useStartAttendanceSessionMutation() {
         queryClient.invalidateQueries({
           queryKey: scheduleKeys.all,
         });
+        if (extraSessionId) {
+          queryClient.invalidateQueries({
+            queryKey: extraSessionsKeys.all,
+          });
+        }
       }
     },
   });

@@ -4,14 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { RowActions } from "@/components/common/RowActions";
-import { Link2 } from "lucide-react";
 
 interface ColumnsProps {
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
   onViewPayments: (student: Student) => void;
   onToggleStatus: (id: string) => void;
-  onGenerateParentLink?: (student: Student) => void;
   togglingId: string | null;
   deletingId: string | null;
 }
@@ -21,7 +19,6 @@ export function getStudentColumns({
   onDelete,
   onViewPayments,
   onToggleStatus,
-  onGenerateParentLink,
   togglingId,
   deletingId,
 }: ColumnsProps): ColumnDef<Student>[] {
@@ -133,18 +130,6 @@ export function getStudentColumns({
           >
             المدفوعات
           </Button>
-          {onGenerateParentLink && (
-            <Button
-              onClick={() => onGenerateParentLink(row.original)}
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-lg border-border text-emerald-800 hover:bg-emerald-50 hover:border-emerald-300 font-semibold text-xs px-2.5 gap-1 cursor-pointer"
-              title="توليد رابط ولي الأمر"
-            >
-              <Link2 className="size-3.5" />
-              <span>ولي الأمر</span>
-            </Button>
-          )}
           <RowActions
             onEdit={() => onEdit(row.original)}
             onDelete={() => onDelete(row.original)}

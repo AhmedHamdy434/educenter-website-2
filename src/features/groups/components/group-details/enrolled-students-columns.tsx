@@ -1,16 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { CreditCard, Link2, UserMinus } from "lucide-react";
+import { CreditCard, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type GroupEnrolledStudent } from "../../types";
-import { type Student } from "@/features/students/types";
 
 interface EnrolledStudentsColumnsOptions {
   page?: number;
   limit?: number;
   showRemoveButton?: boolean;
-  onGenerateParentLink: (student: Student) => void;
   onViewPayments: (
     studentId: string,
     studentName: string,
@@ -23,7 +21,6 @@ export function getEnrolledStudentsColumns({
   page = 1,
   limit = 10,
   showRemoveButton = true,
-  onGenerateParentLink,
   onViewPayments,
   onRemoveStudent,
 }: EnrolledStudentsColumnsOptions): ColumnDef<GroupEnrolledStudent>[] {
@@ -120,20 +117,6 @@ export function getEnrolledStudentsColumns({
         const item = row.original;
         return (
           <div className="flex items-center justify-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                onGenerateParentLink(item.student as unknown as Student)
-              }
-              className="h-8 gap-1 text-emerald-800 hover:bg-emerald-50 hover:border-emerald-300 rounded-lg text-xs font-medium"
-              title="توليد رابط تقرير ولي الأمر"
-            >
-              <Link2 className="size-3.5" />
-              <span>ولي الأمر</span>
-            </Button>
-
             <Button
               type="button"
               variant="brandOutline"

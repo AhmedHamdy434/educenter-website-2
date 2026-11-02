@@ -11,18 +11,20 @@ import {
 } from "../types";
 
 export async function startOrGetSessionAction(
-  groupId: string
+  groupId: string,
+  date?: string,
 ): Promise<ApiResponse<AttendanceSession>> {
   return serverApiClient<AttendanceSession>({
     url: `/groups/${groupId}/attendance/session`,
     method: "POST",
+    params: date ? { date } : undefined,
     cache: "no-store",
   });
 }
 
 export async function getSessionDetailsAction(
   groupId: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<ApiResponse<AttendanceSessionDetails>> {
   return serverApiClient<AttendanceSessionDetails>({
     url: `/groups/${groupId}/attendance/session/${sessionId}`,
@@ -34,7 +36,7 @@ export async function getSessionDetailsAction(
 export async function saveAttendanceAction(
   groupId: string,
   sessionId: string,
-  data: SaveAttendanceDTO
+  data: SaveAttendanceDTO,
 ): Promise<ApiResponse<{ success: boolean; message: string }>> {
   return serverApiClient<{ success: boolean; message: string }>({
     url: `/groups/${groupId}/attendance/session/${sessionId}/save`,
@@ -44,7 +46,7 @@ export async function saveAttendanceAction(
 }
 
 export async function getGroupSessionsAction(
-  groupId: string
+  groupId: string,
 ): Promise<ApiResponse<AttendanceSession[]>> {
   return serverApiClient<AttendanceSession[]>({
     url: `/groups/${groupId}/attendance/sessions`,
@@ -54,7 +56,7 @@ export async function getGroupSessionsAction(
 }
 
 export async function getGroupReportAction(
-  groupId: string
+  groupId: string,
 ): Promise<ApiResponse<GroupAttendanceReport>> {
   return serverApiClient<GroupAttendanceReport>({
     url: `/groups/${groupId}/attendance/report`,
@@ -64,7 +66,7 @@ export async function getGroupReportAction(
 }
 
 export async function getStudentReportAction(
-  studentId: string
+  studentId: string,
 ): Promise<ApiResponse<StudentAttendanceReport>> {
   return serverApiClient<StudentAttendanceReport>({
     url: `/students/${studentId}/attendance/report`,

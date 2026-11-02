@@ -139,3 +139,50 @@ export const getTodayDateString = () => {
   const dd = String(today.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
+
+/**
+ * Returns today's date formatted as YYYY-MM-DD strictly in the Africa/Cairo timezone.
+ */
+export const getCairoTodayDateString = (): string => {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(new Date());
+};
+
+/**
+ * Formats a YYYY-MM-DD date string to a localized Arabic date with weekday, strictly in Africa/Cairo.
+ */
+export const formatCairoDate = (dateStr: string): string => {
+  if (!dateStr) return "—";
+  const [year, month, day] = dateStr.split("-").map(Number);
+  if (!year || !month || !day) return dateStr;
+  const d = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  return d.toLocaleDateString("ar-EG", {
+    timeZone: "Africa/Cairo",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+/**
+ * Formats an ISO datetime string into Arabic date and time strictly in Africa/Cairo.
+ */
+export const formatCairoDateTime = (isoString: string | null | undefined): string => {
+  if (!isoString) return "—";
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleString("ar-EG", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};

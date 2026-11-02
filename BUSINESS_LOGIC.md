@@ -9,10 +9,10 @@
 
 ## 1. Frontend Architectural Overview
 
-EduCenter Frontend is a modern **Next.js 16 App Router application** built with a **Feature-Based Modular Architecture**. It delivers a high-performance, accessible (WCAG 2.2 AA), and responsive Arabic (RTL) interface for three center-scoped user roles (**Center Owner**, **Teacher / Instructor**, and **Student**), alongside a public marketing portal and a zero-friction **Public Parent Portal** (`/p/:token`).
+EduCenter Frontend is a modern **Next.js 16 App Router application** built with a **Feature-Based Modular Architecture**. It delivers a high-performance, accessible (WCAG 2.2 AA), and responsive Arabic (RTL) interface for three center-scoped user roles (**Center Owner**, **Teacher / Instructor**, and **Student**), alongside a public marketing portal.
 
 > [!NOTE]
-> **Admin Dashboard Separation**: System Admins / Center Managers (`ADMIN` / Super Admin) have their own dedicated standalone dashboard application. The `educenter-website` application strictly serves **Center Owners (`OWNER`)**, **Teachers (`TEACHER`)**, **Students (`STUDENT`)**, and **Public Parent Magic Reports (`/p/:token`)**.
+> **Admin Dashboard Separation**: System Admins / Center Managers (`ADMIN` / Super Admin) have their own dedicated standalone dashboard application. The `educenter-website` application strictly serves **Center Owners (`OWNER`)**, **Teachers (`TEACHER`)**, and **Students (`STUDENT`)**.
 
 ```
 src/
@@ -23,8 +23,7 @@ src/
 │   │   ├── login/page.tsx            # Login Page (with mustChangePassword detection)
 │   │   ├── forgot-password/page.tsx  # OTP Request Flow
 │   │   ├── reset-password/page.tsx   # OTP Verification & Password Reset
-│   │   ├── change-password/page.tsx  # Mandatory Initial Password Change
-│   │   └── p/[token]/page.tsx        # Public Parent Magic Report portal
+│   │   └── change-password/page.tsx  # Mandatory Initial Password Change
 │   └── (logged-in)/
 │       └── [centerSlug]/             # Protected center-scoped dynamic routes
 │           ├── layout.tsx            # Center shell (Sidebar + DashboardHeader + Grace Banner)
@@ -40,15 +39,12 @@ src/
 ├── features/                         # Modular domain features
 │   ├── admins/                       # Center Managers Management (OWNER only: GET/POST /admins)
 │   ├── attendance/                   # Daily Sessions & Reports
-│   ├── audit-logs/                   # Center Operational & Security Audit Logs
 │   ├── auth/                         # Login (1-day cookie maxAge), Logout, OTP Forgot/Reset, Change Password
 │   ├── dashboard/                    # Shell, Sidebar, Header, Routes Config
 │   ├── grades/                       # Academic Grades Management
 │   ├── groups/                       # Class Groups, Schedules, Roster, Payments Grid
 │   ├── landing/                      # Public Landing Page Sections
-│   ├── notifications/                # WhatsApp Dispatch & Notification Logs
-│   ├── parent-portal/                # Public Parent Magic Link Report
-│   ├── students/                     # Student Records, Enrollment, Parent Link Generation
+│   ├── students/                     # Student Records, Enrollment
 │   ├── subjects/                     # Academic Subjects Management
 │   ├── subscription/                 # Center Plan, Limits, Resource Quotas, Grace Period
 │   ├── teachers/                     # Teacher Directory & Assignments
@@ -78,8 +74,8 @@ Routing and role-based protection are handled natively in `src/proxy.ts` using t
                          ▼                               ▼
                    Has Token?                        No Token?
                          │                               │
-            ┌────────────┴────────────┐                  ├─ Public route (/, /login, /forgot-password, /reset-password, /p/*) ──► Allow
-            ▼                         ▼                  └─ Protected (/[centerSlug]/*) ─────────────────────────────────────► Redirect to /login
+            ┌────────────┴────────────┐                  ├─ Public route (/, /login, /forgot-password, /reset-password) ──► Allow
+            ▼                         ▼                  └─ Protected (/[centerSlug]/*) ─────────────────────────────────► Redirect to /login
        Valid & Active?         Expired/Invalid?
             │                         │
             │                         ├─ Delete 'token' & 'centerSlug' cookies
@@ -93,7 +89,7 @@ Routing and role-based protection are handled natively in `src/proxy.ts` using t
    └─ Role STUDENT ──► /:slug/student/*
 ```
 
-* **Public Allowed Routes**: `/`, `/login`, `/forgot-password`, `/reset-password`, `/change-password`, and `/p/*` (Parent Magic Link Portal).
+* **Public Allowed Routes**: `/`, `/login`, `/forgot-password`, `/reset-password`, `/change-password`, and `/subscription-required`.
 * **Role Mappings**:
   - `UserRole.OWNER` $\rightarrow$ `/[centerSlug]/owner`
   - `UserRole.TEACHER` $\rightarrow$ `/[centerSlug]/teacher`
@@ -168,14 +164,15 @@ The `OWNER` has full administrative and financial authority over their center:
   - `GET /schedule/calendar`: Dynamic monthly calendar view (`YYYY-MM`) displaying all center sessions, group/grade/subject labels, teacher badges, attendance statuses (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`), and extra sessions (`isExtraSession`).
   - `GET /schedule/upcoming`: Filterable accordion view grouped by dates with status filter tabs (`ALL`, `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`), grade/teacher/subject selectors, and quick-action attendance buttons.
   - Interactive direct entry to class attendance recordings (`/[centerSlug]/owner/schedule/attendance/:groupId/:sessionId?`).
-* **Audit Logs (`/[centerSlug]/owner/audit-logs`)**:
-  - `GET /audit-logs`: Chronological security and operations log (timestamp, actor user/ID, action, entity, IP address, details payload).
-* **WhatsApp Dispatch Logs (`/[centerSlug]/owner/notifications`)**:
-  - `GET /notifications`: Log of sent WhatsApp messages (recipients, student name, delivery status, message preview, timestamp).
 * **Academic Catalog Management**:
   - Full creation and management of Grades (`POST /grades`), Subjects (`POST /subjects`), Teachers, Students, and Groups.
 * **Center Subscription Overview (`/[centerSlug]/owner/subscription`)**:
   - `GET /centers/my-subscription`: View current plan limits, remaining days, student/teacher/subject quotas, and grace period status.
+* **Extra Sessions Lifecycle (`/[centerSlug]/owner/groups/:groupId` - Tab: Extra Sessions)**:
+  - Create and manage extra revision, makeup, and exam preparation sessions (`POST /groups/:groupId/extra-sessions`).
+  - Scheduled with start date and time (`hour`, `minute`) without hardcoded session duration limits or conflict blockings. Created directly with standard `201 Created` response.
+  - Supports full group enrollment or selective students (`ALL_GROUP` vs `SELECTED`).
+  - Supports cash fee tracking with quick collection/waiver workflows and financial summary.
 * **Full Operational Access**:
   - Full management of Students (`/[centerSlug]/owner/students`), Teachers (`/[centerSlug]/owner/teachers`), Groups (`/[centerSlug]/owner/groups`), Exams (`/[centerSlug]/owner/exams`), and Center Settings (`/[centerSlug]/owner/settings`).
 
@@ -187,9 +184,8 @@ The teacher interface is strictly scoped to academic execution for their assigne
 * **Assigned Groups (`/[centerSlug]/teacher/groups` - `GET /groups`)**: Filtered automatically to groups where `teacherId === currentTeacher.id`.
 * **Class Attendance (`/[centerSlug]/teacher/attendance/:groupId`)**: Open/retrieve today's session, record presence, absence, lateness, and excuse notes, view group attendance reports.
 * **Student Tuition Status (`GET /students/:studentId/payments`)**: Inspect monthly payment status **only for students currently enrolled in the teacher's groups**.
-* **Generate Parent Magic Links (`POST /p/generate/:studentId`)**: Generate a 30-day magic report link for any taught student to share with parents via WhatsApp or direct copy.
 * **Teacher Profile (`GET /auth/me`, `GET /teachers/:id`)**: View profile, assignments (`/[centerSlug]/teacher/assignments`), and exams (`/[centerSlug]/teacher/exams`).
-* **Strict Exclusions**: Center finances, subscription warnings, audit logs, center settings, and other teachers' groups/salaries are completely hidden.
+* **Strict Exclusions**: Center finances, subscription warnings, center settings, and other teachers' groups/salaries are completely hidden.
 
 ---
 
@@ -205,33 +201,6 @@ The student interface is a clean, read-only personal progress dashboard:
 
 ---
 
-### 5.4 Public Parent Magic Link Portal (`/p/:token`)
-A zero-friction, public mobile-responsive web view for parents that does not require login or passwords:
-
-```
-                            ┌───────────────────────────────┐
-                            │      Parent Magic Report      │
-                            │        (GET /p/:token)        │
-                            └───────────────┬───────────────┘
-                                            │
-         ┌──────────────────────────────────┼──────────────────────────────────┐
-         ▼                                  ▼                                  ▼
-┌──────────────────┐               ┌──────────────────┐               ┌──────────────────┐
-│ Attendance Rates │               │ Enrolled Groups  │               │ Monthly Tuition  │
-│   & Absence Log  │               │   & Subjects     │               │  Payment Status  │
-└──────────────────┘               └──────────────────┘               └──────────────────┘
-```
-
-* **Staff Generation**: `OWNER` and `TEACHER` generate the link from student cards/rosters via `POST /p/generate/:studentId`.
-* **Actions**: "نسخ رابط التقرير" (Copy Link) or "إرسال عبر واتساب" (WhatsApp Share).
-* **Parent Report Screen (`/p/[token]`)**:
-  1. **Student Header Card**: Name, grade, center name, center phone, and report expiration date.
-  2. **Attendance Summary**: Visual gauge for overall attendance percentage, total sessions attended vs absent, and a detailed absence log with recorded reasons.
-  3. **Academic Enrollments**: Active subjects, group names, teachers, and weekly schedules.
-  4. **Tuition & Payment Status**: Transparent grid of paid vs pending months for each enrolled subject.
-
----
-
 ## 6. Complete Frontend Route & Component Inventory
 
 | Route Path | Role Access | Component / Page | Key Server Actions / API Hooks | Integration Status |
@@ -241,16 +210,13 @@ A zero-friction, public mobile-responsive web view for parents that does not req
 | `/forgot-password` | Public | `src/app/(landing)/forgot-password/page.tsx` | `forgotPasswordAction` | **New** |
 | `/reset-password` | Public | `src/app/(landing)/reset-password/page.tsx` | `resetPasswordAction` | **New** |
 | `/change-password` | Public / Logged In | `src/app/(landing)/change-password/page.tsx` | `changePasswordAction` | **New** |
-| `/p/[token]` | Public (Parents) | `src/app/(landing)/p/[token]/page.tsx` | `getParentReportAction` | **New** |
 | `/[centerSlug]` | All Roles | `src/app/(logged-in)/[centerSlug]/page.tsx` | Redirects to role-specific route (`/owner`, `/teacher`, `/student`) | **Integrated** |
 | `/[centerSlug]/owner` | `OWNER` | `(center-owner)/owner/page.tsx` | Overview metrics | **Integrated** |
 | `/[centerSlug]/owner/users` | `OWNER` | `(center-owner)/owner/users/page.tsx` (`UsersListClient`) | `getUsers`, `toggleUserStatusAction` | **Integrated** |
-| `/[centerSlug]/owner/audit-logs` | `OWNER` | `(center-owner)/owner/audit-logs/page.tsx` (`AuditLogsListClient`) | `getAuditLogs` | **Integrated** |
-| `/[centerSlug]/owner/notifications` | `OWNER` | `(center-owner)/owner/notifications/page.tsx` (`NotificationsListClient`) | `getNotifications` | **Integrated** |
 | `/[centerSlug]/owner/grades` | `OWNER` | `(center-owner)/owner/grades/page.tsx` (`GradesListClient`) | `getGrades`, `createGradeAction`, `updateGradeAction`, `toggleGradeStatusAction` | **Integrated** |
 | `/[centerSlug]/owner/subjects` | `OWNER` | `(center-owner)/owner/subjects/page.tsx` (`SubjectsListClient`) | `getSubjects`, `createSubjectAction`, `updateSubjectAction`, `toggleSubjectStatusAction` | **Integrated** |
 | `/[centerSlug]/owner/teachers` | `OWNER` | `(center-owner)/owner/teachers/page.tsx` (`TeachersListClient`) | `getTeachers`, `createTeacherAction`, `updateTeacherAction`, `toggleTeacherStatusAction` | **Integrated** |
-| `/[centerSlug]/owner/students` | `OWNER` | `(center-owner)/owner/students/page.tsx` (`StudentsListClient`) | `getStudents`, `createStudentAction`, `updateStudentAction`, `generateParentLinkAction` | **Integrated** |
+| `/[centerSlug]/owner/students` | `OWNER` | `(center-owner)/owner/students/page.tsx` (`StudentsListClient`) | `getStudents`, `createStudentAction`, `updateStudentAction` | **Integrated** |
 | `/[centerSlug]/owner/groups` | `OWNER` | `(center-owner)/owner/groups/page.tsx` (`GroupsListClient`) | `getGroups`, `createGroupAction`, `updateGroupAction`, `toggleGroupStatusAction` | **Integrated** |
 | `/[centerSlug]/owner/groups/[id]` | `OWNER` | `(center-owner)/owner/groups/[id]/page.tsx` (`GroupDetailsClient`) | `getGroupDetails`, `addStudentsToGroupAction`, `saveAttendanceAction`, `payMonthAction` | **Integrated** |
 | `/[centerSlug]/owner/schedule` | `OWNER` | `(center-owner)/owner/schedule/page.tsx` (`ScheduleViewClient`) | `getCalendarScheduleAction`, `getUpcomingScheduleAction` | **Integrated** |
