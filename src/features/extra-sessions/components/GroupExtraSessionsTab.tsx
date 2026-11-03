@@ -63,7 +63,7 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
   return (
     <div className="space-y-6">
       {/* KPI Stats Overview */}
-      <ExtraSessionsStats sessions={sessions} />
+      <ExtraSessionsStats stats={response?.stats} />
 
       {/* Toolbar / Actions Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-border bg-card">

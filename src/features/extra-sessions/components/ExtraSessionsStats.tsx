@@ -1,22 +1,10 @@
-import { ExtraSessionItem } from "../types";
+import { ExtraSessionsGroupStats } from "../types";
 
 interface ExtraSessionsStatsProps {
-  sessions: ExtraSessionItem[];
+  stats?: ExtraSessionsGroupStats;
 }
 
-export const ExtraSessionsStats = ({ sessions }: ExtraSessionsStatsProps) => {
-  const totalSessionsCount = sessions.length;
-  const scheduledCount = sessions.filter(
-    (s) => s.status === "SCHEDULED",
-  ).length;
-  const completedCount = sessions.filter(
-    (s) => s.status === "COMPLETED",
-  ).length;
-  const totalCollectedSum = sessions.reduce(
-    (acc, s) => acc + (s.financialSummary?.totalCollected || 0),
-    0,
-  );
-
+export const ExtraSessionsStats = ({ stats }: ExtraSessionsStatsProps) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div className="p-4 rounded-2xl border border-border bg-card">
@@ -24,7 +12,7 @@ export const ExtraSessionsStats = ({ sessions }: ExtraSessionsStatsProps) => {
           إجمالي الحصص الإضافية
         </span>
         <span className="text-xl font-extrabold text-foreground">
-          {totalSessionsCount}
+          {stats?.totalSessions}
         </span>
         <span className="text-[11px] text-muted-foreground block mt-0.5">
           حصة مسجلة للمجموعة
@@ -36,7 +24,7 @@ export const ExtraSessionsStats = ({ sessions }: ExtraSessionsStatsProps) => {
           الحصص القادمة (المجدولة)
         </span>
         <span className="text-xl font-extrabold text-primary">
-          {scheduledCount}
+          {stats?.scheduledSessions}
         </span>
         <span className="text-[11px] text-muted-foreground block mt-0.5">
           بانتظار الانعقاد
@@ -48,7 +36,7 @@ export const ExtraSessionsStats = ({ sessions }: ExtraSessionsStatsProps) => {
           الحصص المكتملة
         </span>
         <span className="text-xl font-extrabold text-emerald-700 dark:text-emerald-400">
-          {completedCount}
+          {stats?.completedSessions}
         </span>
         <span className="text-[11px] text-emerald-600 dark:text-emerald-500 block mt-0.5">
           تم تسجيل حضورها
@@ -60,7 +48,7 @@ export const ExtraSessionsStats = ({ sessions }: ExtraSessionsStatsProps) => {
           إجمالي الرسوم المحصلة
         </span>
         <span className="text-xl font-extrabold text-amber-700 dark:text-amber-400">
-          {totalCollectedSum} ج.م
+          {stats?.totalCollected} ج.م
         </span>
         <span className="text-[11px] text-amber-600 dark:text-amber-500 block mt-0.5">
           مدفوعات كاش

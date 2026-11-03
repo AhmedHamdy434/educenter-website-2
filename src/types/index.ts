@@ -11,6 +11,7 @@ export type ApiResponse<T> = {
   message: string;
   data: T;
   meta?: Meta;
+  stats?: any;
   code?: string;
   statusCode?: number;
 };

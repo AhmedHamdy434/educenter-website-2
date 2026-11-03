@@ -10,7 +10,7 @@ interface GroupDetailsTabsProps {
 export default function GroupDetailsTabs({ isOwner = true }: GroupDetailsTabsProps) {
   const tabs = [
     { id: "students", label: "الطلاب المسجلون", Icon: Users },
-    { id: "attendance", label: "تحضير الحضور والغياب", Icon: CalendarCheck2 },
+    { id: "attendance", label: "سجل الحضور والغياب", Icon: CalendarCheck2 },
     { id: "reports", label: "تقارير نسب الحضور", Icon: TrendingUp },
     { id: "payments", label: "الاشتراكات والمدفوعات", Icon: CreditCard },
     ...(isOwner

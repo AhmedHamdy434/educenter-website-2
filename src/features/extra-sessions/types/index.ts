@@ -49,6 +49,14 @@ export interface ExtraSessionFinancialSummary {
   unpaidCount: number;
 }
 
+export interface ExtraSessionsGroupStats {
+  totalSessions: number;
+  scheduledSessions: number;
+  completedSessions: number;
+  canceledSessions: number;
+  totalCollected: number;
+}
+
 export interface ExtraSessionGroupTeacherUser {
   fullName: string;
   avatar: string | null;
