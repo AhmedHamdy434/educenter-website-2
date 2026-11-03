@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { CalendarCheck, Calendar } from "lucide-react";
 import { SharedTable } from "@/components/common/SharedTable";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useGroupAttendanceSessionsQuery } from "@/features/attendance/hooks/queries";
 import { AttendanceRecorder } from "@/features/groups/components/group-details/AttendanceRecorder";
 import { getAttendanceSessionsColumns } from "@/features/groups/components/group-details/attendance-sessions-columns";
@@ -23,8 +24,13 @@ export function AttendanceManagementView({
   );
 
   // 1. Fetch sessions list
-  const { data: response, isLoading } =
-    useGroupAttendanceSessionsQuery(groupId);
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGroupAttendanceSessionsQuery(groupId);
 
   const sessions = response?.data || [];
   const columns = useMemo(
@@ -51,6 +57,16 @@ export function AttendanceManagementView({
     );
   }
 
+  if (isError) {
+    return (
+      <QueryErrorState
+        title="تعذر تحميل سجل الحصص"
+        error={error}
+        onRetry={refetch}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* History log title */}
@@ -61,26 +77,18 @@ export function AttendanceManagementView({
         </h3>
 
         {/* Sessions table list */}
-        {sessions.length > 0 || isLoading ? (
-          <SharedTable
-            columns={columns}
-            data={sessions}
-            isLoading={isLoading}
-            hidePagination={true}
-            emptyMessage="لم تقم بتسجيل حضور أي حصة لهذه المجموعة حتى الآن."
-          />
-        ) : (
-          <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-secondary/20">
-            <CalendarCheck className="size-12 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="font-bold text-foreground text-sm">
-              سجل حضور الحصص فارغ
-            </p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-              لم تقم بتسجيل حضور أي حصة لهذه المجموعة حتى الآن. اضغط على الزر
-              أعلاه لتسجيل حضور حصة اليوم.
-            </p>
-          </div>
-        )}
+        <SharedTable
+          columns={columns}
+          data={sessions}
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
+          hidePagination={true}
+          emptyTitle="سجل حضور الحصص فارغ"
+          emptyDescription="لم تقم بتسجيل حضور أي حصة لهذه المجموعة حتى الآن."
+          emptyIcon={CalendarCheck}
+        />
       </div>
     </div>
   );

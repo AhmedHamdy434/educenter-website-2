@@ -68,30 +68,20 @@ export function AttendancePresentList({
         </h3>
       </div>
 
-      {students.length > 0 ? (
-        <SharedTable
-          columns={columns}
-          data={students}
-          hidePagination={true}
-          getRowId={(row) => row.studentId}
-          rowClassName={(row) =>
-            row.original.studentId === highlightedStudentId
-              ? "bg-emerald-50/60 dark:bg-emerald-950/30 transition-colors"
-              : ""
-          }
-        />
-      ) : (
-        <div className="text-center py-10 px-4 border border-dashed border-border rounded-xl bg-secondary/10">
-          <UserX className="size-8 mx-auto text-muted-foreground/40 mb-2" />
-          <p className="text-xs font-bold text-foreground">
-            لم يتم تسجيل حضور أي طالب حتى الآن
-          </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            امسح كود الطالب بالماسح أو ابحث عنه بالأعلى، أو اختر &quot;تسجيل
-            حضور&quot; من القائمة بالأسفل.
-          </p>
-        </div>
-      )}
+      <SharedTable
+        columns={columns}
+        data={students}
+        hidePagination={true}
+        getRowId={(row) => row.studentId}
+        rowClassName={(row) =>
+          row.original.studentId === highlightedStudentId
+            ? "bg-emerald-50/60 dark:bg-emerald-950/30 transition-colors"
+            : ""
+        }
+        emptyTitle="لم يتم تسجيل حضور أي طالب حتى الآن"
+        emptyDescription='امسح كود الطالب بالماسح أو ابحث عنه بالأعلى، أو اختر "تسجيل حضور" من القائمة بالأسفل.'
+        emptyIcon={UserX}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, GraduationCap } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
@@ -70,7 +70,7 @@ export function StudentsListClient() {
   } = useCrudModal<Student>();
 
   // Data fetching
-  const { data, isLoading } = useStudentsQuery(queryParams);
+  const { data, isLoading, isError, error, refetch } = useStudentsQuery(queryParams);
 
   // Mutations
   const toggleMutation = useToggleStudentMutation();
@@ -142,10 +142,15 @@ export function StudentsListClient() {
           columns={columns}
           data={data?.data ?? []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage="لم يتم العثور على أي طلاب."
+          emptyTitle="لم يتم العثور على أي طلاب"
+          emptyDescription="لم تتم إضافة طلاب بعد أو لا توجد نتائج مطابقة لخيارات الفلترة والبحث."
+          emptyIcon={GraduationCap}
         />
       </Card>
 

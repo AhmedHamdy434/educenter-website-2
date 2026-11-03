@@ -111,6 +111,7 @@ export function TeacherForm({
         }),
       );
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSubjects(initialSubjects);
       reset({
         fullName: teacher.user.fullName,

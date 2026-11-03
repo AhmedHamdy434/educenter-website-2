@@ -16,6 +16,8 @@ import { usePayGroupStudentMonthMutation } from "@/features/groups/hooks/mutatio
 import { useGroupQuery } from "@/features/groups/hooks/queries";
 import { formatFullDate, formatMonthName } from "@/utils/time";
 import { Loading } from "@/components/common/Loading";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 
 interface StudentPaymentsModalProps {
   isOpen: boolean;
@@ -38,11 +40,13 @@ export function StudentPaymentsModal({
   const [notes, setNotes] = useState<string>("");
 
   // 1. استعلام جلب مدفوعات الطالب في هذه المجموعة
-  const { data: paymentsRes, isLoading } = useStudentPaymentsQuery(
-    studentId,
-    groupId,
-    isOpen,
-  );
+  const {
+    data: paymentsRes,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useStudentPaymentsQuery(studentId, groupId, isOpen);
 
   const payments = useMemo(
     () => paymentsRes?.data || [],
@@ -251,6 +255,13 @@ export function StudentPaymentsModal({
 
           {isLoading ? (
             <Loading />
+          ) : isError ? (
+            <QueryErrorState
+              title="تعذر تحميل سجل المدفوعات"
+              error={error}
+              onRetry={refetch}
+              compact
+            />
           ) : payments.length > 0 ? (
             <div className="overflow-x-auto border border-border rounded-xl max-h-72 overflow-y-auto">
               <table className="w-full text-right border-collapse text-xs">
@@ -306,17 +317,17 @@ export function StudentPaymentsModal({
               </table>
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground bg-secondary/20 border border-border rounded-xl">
-              <Landmark className="size-8 mx-auto text-muted-foreground/30 mb-2" />
-              <p className="font-bold text-foreground text-xs">
-                لا توجد مدفوعات مسجلة
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {groupId
+            <EmptyState
+              icon={Landmark}
+              title="لا توجد مدفوعات مسجلة"
+              description={
+                groupId
                   ? "لم يتم تسجيل أي عمليات تحصيل اشتراك لهذا الطالب في هذه المجموعة بعد."
-                  : "لم يتم تسجيل أي عمليات تحصيل اشتراك لهذا الطالب بعد."}
-              </p>
-            </div>
+                  : "لم يتم تسجيل أي عمليات تحصيل اشتراك لهذا الطالب بعد."
+              }
+              compact
+              className="border border-border rounded-xl bg-secondary/20"
+            />
           )}
         </div>
       </div>

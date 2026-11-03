@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useRef, useCallback, useMemo } from "react";
+import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useAttendanceSessionDetailsQuery } from "@/features/attendance/hooks/queries";
 import { useSaveAttendanceMutation } from "@/features/attendance/hooks/mutations";
 import {
@@ -37,10 +40,13 @@ export function AttendanceRecorder({
   onBack,
 }: AttendanceRecorderProps) {
   // 1. Fetch Session details (includes student list and their saved status)
-  const { data: response, isLoading } = useAttendanceSessionDetailsQuery(
-    groupId,
-    sessionId,
-  );
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useAttendanceSessionDetailsQuery(groupId, sessionId);
 
   const saveMutation = useSaveAttendanceMutation();
 
@@ -419,6 +425,18 @@ export function AttendanceRecorder({
     );
   }
 
+  if (isError) {
+    return (
+      <div className="py-8">
+        <QueryErrorState
+          title="تعذر تحميل تفاصيل جلسة الحضور"
+          error={error}
+          onRetry={refetch}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 text-right animate-fade-in" dir="rtl">
       {/* 1. Header & Dynamic Progress Stats */}
@@ -471,14 +489,12 @@ export function AttendanceRecorder({
           />
         </>
       ) : (
-        <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-xl bg-secondary/20">
-          <p className="font-bold text-foreground text-sm">
-            لا يوجد طلاب مقيدون في هذه المجموعة الدراسية بعد.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            أضف طلاباً للمجموعة لتتمكن من تسجيل الحضور والغياب.
-          </p>
-        </div>
+        <EmptyState
+          icon={Users}
+          title="لا يوجد طلاب مقيدون في هذه المجموعة الدراسية بعد"
+          description="أضف وقيد طلاباً للمجموعة لتتمكن من تسجيل الحضور والغياب."
+          className="border border-dashed border-border rounded-xl bg-secondary/20 py-12"
+        />
       )}
     </div>
   );

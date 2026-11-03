@@ -60,8 +60,13 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
     [page, limit, search, month, sortBy, sortOrder],
   );
 
-  const { data: paymentsRes, isLoading: isPaymentsLoading } =
-    useGroupPaymentsQuery(groupId, queryParams);
+  const {
+    data: paymentsRes,
+    isLoading: isPaymentsLoading,
+    isError,
+    error,
+    refetch,
+  } = useGroupPaymentsQuery(groupId, queryParams);
 
   const stats = paymentsRes?.stats;
 
@@ -219,14 +224,23 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
         columns={columns}
         data={payments}
         isLoading={isPaymentsLoading}
+        isError={isError}
+        error={error}
+        onRetry={refetch}
         meta={meta}
         sorting={sorting}
         onSortingChange={onSortingChange}
-        emptyMessage={
+        emptyTitle={
           search
-            ? "لا يوجد طلاب يطابقون معايير البحث في هذا الشهر."
-            : "لا توجد بيانات اشتراكات مسجلة لهذا الشهر."
+            ? "لا يوجد طلاب يطابقون معايير البحث في هذا الشهر"
+            : "لا توجد بيانات اشتراكات مسجلة لهذا الشهر"
         }
+        emptyDescription={
+          search
+            ? "تأكد من اسم الطالب المسجل أو حاول البحث في شهر آخر."
+            : "لم يتم تسجيل أو تحصيل أي اشتراكات للطلاب في هذا الشهر حتى الآن."
+        }
+        emptyIcon={CreditCard}
       />
 
       {/* 5. Record Payment Modal Dialog */}

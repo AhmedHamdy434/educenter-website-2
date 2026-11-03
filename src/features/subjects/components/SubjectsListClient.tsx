@@ -66,7 +66,7 @@ export function SubjectsListClient() {
   } = useCrudModal<Subject>();
 
   // Data fetching
-  const { data, isLoading } = useSubjectsQuery(queryParams);
+  const { data, isLoading, isError, error, refetch } = useSubjectsQuery(queryParams);
 
   // Mutations
   const toggleMutation = useToggleSubjectMutation();
@@ -137,10 +137,15 @@ export function SubjectsListClient() {
           columns={columns}
           data={data?.data ?? []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage="لم يتم العثور على أي مواد دراسية."
+          emptyTitle="لم يتم العثور على أي مواد دراسية"
+          emptyDescription="لم يتم إضافة مواد دراسية بعد أو لا توجد نتائج مطابقة لخيارات الفلترة والبحث."
+          emptyIcon={BookOpen}
         />
       </Card>
 

@@ -33,10 +33,13 @@ export function EnrolledStudentsList({
   };
 
   // 3. استعلام جلب الطلاب المسجلين بالصفحة الحالية من الباك إند
-  const { data: groupStudentsResponse, isLoading } = useGroupStudentsQuery(
-    groupId,
-    queryParams,
-  );
+  const {
+    data: groupStudentsResponse,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGroupStudentsQuery(groupId, queryParams);
 
 
   // 5. حالات المودالات المحلية
@@ -129,14 +132,23 @@ export function EnrolledStudentsList({
           columns={columns}
           data={studentsList}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={groupStudentsResponse?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage={
+          emptyTitle={
             search
-              ? "لا يوجد طلاب يطابقون معايير البحث."
-              : "لم يتم تسجيل أي طلاب في هذه المجموعة بعد."
+              ? "لا يوجد طلاب يطابقون معايير البحث"
+              : "لم يتم تسجيل أي طلاب في هذه المجموعة بعد"
           }
+          emptyDescription={
+            search
+              ? "تأكد من كتابة الاسم أو رقم الهاتف بشكل صحيح، أو أعد ضبط معايير البحث."
+              : "يمكنك إضافة وقيد الطلاب في هذه المجموعة للبدء في متابعة حضورهم واشتراكاتهم."
+          }
+          emptyIcon={Users}
         />
 
         {/* حوار تأكيد إلغاء تسجيل الطالب */}

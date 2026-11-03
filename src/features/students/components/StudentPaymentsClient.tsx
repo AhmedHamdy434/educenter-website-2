@@ -3,11 +3,19 @@
 import { Landmark, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useStudentPaymentsQuery } from "../hooks/queries";
 import { formatFullDate, formatMonthName } from "@/utils/time";
 
 export function StudentPaymentsClient() {
-  const { data: paymentsRes, isLoading } = useStudentPaymentsQuery("me");
+  const {
+    data: paymentsRes,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useStudentPaymentsQuery("me");
   const payments = paymentsRes?.data || [];
 
   return (
@@ -25,6 +33,12 @@ export function StudentPaymentsClient() {
             <Loader2 className="size-10 animate-spin text-primary mb-3" />
             <p className="text-sm font-semibold">جاري تحميل سجل مدفوعاتك...</p>
           </div>
+        ) : isError ? (
+          <QueryErrorState
+            title="تعذر تحميل سجل المدفوعات"
+            error={error}
+            onRetry={refetch}
+          />
         ) : payments.length > 0 ? (
           <div className="overflow-x-auto border border-border rounded-xl">
             <table className="w-full text-right border-collapse text-sm">
@@ -61,11 +75,11 @@ export function StudentPaymentsClient() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-16 text-muted-foreground">
-            <Landmark className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-            <p className="font-bold text-foreground">لا يوجد مدفوعات مسجلة بعد</p>
-            <p className="text-xs text-muted-foreground mt-1">لم نجد أي اشتراكات مسددة مسجلة باسمك في النظام حالياً.</p>
-          </div>
+          <EmptyState
+            icon={Landmark}
+            title="لا توجد مدفوعات مسجلة بعد"
+            description="لم نجد أي اشتراكات مسددة مسجلة باسمك في النظام حالياً."
+          />
         )}
       </Card>
     </div>

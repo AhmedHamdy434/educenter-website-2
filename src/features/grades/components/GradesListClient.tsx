@@ -59,7 +59,7 @@ export function GradesListClient() {
   } = useCrudModal<Grade>();
 
   // Data fetching
-  const { data, isLoading } = useGradesQuery(queryParams);
+  const { data, isLoading, isError, error, refetch } = useGradesQuery(queryParams);
 
   // Mutations
   const toggleMutation = useToggleGradeMutation();
@@ -130,10 +130,15 @@ export function GradesListClient() {
           columns={columns}
           data={data?.data ?? []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage="لم يتم العثور على أي مراحل دراسية."
+          emptyTitle="لم يتم العثور على أي مراحل دراسية"
+          emptyDescription="لم يتم إضافة مراحل دراسية بعد أو لا توجد نتائج مطابقة لمعايير البحث."
+          emptyIcon={Layers}
         />
       </Card>
 

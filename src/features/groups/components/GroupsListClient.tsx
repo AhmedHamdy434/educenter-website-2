@@ -76,7 +76,7 @@ export function GroupsListClient() {
   } = useCrudModal<Group>();
 
   // Data fetching
-  const { data, isLoading } = useGroupsQuery(queryParams);
+  const { data, isLoading, isError, error, refetch } = useGroupsQuery(queryParams);
   const { data: gradesOptions, isLoading: gradesLoading } =
     useGradesOptionsQuery();
 
@@ -164,10 +164,15 @@ export function GroupsListClient() {
           columns={columns}
           data={data?.data ?? []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage="لم يتم العثور على أي مجموعات دراسية."
+          emptyTitle="لم يتم العثور على أي مجموعات دراسية"
+          emptyDescription="لم يتم إضافة أي مجموعات بعد أو لا توجد نتائج مطابقة لخيارات الفلترة والبحث."
+          emptyIcon={Users}
         />
       </Card>
 

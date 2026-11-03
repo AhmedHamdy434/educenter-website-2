@@ -21,6 +21,7 @@ import {
   ScheduleAccordionSkeleton,
 } from "./ScheduleSkeletons";
 import { PageHeader } from "@/components/common/PageHeader";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 
 export function ScheduleViewClient() {
   const initialFilter: ScheduleFilterState = {
@@ -64,11 +65,21 @@ export function ScheduleViewClient() {
     groupId: filters.groupId,
   };
 
-  const { data: calendarResponse, isLoading: isCalendarLoading } =
-    useCalendarScheduleQuery(calendarQueryParams, viewMode === "calendar");
+  const {
+    data: calendarResponse,
+    isLoading: isCalendarLoading,
+    isError: isCalendarError,
+    error: calendarError,
+    refetch: refetchCalendar,
+  } = useCalendarScheduleQuery(calendarQueryParams, viewMode === "calendar");
 
-  const { data: upcomingResponse, isLoading: isUpcomingLoading } =
-    useUpcomingScheduleQuery(upcomingQueryParams, viewMode === "accordion");
+  const {
+    data: upcomingResponse,
+    isLoading: isUpcomingLoading,
+    isError: isUpcomingError,
+    error: upcomingError,
+    refetch: refetchUpcoming,
+  } = useUpcomingScheduleQuery(upcomingQueryParams, viewMode === "accordion");
 
   const rawSessions: ScheduleSessionItem[] = useMemo(() => {
     if (viewMode === "calendar") {
@@ -91,6 +102,9 @@ export function ScheduleViewClient() {
 
   const isLoading =
     viewMode === "calendar" ? isCalendarLoading : isUpcomingLoading;
+  const isError = viewMode === "calendar" ? isCalendarError : isUpcomingError;
+  const error = viewMode === "calendar" ? calendarError : upcomingError;
+  const refetch = viewMode === "calendar" ? refetchCalendar : refetchUpcoming;
 
   return (
     <div className="space-y-6">
@@ -123,6 +137,12 @@ export function ScheduleViewClient() {
         ) : (
           <ScheduleAccordionSkeleton />
         )
+      ) : isError ? (
+        <QueryErrorState
+          title="تعذر تحميل جدول الحصص"
+          error={error}
+          onRetry={refetch}
+        />
       ) : viewMode === "calendar" ? (
         <CalendarGrid month={month} sessions={filteredSessions} />
       ) : (

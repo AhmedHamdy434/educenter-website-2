@@ -14,6 +14,7 @@ import {
 import { TableSearch } from "@/components/common/TableSearch";
 import { SharedTable } from "@/components/common/SharedTable";
 import { Loading } from "@/components/common/Loading";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { type ApiResponse } from "@/types";
 import { type StudentAttendanceReport } from "../types";
 import { useStudentAttendanceReportQuery } from "../hooks/queries";
@@ -32,10 +33,13 @@ export function StudentAttendanceHistoryClient({
   const search = searchParams.get("search") || "";
 
   // Fetch student report with TanStack Query
-  const { data: response, isLoading } = useStudentAttendanceReportQuery(
-    studentId,
-    true
-  );
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useStudentAttendanceReportQuery(studentId, true);
 
   const reportData = response?.data || initialData.data;
 
@@ -91,6 +95,12 @@ export function StudentAttendanceHistoryClient({
 
       {isLoading && !reportData ? (
         <Loading message="جاري تحميل سجل الحضور..." />
+      ) : isError && !reportData ? (
+        <QueryErrorState
+          title="تعذر تحميل سجل الحضور والغياب"
+          error={error}
+          onRetry={refetch}
+        />
       ) : (
         <>
           {/* Differentiated Stats Grid Hierarchy */}
@@ -184,7 +194,16 @@ export function StudentAttendanceHistoryClient({
               columns={columns}
               data={filteredHistory}
               isLoading={isLoading}
-              emptyMessage="لا يوجد سجل حضور مسجل حتى الآن."
+              isError={isError}
+              error={error}
+              onRetry={refetch}
+              emptyTitle="لا يوجد سجل حضور"
+              emptyDescription={
+                search
+                  ? "لا توجد حصص تطابق معايير البحث."
+                  : "لم يتم تسجيل أي حضور أو غياب لك في أي حصة بعد."
+              }
+              emptyIcon={CalendarCheck}
             />
           </div>
         </>

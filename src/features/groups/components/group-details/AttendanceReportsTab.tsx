@@ -12,6 +12,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/common/Loading";
 import { StatCard } from "@/components/common/StatCard";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useGroupAttendanceReportQuery } from "@/features/attendance/hooks/queries";
 
 interface AttendanceReportsTabProps {
@@ -106,6 +108,8 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
     data: response,
     isLoading,
     isError,
+    error,
+    refetch,
   } = useGroupAttendanceReportQuery(groupId);
 
   const report = response?.data;
@@ -116,24 +120,21 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
 
   if (isError) {
     return (
-      <div
-        role="alert"
-        className="rounded-xl border border-border bg-card px-4 py-10 text-center"
-      >
-        <p className="font-bold text-foreground">تعذر تحميل تقارير الحضور</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          حاول مرة أخرى بعد قليل.
-        </p>
-      </div>
+      <QueryErrorState
+        title="تعذر تحميل تقارير الحضور"
+        error={error}
+        onRetry={refetch}
+      />
     );
   }
 
   if (!report) {
     return (
-      <div className="rounded-xl border border-border bg-card py-16 text-center">
-        <TrendingUp className="mx-auto mb-3 size-12 text-muted-foreground/30" />
-        <p className="font-bold text-foreground">لا تتوفر إحصائيات للمجموعة</p>
-      </div>
+      <EmptyState
+        icon={TrendingUp}
+        title="لا تتوفر إحصائيات للمجموعة"
+        description="لم يتم تسجيل حضور كافٍ لتوليد تقارير إحصائية لهذه المجموعة بعد."
+      />
     );
   }
 

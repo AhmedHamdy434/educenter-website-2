@@ -1,5 +1,4 @@
-import { AlertCircle } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { SubscriptionHeroCard } from "./SubscriptionHeroCard";
 import { SubscriptionUsageSection } from "./SubscriptionUsageSection";
 import { SubscriptionFeaturesCard } from "./SubscriptionFeaturesCard";
@@ -24,15 +23,10 @@ export function SubscriptionClient({ initialData }: SubscriptionClientProps) {
   if (!center) {
     return (
       <div className="space-y-6 text-right">
-        <Card className="p-12 text-center text-muted-foreground bg-card border border-border rounded-2xl shadow-none">
-          <AlertCircle className="size-12 mx-auto text-muted-foreground/30 mb-3" />
-          <p className="font-bold text-foreground text-sm">
-            تعذر تحميل بيانات اشتراك المركز
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            يرجى التأكد من اتصالك بالإنترنت أو إعادة المحاولة لاحقاً.
-          </p>
-        </Card>
+        <QueryErrorState
+          title="تعذر تحميل بيانات اشتراك المركز"
+          errorMessage="يرجى التأكد من اتصالك بالإنترنت أو إعادة المحاولة لاحقاً."
+        />
       </div>
     );
   }

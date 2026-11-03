@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loading } from "@/components/common/Loading";
 import { TableSearch } from "@/components/common/TableSearch";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useGroupExtraSessionsQuery } from "../hooks/queries";
 import { CreateExtraSessionModal } from "./CreateExtraSessionModal";
 import { EditExtraSessionModal } from "./EditExtraSessionModal";
@@ -46,7 +48,13 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
     useState<ExtraSessionItem | null>(null);
   const [detailsSessionId, setDetailsSessionId] = useState<string | null>(null);
 
-  const { data: response, isLoading } = useGroupExtraSessionsQuery(groupId, {
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGroupExtraSessionsQuery(groupId, {
     search,
     limit: 50,
   });
@@ -93,17 +101,28 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
         <div className="py-16">
           <Loading />
         </div>
+      ) : isError ? (
+        <QueryErrorState
+          error={error}
+          onRetry={refetch}
+          title="تعذر تحميل الحصص الإضافية"
+        />
       ) : sessions.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-border rounded-2xl bg-card space-y-3">
-          <Sparkles className="size-10 text-muted-foreground/40 mx-auto" />
-          <h3 className="text-sm font-bold text-foreground">
-            لا توجد حصص إضافية مسجلة
-          </h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
-            يمكنك إنشاء حصة إضافية للمجموعة لأي غرض (مراجعة، تعويض، ليلة امتحان)
-            سواء كانت مجانية أو برسوم كاش.
-          </p>
-        </div>
+        <EmptyState
+          icon={Sparkles}
+          title="لا توجد حصص إضافية مسجلة"
+          description={
+            search
+              ? "لم يتم العثور على أي حصص تطابق معايير البحث."
+              : "يمكنك إنشاء حصة إضافية للمجموعة لأي غرض (مراجعة، تعويض، ليلة امتحان) سواء كانت مجانية أو برسوم كاش."
+          }
+          action={{
+            label: "حصة إضافية جديدة",
+            onClick: () => setIsCreateOpen(true),
+            icon: Sparkles,
+          }}
+          className="border border-dashed border-border rounded-2xl bg-card"
+        />
       ) : (
         <div className="space-y-3">
           {sessions.map((session) => {

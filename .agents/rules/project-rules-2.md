@@ -53,7 +53,8 @@ This document defines the mandatory engineering standards for authentication, ro
 *   [ ] Checked and reused existing components/helpers?
 *   [ ] Decoupled code correctly inside `src/features/<feature>/`?
 *   [ ] Checked that no `any` types were used?
-*   [ ] Handled loading, empty, and error states?
+*   [ ] Handled loading, empty, and error states using `<EmptyState>` and `<QueryErrorState>`?
+*   [ ] Rendered `<SharedTable>` directly with `isError`, `error`, `onRetry={refetch}` without redundant outer `{data.length > 0 ? <SharedTable /> : <EmptyState />}` conditions?
 *   [ ] Checked that form fields, Zod schemas, and table columns strictly match the backend Prisma schema and DTOs (no ghost/unsupported fields)?
 *   [ ] Verified that list pages (`page.tsx`) do not pass server `initialData` to client list containers, delegating list fetching entirely to React Query?
 *   [ ] Used `@/hooks/useOnClickOutside` instead of manual window/document listeners?
@@ -88,7 +89,7 @@ Every feature module (e.g., `src/features/students/`, `src/features/subjects/`, 
 
 #### 1. Page Client Container (`<Feature>sListClient.tsx`)
 Must orchestrate the main view components and should compose:
-- **Pure Client-Side React Query Fetching**: Data fetching is initiated strictly within the client container via `const { data, isLoading } = use<Feature>Query(queryParams)`. Never accept or pass down server `initialData`.
+- **Pure Client-Side React Query Fetching**: Data fetching is initiated strictly within the client container via `const { data, isLoading, isError, error, refetch } = use<Feature>Query(queryParams)`. Never accept or pass down server `initialData`.
 - **`useTableFilters<TFilters>()`**: Reads and updates URL search parameters for `page`, `limit`, `search`, custom filters, and sorting (`sortBy`, `sortOrder`, `sorting`, `onSortingChange`).
 - **`useCrudModal<TEntity>()`**: Provides `{ isOpen, selectedItem, openCreate, openEdit, close }` for create/edit modal lifecycle.
 - **`<PageHeader>`**: Renders the title, Arabic description, and a "create new" action button triggering `openCreate`.
@@ -108,9 +109,11 @@ Must orchestrate the main view components and should compose:
   - `columns`: Column definitions explicitly typed as `ColumnDef<TEntity>[]`.
   - `data`: List items.
   - `isLoading`: Loading state.
+  - `isError`, `error`, `onRetry`: Server error handling directly rendering `<QueryErrorState compact />` with retry button.
+  - `emptyTitle`, `emptyDescription`, `emptyIcon`, `emptyAction`: Direct props for internal `<EmptyState compact />` rendering when `data.length === 0`.
   - `meta`: Backend pagination metadata (`meta={data?.meta}`) containing `total`, `page`, `limit`, `totalPages`.
   - `sorting`, `onSortingChange`: Server-side sorting wired to TanStack Table.
-  - `emptyMessage`: Localized empty state message.
+  - **No redundant outer checks**: Always render `<SharedTable>` directly without wrapping in `{data.length > 0 ? <SharedTable /> : <EmptyState />}`.
 - **`<SharedModal>`**: A popup wrapper triggered by `isOpen` which renders `<Feature>Form`.
 - **`<ConfirmDialog>`**: Standard deletion confirmation dialog utilizing state `itemToDelete`, `onClose={() => setItemToDelete(null)}`, and a clean async callback `handleConfirmDelete`.
 

@@ -9,8 +9,10 @@ import {
   OnChangeFn,
   Row,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, LucideIcon } from "lucide-react";
 import { SharedPagination } from "./SharedPagination";
+import { EmptyState, EmptyStateAction } from "./EmptyState";
+import { QueryErrorState } from "./QueryErrorState";
 import { DEFAULT_LIMIT } from "@/constants/dropdown-options";
 import { cn } from "@/lib/utils";
 import { Meta } from "@/types";
@@ -19,10 +21,17 @@ interface SharedTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
   isLoading?: boolean;
+  isError?: boolean;
+  error?: Error | unknown;
+  onRetry?: () => void;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
   meta?: Meta;
   emptyMessage?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyIcon?: LucideIcon;
+  emptyAction?: EmptyStateAction;
   hidePagination?: boolean;
   rowClassName?: (row: Row<TData>) => string;
   getRowId?: (originalRow: TData, index: number) => string;
@@ -32,10 +41,17 @@ export function SharedTable<TData>({
   columns,
   data,
   isLoading = false,
+  isError = false,
+  error,
+  onRetry,
   sorting,
   onSortingChange,
   meta = { total: 1, page: 1, limit: 10, totalPages: 1 },
   emptyMessage = "لا توجد بيانات لعرضها.",
+  emptyTitle,
+  emptyDescription,
+  emptyIcon,
+  emptyAction,
   hidePagination = false,
   rowClassName,
   getRowId,
@@ -131,14 +147,34 @@ export function SharedTable<TData>({
                     </tr>
                   ),
                 )
+              ) : isError ? (
+                // Error State
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="px-5 py-8 text-center"
+                  >
+                    <QueryErrorState
+                      error={error}
+                      onRetry={onRetry}
+                      compact
+                    />
+                  </td>
+                </tr>
               ) : data.length === 0 ? (
                 // Empty State
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="px-5 py-12 text-center text-muted-foreground font-medium text-xs"
+                    className="px-5 py-8 text-center"
                   >
-                    {emptyMessage}
+                    <EmptyState
+                      title={emptyTitle || emptyMessage}
+                      description={emptyDescription}
+                      icon={emptyIcon}
+                      action={emptyAction}
+                      compact
+                    />
                   </td>
                 </tr>
               ) : (
@@ -171,7 +207,7 @@ export function SharedTable<TData>({
       </div>
 
       {/* Pagination Controls */}
-      {!hidePagination && total > 0 && !isLoading && (
+      {!hidePagination && total > 0 && !isLoading && !isError && (
         <SharedPagination
           page={page}
           limit={limit}

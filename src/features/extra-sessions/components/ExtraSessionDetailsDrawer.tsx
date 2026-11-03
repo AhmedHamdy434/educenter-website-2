@@ -20,6 +20,8 @@ import { SharedModal } from "@/components/common/SharedModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loading } from "@/components/common/Loading";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useExtraSessionDetailsQuery } from "../hooks/queries";
 import { useSubscriptionStore } from "@/features/subscription/state/useSubscriptionStore";
 import { QuickPayModal } from "./QuickPayModal";
@@ -57,7 +59,13 @@ export function ExtraSessionDetailsDrawer({
     useState<ExtraSessionParticipant | null>(null);
   const [searchStudent, setSearchStudent] = useState("");
 
-  const { data: detailsResponse, isLoading } = useExtraSessionDetailsQuery(
+  const {
+    data: detailsResponse,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useExtraSessionDetailsQuery(
     sessionId || undefined,
     isOpen && !!sessionId,
   );
@@ -93,9 +101,18 @@ export function ExtraSessionDetailsDrawer({
           session?.title ? `تفاصيل: ${session.title}` : "تفاصيل الحصة الإضافية"
         }
       >
-        {isLoading || !session ? (
+        {isLoading ? (
           <div className="py-12">
             <Loading />
+          </div>
+        ) : isError || !session ? (
+          <div className="py-8">
+            <QueryErrorState
+              title="تعذر تحميل تفاصيل الحصة الإضافية"
+              error={error}
+              onRetry={refetch}
+              compact
+            />
           </div>
         ) : (
           <div className="space-y-6 text-right" dir="rtl">
@@ -309,9 +326,11 @@ export function ExtraSessionDetailsDrawer({
               <div className="border border-border rounded-xl bg-card overflow-hidden">
                 <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
                   {filteredParticipants.length === 0 ? (
-                    <div className="py-8 text-center text-xs text-muted-foreground">
-                      لا يوجد طلاب يطابقون البحث.
-                    </div>
+                    <EmptyState
+                      title="لا يوجد طلاب يطابقون البحث"
+                      description="يرجى التأكد من كتابة الاسم أو الكود بشكل صحيح."
+                      compact
+                    />
                   ) : (
                     filteredParticipants.map((p) => {
                       const isFeeSession = Number(session.fee) > 0;

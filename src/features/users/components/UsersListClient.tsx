@@ -48,7 +48,7 @@ export function UsersListClient({ initialData }: UsersListClientProps) {
     sortOrder,
   };
 
-  const { data, isLoading } = useUsersQuery(queryParams, initialData);
+  const { data, isLoading, isError, error, refetch } = useUsersQuery(queryParams, initialData);
 
   const users = data?.data || [];
 
@@ -120,10 +120,15 @@ export function UsersListClient({ initialData }: UsersListClientProps) {
           columns={columns}
           data={users}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage="لم يتم العثور على أي مستخدمين مطابقين لمعايير البحث."
+          emptyTitle="لم يتم العثور على أي مستخدمين"
+          emptyDescription="لم يتم العثور على أي مستخدمين مطابقين لمعايير البحث والفلترة."
+          emptyIcon={UserCheck}
         />
       </Card>
     </div>

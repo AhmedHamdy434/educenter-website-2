@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TableSearch } from "@/components/common/TableSearch";
 import { Loading } from "@/components/common/Loading";
+import { EmptyState } from "@/components/common/EmptyState";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { type Group } from "../types";
 import { type ApiResponse } from "@/types";
 import { DAY_NAMES_AR, formatTime } from "@/utils/time";
@@ -23,10 +25,13 @@ export function TeacherGroupsList({ initialData }: TeacherGroupsListProps) {
   const [search, setSearch] = useState("");
 
   // Load teacher's groups with custom query hook
-  const { data: response, isLoading } = useTeacherGroupsQuery(
-    { limit: 100 },
-    initialData,
-  );
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useTeacherGroupsQuery({ limit: 100 }, initialData);
 
   const groupsData = response?.data;
 
@@ -67,6 +72,12 @@ export function TeacherGroupsList({ initialData }: TeacherGroupsListProps) {
       {/* Grid of groups */}
       {isLoading ? (
         <Loading message="جاري تحميل المجموعات..." />
+      ) : isError ? (
+        <QueryErrorState
+          title="تعذر تحميل المجموعات الدراسية"
+          error={error}
+          onRetry={refetch}
+        />
       ) : filteredGroups.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGroups.map((group) => (
@@ -149,17 +160,16 @@ export function TeacherGroupsList({ initialData }: TeacherGroupsListProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-2xl bg-card shadow-none max-w-lg mx-auto p-8">
-          <BookOpen className="size-14 mx-auto text-muted-foreground/30 mb-4" />
-          <h3 className="font-bold text-foreground text-lg">
-            لم يتم العثور على مجموعات
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-            {search
+        <EmptyState
+          icon={BookOpen}
+          title="لم يتم العثور على مجموعات"
+          description={
+            search
               ? "لم يتم العثور على أي مجموعة تطابق بحثك الحالي."
-              : "لم يتم تعيينك كمعلم مسؤول لأي مجموعة دراسية نشطة حالياً."}
-          </p>
-        </div>
+              : "لم يتم تعيينك كمعلم مسؤول لأي مجموعة دراسية نشطة حالياً."
+          }
+          className="border border-dashed border-border rounded-2xl bg-card shadow-none max-w-lg mx-auto py-16"
+        />
       )}
     </div>
   );

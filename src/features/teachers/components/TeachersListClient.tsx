@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableToolbar } from "@/components/common/table-toolbar";
 import { SharedTable } from "@/components/common/SharedTable";
@@ -72,7 +72,7 @@ export function TeachersListClient() {
 
 
   // Data fetching & mutations
-  const { data, isLoading } = useTeachersQuery(queryParams);
+  const { data, isLoading, isError, error, refetch } = useTeachersQuery(queryParams);
   const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
 
   const toggleMutation = useToggleTeacherMutation();
@@ -151,10 +151,15 @@ export function TeachersListClient() {
           columns={columns}
           data={data?.data ?? []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={refetch}
           meta={data?.meta}
           sorting={sorting}
           onSortingChange={onSortingChange}
-          emptyMessage="لم يتم العثور على أي مدرسين."
+          emptyTitle="لم يتم العثور على أي معلمين"
+          emptyDescription="لم يتم تسجيل معلمين بعد أو لا توجد نتائج مطابقة لخيارات الفلترة والبحث."
+          emptyIcon={UserCheck}
         />
       </Card>
 
