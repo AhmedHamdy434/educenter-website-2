@@ -11,6 +11,7 @@ const cairo = Cairo({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
