@@ -40,7 +40,7 @@ export function CTA() {
                 >
                   <Link href="#pricing" className="flex items-center gap-2">
                     <span>ابدأ تجربتك المجانية</span>
-                    <ArrowLeft className="size-4 stroke-[2.5] rotate-180" />
+                    <ArrowLeft className="size-4 stroke-[2.5]" />
                   </Link>
                 </Button>
 

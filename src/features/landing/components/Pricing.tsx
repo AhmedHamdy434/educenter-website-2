@@ -47,9 +47,6 @@ export async function Pricing() {
               plan.teacherLimit === -1 || plan.teacherLimit >= 999999
                 ? "مدرسين غير محدودين"
                 : `عدد المدرسين الأقصى: ${plan.teacherLimit}`,
-              plan.subjectLimit === -1 || plan.subjectLimit >= 999999
-                ? "مواد غير محدودة"
-                : `عدد المواد الأقصى: ${plan.subjectLimit}`,
               plan.canCreateExams ? "إمكانية إنشاء الاختبارات والواجبات" : null,
               plan.canExportReports ? "تصدير التقارير والتحليلات" : null,
               plan.canUploadFiles ? "رفع الملفات والمرفقات" : null,

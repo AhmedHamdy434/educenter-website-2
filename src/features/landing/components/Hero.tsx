@@ -44,7 +44,7 @@ export function Hero() {
             {/* Sub-headline description */}
             <FadeIn direction="up" delay={0.2} duration={0.6}>
               <p className="text-muted-foreground text-base sm:text-lg max-w-lg leading-relaxed font-medium">
-                تخلص من الفوضى الورقية وإدارة المركز بالطرق التقليدية. منصة إيديو سنتر تمنحك تحكماً شاملاً في المجموعات، الحضور، الدرجات، والمدفوعات بكل سلاسة.
+                تخلص من الفوضى الورقية وإدارة المركز بالطرق التقليدية. المنصة تمنحك تحكماً شاملاً في المجموعات، الحضور، الدرجات، والمدفوعات بكل سلاسة.
               </p>
             </FadeIn>
 
@@ -54,7 +54,7 @@ export function Hero() {
                 <Button asChild variant="brand" size="brandXl" className="font-bold shadow-none">
                   <Link href="#pricing" className="flex items-center gap-2">
                     <span>ابدأ الآن مجاناً</span>
-                    <ArrowLeft className="size-4 stroke-[2.5] rotate-180" />
+                    <ArrowLeft className="size-4 stroke-[2.5]" />
                   </Link>
                 </Button>
 
@@ -65,10 +65,10 @@ export function Hero() {
                   className="border-border hover:bg-muted text-foreground font-semibold gap-2 shadow-none"
                 >
                   <a href="#features" className="flex items-center gap-2">
-                    <div className="flex size-6 items-center justify-center rounded-full bg-secondary text-primary">
-                      <Play className="size-3 fill-primary translate-x-[-0.5px]" />
-                    </div>
                     <span>شاهد كيف يعمل</span>
+                    <div className="flex size-6 items-center justify-center rounded-full bg-secondary text-primary">
+                      <Play className="size-3 fill-primary rotate-180" />
+                    </div>
                   </a>
                 </Button>
               </div>
@@ -89,7 +89,7 @@ export function Hero() {
                   </div>
                 </div>
                 <div className="flex flex-col text-right">
-                  <span className="text-[14px] font-bold text-foreground">أكثر من +10,000 مركز تعليمي</span>
+                  <span className="text-[14px] font-bold text-foreground">أكثر من +100 مركز تعليمي</span>
                   <span className="text-xs text-muted-foreground font-medium">يثقون بنا حول الوطن العربي</span>
                 </div>
               </div>

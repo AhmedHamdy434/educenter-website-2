@@ -55,18 +55,18 @@ export function ContactUs() {
     {
       icon: Mail,
       label: "البريد الإلكتروني",
-      value: "support@educenter.com",
+      value: "ahmedhamdy43411@gmail.com",
     },
     {
       icon: Phone,
       label: "خدمة العملاء والواتساب",
-      value: "+20 100 000 0000",
+      value: "+20 1120713673",
       dir: "ltr",
     },
     {
       icon: MapPin,
       label: "المقر الرئيسي",
-      value: "القاهرة، جمهورية مصر العربية",
+      value: "المنصورة - الدقهلية - جمهورية مصر العربية",
     },
   ];
 

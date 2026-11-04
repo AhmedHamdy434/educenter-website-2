@@ -14,11 +14,11 @@ export async function Header() {
     : "/login";
 
   const navItems = [
-    { name: "الرئيسية", href: "#hero" },
-    { name: "المميزات", href: "#features" },
-    { name: "الباقات", href: "#pricing" },
-    { name: "آراء العملاء", href: "#testimonials" },
-    { name: "تواصل معنا", href: "#contact" },
+    { name: "الرئيسية", href: "/" },
+    { name: "المميزات", href: "/#features" },
+    { name: "الباقات", href: "/#pricing" },
+    { name: "آراء العملاء", href: "/#testimonials" },
+    { name: "تواصل معنا", href: "/#contact" },
   ];
 
   return (
