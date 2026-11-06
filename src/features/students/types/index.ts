@@ -55,32 +55,54 @@ export interface UpdateStudentDTO {
   isActive?: boolean;
 }
 
-export interface StudentPayment {
+ export interface StudentPaymentMonthItem {
+  month: string;
+  amountDue: number;
+  paidAmount: number;
+  remainingAmount: number;
+  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
+  isWaived: boolean;
+}
+
+ export interface StudentPaymentHistoryItem {
   id: string;
-  groupStudentId: string;
+  receiptNumber: string;
+  groupId: string;
+  groupName: string;
   subscriptionDate: string;
-  amount: number | string;
+  amount: number;
+  refundedAmount: number;
+  amountDue: number;
+  remainingAfter: number;
+  status: 'PAID' | 'PARTIALLY_PAID';
+  paymentMethod: string;
   paidAt: string;
   notes: string | null;
-  createdAt?: string;
-  groupStudent?: {
-    id: string;
-    groupId: string;
-    group: {
-      id: string;
-      name: string;
-      monthlyFee: number | string;
-      startDate: string;
-      monthsCount: number;
-    };
-  };
-  group?: {
+  isLegacy: boolean;
+}
+
+ export interface StudentPaymentsTotals {
+  paymentsCount: number;
+  totalPaid: number;
+  totalRefunded: number;
+  totalRemaining: number;
+}
+
+export interface StudentPayment {
+  group: {
     id: string;
     name: string;
-    monthlyFee: number | string;
+    monthlyFee: number;
     startDate: string;
     monthsCount: number;
-  };
+  } | null;
+  groupStudentId: string | null;
+  subscriptionStartDate: string | null;
+  canRecordPayment: boolean;
+  months: StudentPaymentMonthItem[];
+  defaultMonth: string | null;
+  payments: StudentPaymentHistoryItem[];
+  totals: StudentPaymentsTotals;
 }
 
 export interface StudentFilters {

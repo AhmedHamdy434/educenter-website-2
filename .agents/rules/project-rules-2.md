@@ -62,6 +62,7 @@ This document defines the mandatory engineering standards for authentication, ro
 *   [ ] Separated Grade and Subject selectors in forms/toolbars so subjects are strictly dependent on the selected grade via `useResetOnChange`?
 *   [ ] Used `@/components/common/RowActions` for table edit/delete actions?
 *   [ ] Used `<DetailsHeaderSkeleton>` for entity detail header loading states instead of blocking spinners?
+*   [ ] Isolated skeletons from grid and card layouts, mapping StatCards via `cards.map(...) ? <StatCardSkeleton /> : <StatCard />` to prevent duplicating grid/Card classes?
 *   [ ] Included `if (!isOpen) return;` early return in modal form reset `useEffect`?
 *   [ ] Called `handleResponseToast()` for user notifications?
 *   [ ] Verified code builds cleanly (`npx tsc --noEmit`) and passes `npm run lint`?
@@ -149,3 +150,31 @@ Must provide page context, entity identity, breadcrumb trail, and top actions:
 - **Graceful Error Guard**: If item is missing after resolution (`isError || !data`), invoke Next.js `notFound()`.
 - **Breadcrumbs Navigation**: Provide clear contextual hierarchy with RTL-aware Chevron (`rotate-180`).
 - **Semantic Badges**: Render entity status (`isActive`) using deliberate subtle badge variants (`bg-emerald-50/80 text-emerald-800 border-emerald-300/80` or stone neutral).
+
+#### 5. Dashboard & Analytics Container Pattern (`<Feature>DashboardClient.tsx` / `<Feature>ReportsTab.tsx`)
+Must orchestrate metric cards, data feeds, and analytical lists with pure leaf skeletons and zero layout duplication:
+- **No Blocking Spinners**: Never return early with `<Loading />` or full-page spinners.
+- **Grids & Cards Declared Once**: Outer layout containers (`grid`, `<Card>`, responsive flex) must be defined once in the main view. Skeletons must never wrap their own outer `grid` or `<Card>` containers.
+- **StatCard Dynamic Mapping**: StatCards in grids must be declared as a `cards` array and mapped directly:
+  ```tsx
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {cards.map(({ label, value, unit, icon, variant }) =>
+      isLoading ? (
+        <StatCardSkeleton key={label} />
+      ) : (
+        <StatCard
+          key={label}
+          label={label}
+          value={value}
+          unit={unit}
+          icon={icon}
+          variant={variant === "primary" ? "primary" : "default"}
+        />
+      ),
+    )}
+  </div>
+  ```
+- **Inner Card Skeletons**: Within cards or complex sections, render the dedicated inner content skeleton (e.g. `<StudentListCardSkeleton />`) as a React Fragment `<>...</>` inside the existing `<Card>`, keeping headers, border dividers, and row heights (`flex items-center justify-between gap-3 py-3`) 100% aligned with zero layout shift.
+- **Graceful Error & Empty State Guard**:
+  - Show `<QueryErrorState error={error} onRetry={refetch} />` when `isError`.
+  - Show `<EmptyState />` only after query finishes loading and returns empty/unrecorded data (`!isLoading && !data`).

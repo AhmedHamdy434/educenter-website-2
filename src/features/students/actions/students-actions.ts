@@ -58,11 +58,11 @@ export async function deleteStudentAction(
 export async function getStudentPaymentsAction(
   studentId: string,
   groupId?: string,
-): Promise<ApiResponse<StudentPayment[]>> {
+): Promise<ApiResponse<StudentPayment>> {
   const url = groupId
-    ? `/students/${studentId}/payments?groupId=${groupId}`
-    : `/students/${studentId}/payments`;
-  return serverApiClient<StudentPayment[]>({
+    ? `/students/${studentId}/payments/summary?groupId=${groupId}`
+    : `/students/${studentId}/payments/summary`;
+  return serverApiClient<StudentPayment>({
     url,
     method: "GET",
     cache: "no-store",

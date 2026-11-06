@@ -9,11 +9,7 @@ interface EnrolledStudentsColumnsOptions {
   page?: number;
   limit?: number;
   showRemoveButton?: boolean;
-  onViewPayments: (
-    studentId: string,
-    studentName: string,
-    groupStudentId?: string,
-  ) => void;
+  onViewPayments: (studentId: string, studentName: string) => void;
   onRemoveStudent: (studentId: string, studentName: string) => void;
 }
 
@@ -122,11 +118,7 @@ export function getEnrolledStudentsColumns({
               variant="brandOutline"
               size="sm"
               onClick={() =>
-                onViewPayments(
-                  item.student.id,
-                  item.student.user.fullName,
-                  item.id,
-                )
+                onViewPayments(item.student.id, item.student.user.fullName)
               }
               className="h-8 gap-1.5 text-xs rounded-lg font-medium"
             >

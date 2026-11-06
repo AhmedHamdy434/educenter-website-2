@@ -10,11 +10,11 @@ import {
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/common/Loading";
-import { StatCard } from "@/components/common/StatCard";
+import { StatCard, StatCardSkeleton } from "@/components/common/StatCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useGroupAttendanceReportQuery } from "@/features/attendance/hooks/queries";
+import { StudentListCardSkeleton } from "./AttendanceReportsSkeleton";
 
 interface AttendanceReportsTabProps {
   groupId: string;
@@ -41,6 +41,7 @@ interface StudentListProps<T> {
   items: T[];
   emptyMessage: string;
   renderItem: (item: T) => React.ReactNode;
+  isLoading: boolean;
 }
 
 function SectionHeader({
@@ -77,21 +78,33 @@ function StudentList<T>({
   items,
   emptyMessage,
   renderItem,
+  isLoading,
 }: StudentListProps<T>) {
   return (
     <Card className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-none">
-      <SectionHeader title={title} icon={icon} variant={variant} />
-
-      {items.length > 0 ? (
-        <div className="max-h-72 divide-y divide-border/60 overflow-y-auto">
-          {items.map((item, index) => (
-            <div key={index}>{renderItem(item)}</div>
-          ))}
-        </div>
+      {isLoading ? (
+        <StudentListCardSkeleton />
       ) : (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          {emptyMessage}
-        </p>
+        <>
+          <SectionHeader title={title} icon={icon} variant={variant} />
+
+          {items.length > 0 ? (
+            <div className="max-h-72 divide-y divide-border/60 overflow-y-auto">
+              {items.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-3 py-3"
+                >
+                  {renderItem(item)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {emptyMessage}
+            </p>
+          )}
+        </>
       )}
     </Card>
   );
@@ -113,10 +126,27 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
   } = useGroupAttendanceReportQuery(groupId);
 
   const report = response?.data;
-
-  if (isLoading) {
-    return <Loading message="جاري تحميل تقارير الحضور..." />;
-  }
+  const cards = [
+    {
+      label: "نسبة الحضور الإجمالية",
+      value: report?.attendanceRate,
+      unit: "%",
+      icon: TrendingUp,
+      variant: "primary",
+    },
+    {
+      label: "إجمالي الحصص المنشأة",
+      value: report?.totalSessions,
+      unit: "حصة",
+      icon: Calendar,
+    },
+    {
+      label: "عدد الطلاب المقيدين",
+      value: report?.totalStudents,
+      unit: "طالب",
+      icon: Users,
+    },
+  ];
 
   if (isError) {
     return (
@@ -128,7 +158,7 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
     );
   }
 
-  if (!report) {
+  if (!report && !isLoading) {
     return (
       <EmptyState
         icon={TrendingUp}
@@ -140,39 +170,34 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
 
   return (
     <div className="animate-fade-in space-y-6">
+      {/* 1. شبكة البطاقات الإحصائية (StatCards Grid) */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          label="نسبة الحضور الإجمالية"
-          value={report.attendanceRate}
-          unit="%"
-          icon={TrendingUp}
-          variant="primary"
-        />
-
-        <StatCard
-          label="إجمالي الحصص المنشأة"
-          value={report.totalSessions}
-          unit="حصة"
-          icon={Calendar}
-        />
-
-        <StatCard
-          label="عدد الطلاب المقيدين"
-          value={report.totalStudents}
-          unit="طالب"
-          icon={Users}
-        />
+        {cards.map(({ label, value, unit, icon, variant }) =>
+          isLoading ? (
+            <StatCardSkeleton key={label} />
+          ) : (
+            <StatCard
+              key={label}
+              label={label}
+              value={value}
+              unit={unit}
+              icon={icon}
+              variant={variant === "primary" ? "primary" : "default"}
+            />
+          ),
+        )}
       </div>
 
+      {/* 2. قوائم تميز وغياب الطلاب (Student Lists Grid) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <StudentList<StudentAbsenceItem>
           title="الطلاب الأكثر غيابًا"
           icon={AlertTriangle}
           variant="danger"
-          items={report.highestAbsence}
+          items={report?.highestAbsence || []}
           emptyMessage="لا يوجد طلاب لديهم حالات غياب مسجلة."
           renderItem={(item) => (
-            <div className="flex items-center justify-between gap-3 py-3">
+            <>
               <div className="min-w-0 space-y-1">
                 <p className="truncate text-sm font-bold text-foreground">
                   {item.fullName}
@@ -187,18 +212,19 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
               <span className="shrink-0 rounded-full border border-rose-300/80 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-800">
                 {item.absent} غياب
               </span>
-            </div>
+            </>
           )}
+          isLoading={isLoading}
         />
 
         <StudentList<PerfectAttendanceItem>
           title="الطلاب ذوو الحضور المثالي"
           icon={Award}
           variant="success"
-          items={report.perfectAttendance}
+          items={report?.perfectAttendance || []}
           emptyMessage="لا يوجد طلاب بحضور مثالي حتى الآن."
           renderItem={(item) => (
-            <div className="flex items-center justify-between gap-3 py-3">
+            <>
               <span className="truncate text-sm font-bold text-foreground">
                 {item.fullName}
               </span>
@@ -207,8 +233,9 @@ export function AttendanceReportsTab({ groupId }: AttendanceReportsTabProps) {
                 <CheckCircle className="size-3.5" />
                 {item.present} حصص
               </span>
-            </div>
+            </>
           )}
+          isLoading={isLoading}
         />
       </div>
     </div>

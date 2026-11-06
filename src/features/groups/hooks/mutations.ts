@@ -12,6 +12,7 @@ import { type GroupFormValues } from "../schemas/group-schema";
 import { groupsKeys } from "../utils/queryKeys";
 import { scheduleKeys } from "@/features/schedule/utils/queryKeys";
 import { importFileAction } from "@/lib/export/export-actions";
+import { CreateGroupDTO, GroupPayDto } from "../types";
 
 export function useToggleGroupStatusMutation() {
   const queryClient = useQueryClient();
@@ -58,19 +59,9 @@ export function useUpdateGroupMutation() {
       values,
     }: {
       id: string;
-      values: GroupFormValues;
+      values: CreateGroupDTO;
     }) => {
-      return updateGroupAction(id, {
-        name: values.name,
-        gradeId: values.gradeId,
-        subjectId: values.subjectId,
-        teacherId: values.teacherId,
-        capacity: values.capacity || undefined,
-        schedule: values.schedule,
-        monthlyFee: values.monthlyFee,
-        startDate: values.startDate,
-        monthsCount: values.monthsCount,
-      });
+      return updateGroupAction(id, values);
     },
     onSuccess: (result) => {
       if (result.success) {
@@ -136,13 +127,11 @@ export function usePayGroupStudentMonthMutation() {
   return useMutation({
     mutationFn: async ({
       groupStudentId,
-      subscriptionDate,
-      notes,
+      dto,
     }: {
       groupStudentId: string;
-      subscriptionDate: string;
-      notes?: string;
-    }) => payGroupStudentMonthAction(groupStudentId, subscriptionDate, notes),
+      dto: GroupPayDto;
+    }) => payGroupStudentMonthAction(groupStudentId, dto),
     onSuccess: (result) => {
       if (result.success) {
         // Invalidate groups and student payments caches

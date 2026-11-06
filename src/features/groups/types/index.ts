@@ -97,7 +97,7 @@ export interface CreateGroupDTO {
   gradeId: string;
   subjectId: string;
   teacherId: string;
-  capacity?: number;
+  capacity?: number | null;
   schedule: {
     day: DayOfWeek;
     hour: number;
@@ -106,24 +106,9 @@ export interface CreateGroupDTO {
   monthlyFee: number;
   startDate: string;
   monthsCount: number;
-}
-
-export interface UpdateGroupDTO {
-  name?: string;
-  gradeId?: string;
-  subjectId?: string;
-  teacherId?: string;
-  capacity?: number;
-  schedule?: {
-    day: DayOfWeek;
-    hour: number;
-    minute: number;
-  }[];
-  monthlyFee?: number;
-  startDate?: string;
-  monthsCount?: number;
   isActive?: boolean;
 }
+
 
 export interface GroupStudentPaymentDetail {
   id: string;
@@ -204,3 +189,10 @@ export interface GroupQueryParams extends QueryParams {
   subjectId?: string;
   teacherId?: string;
 }
+
+ export interface GroupPayDto {
+  subscriptionDate: string,
+  notes?: string,
+  amount?: number,
+  markAsFullPayment?: boolean,
+ } 

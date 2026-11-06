@@ -186,3 +186,7 @@ export const formatCairoDateTime = (isoString: string | null | undefined): strin
     minute: "2-digit",
   });
 };
+
+
+export const fmt = (n: number) =>
+  Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });

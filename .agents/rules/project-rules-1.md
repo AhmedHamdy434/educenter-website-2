@@ -43,6 +43,30 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **Leaves Interactivity**: Place `"use client"` only at leaf components requiring browser state or handlers.
 *   **Presentational components**: Keep UI components stateless (accept props, emit callbacks) and store them in `src/components/ui`.
 *   **Entity Detail Page Headers & Skeletons**: Detail pages and header components (e.g. `<...DetailsHeader>`) must never render raw blocking spinners or `<Loading message="..." />` that cause jarring full-page layout shifts. Always implement skeleton loading states using the standardized `<DetailsHeaderSkeleton>` (composed of breadcrumb, title & status badge, description, and action button skeletons) to guarantee zero cumulative layout shift (CLS).
+*   **Dashboards & Analytics Loading Architecture (Pure Leaf Skeletons & Zero CLS)**: Dashboard views, analytics grids, and reporting tabs (e.g., `OwnerDashboardClient`, `AttendanceReportsTab`, `OperationalStatsGrid`, `FinancialMetricsSection`) must NEVER render raw blocking spinners or `<Loading message="..." />` that cause jarring layout shifts or hide the page structure. Instead:
+    - **Skeletons Isolated from Grid & Card Layouts**: Skeletons must be pure leaf/inner-content components (`StatCardSkeleton`, `StudentListCardSkeleton`, etc.) without wrapping their own outer `<Card>` or `grid` containers. The layout containers (`<div className="grid ...">`, `<Card className="...">`) are declared ONCE in the parent/container component.
+    - **StatCard Array Mapping Standard**: StatCards in any grid must be defined in a `cards` array and mapped dynamically:
+      ```tsx
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {cards.map(({ label, value, unit, icon, variant }) =>
+          isLoading ? (
+            <StatCardSkeleton key={label} />
+          ) : (
+            <StatCard
+              key={label}
+              label={label}
+              value={value}
+              unit={unit}
+              icon={icon}
+              variant={variant === "primary" ? "primary" : "default"}
+            />
+          ),
+        )}
+      </div>
+      ```
+    - **Card Inner Skeletons**: Inside cards or lists, render the dedicated inner skeleton (e.g. `<StudentListCardSkeleton />`) as a React Fragment `<>...</>` containing only the header and row skeletons, matching the exact row heights, gaps, and borders without repeating the `<Card>` wrapper.
+    - **Zero Cumulative Layout Shift (CLS)**: Skeletons must mirror the exact dimensions, typography lines, flex alignments, and badges of the loaded content.
+    - **Graceful Error & Empty States**: Render `<QueryErrorState error={error} onRetry={refetch} />` when `isError` occurs, and `<EmptyState />` only when the query has resolved without data (`!isLoading && !data`).
 
 ---
 

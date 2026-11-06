@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/common/form-input";
 import { FormSelect, type SelectOption } from "@/components/common/form-select";
 import { FormActions } from "@/components/common/FormActions";
-import { groupSchema, type GroupFormValues } from "../schemas/group-schema";
-import { type Group } from "../types";
+import { groupSchema } from "../schemas/group-schema";
+import { CreateGroupDTO, type Group } from "../types";
 import {
   useCreateGroupMutation,
   useUpdateGroupMutation,
@@ -38,7 +38,7 @@ export function GroupForm({
     reset,
     setValue,
     formState: { errors },
-  } = useForm<GroupFormValues>({
+  } = useForm<CreateGroupDTO>({
     resolver: zodResolver(groupSchema),
     defaultValues: {
       name: group?.name || "",
@@ -138,7 +138,7 @@ export function GroupForm({
     }
   }, [group, reset, isOpen]);
 
-  const handleFormSubmit = async (values: GroupFormValues) => {
+  const handleFormSubmit = async (values: CreateGroupDTO) => {
     if (!!group) {
       await updateGroup(
         { id: group.id, values },

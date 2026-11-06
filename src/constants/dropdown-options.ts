@@ -15,3 +15,26 @@ export const STATUSES = [
     value: "0",
   },
 ];
+
+export const PAYMENT_METHOD_OPTIONS = [
+  {
+    label: "نقداً",
+    value: "CASH",
+  },
+  {
+    label: "بطاقة",
+    value: "CARD",
+  },
+  {
+    label: "تحويل بنكي",
+    value: "BANK_TRANSFER",
+  },
+  {
+    label: "محفظة إلكترونية",
+    value: "WALLET",
+  },
+  {
+    label: "أونلاين",
+    value: "ONLINE",
+  },
+];

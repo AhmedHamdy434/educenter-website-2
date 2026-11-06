@@ -50,7 +50,6 @@ export function EnrolledStudentsList({
   const [paymentHistoryStudent, setPaymentHistoryStudent] = useState<{
     id: string;
     name: string;
-    groupStudentId?: string;
   } | null>(null);
 
   // 6. طفرة إزالة طالب من المجموعة
@@ -68,11 +67,10 @@ export function EnrolledStudentsList({
   };
 
   const handleViewPayments = useCallback(
-    (studentId: string, studentName: string, groupStudentId?: string) => {
+    (studentId: string, studentName: string) => {
       setPaymentHistoryStudent({
         id: studentId,
         name: studentName,
-        groupStudentId,
       });
     },
     [],
@@ -103,22 +101,17 @@ export function EnrolledStudentsList({
       handleOpenRemoveDialog,
     ],
   );
-
-  const totalCount = groupStudentsResponse?.meta?.total ?? 0;
-  const studentsList = useMemo(
-    () => groupStudentsResponse?.data ?? [],
-    [groupStudentsResponse?.data],
-  );
+ 
 
   return (
     <>
-      <div className="space-y-4 text-right" dir="rtl">
+      <div className="space-y-4">
         {/* شريط البحث وإجمالي عدد الطلاب */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Users className="size-5 text-primary" />
             <h2 className="font-bold text-foreground text-base">
-              قائمة الطلاب المسجلين ({totalCount})
+              قائمة الطلاب المسجلين ({groupStudentsResponse?.meta?.total})
             </h2>
           </div>
 
@@ -130,7 +123,7 @@ export function EnrolledStudentsList({
         {/* الجدول الموحد مع الترتيب والتصفح وحالة التحميل */}
         <SharedTable
           columns={columns}
-          data={studentsList}
+          data={groupStudentsResponse?.data ?? []}
           isLoading={isLoading}
           isError={isError}
           error={error}
@@ -174,7 +167,6 @@ export function EnrolledStudentsList({
           studentId={paymentHistoryStudent.id}
           studentName={paymentHistoryStudent.name}
           groupId={groupId}
-          groupStudentId={paymentHistoryStudent.groupStudentId}
         />
       )}
     </>

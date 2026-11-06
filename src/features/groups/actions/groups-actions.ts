@@ -5,7 +5,6 @@ import {
   type Group,
   type GroupDetails,
   type CreateGroupDTO,
-  type UpdateGroupDTO,
   type GroupStudentPaymentDetail,
   type GroupStudentPaymentInfo,
   type GroupPaymentsQueryParams,
@@ -14,6 +13,7 @@ import {
   type GroupEnrolledStudent,
   type GroupStudentsQueryParams,
   type AvailableGroupStudent,
+  GroupPayDto,
 } from "../types";
 import { type ApiResponse } from "@/types";
 
@@ -48,7 +48,7 @@ export async function createGroupAction(
 
 export async function updateGroupAction(
   id: string,
-  data: UpdateGroupDTO,
+  data: CreateGroupDTO,
 ): Promise<ApiResponse<GroupDetails>> {
   return serverApiClient<GroupDetails>({
     url: `/groups/${id}`,
@@ -137,15 +137,11 @@ export async function getGroupPaymentsAction(
 
 export async function payGroupStudentMonthAction(
   groupStudentId: string,
-  subscriptionDate: string,
-  notes?: string,
+  dto: GroupPayDto,
 ): Promise<ApiResponse<GroupStudentPaymentDetail>> {
   return serverApiClient<GroupStudentPaymentDetail>({
     url: `/group-students/${groupStudentId}/payments`,
     method: "POST",
-    body: {
-      subscriptionDate,
-      ...(notes ? { notes } : {}),
-    },
+    body: dto,
   });
 }

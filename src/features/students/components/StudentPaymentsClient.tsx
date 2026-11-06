@@ -8,6 +8,8 @@ import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { useStudentPaymentsQuery } from "../hooks/queries";
 import { formatFullDate, formatMonthName } from "@/utils/time";
 
+import { StudentPayment, StudentPaymentHistoryItem } from "../types";
+
 export function StudentPaymentsClient() {
   const {
     data: paymentsRes,
@@ -16,7 +18,8 @@ export function StudentPaymentsClient() {
     error,
     refetch,
   } = useStudentPaymentsQuery("me");
-  const payments = paymentsRes?.data || [];
+  const summary = paymentsRes?.data as StudentPayment | undefined;
+  const payments: StudentPaymentHistoryItem[] = summary?.payments || [];
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
@@ -55,7 +58,7 @@ export function StudentPaymentsClient() {
                 {payments.map((payment) => (
                   <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4 font-bold text-foreground">
-                      {payment.groupStudent?.group?.name || "—"}
+                      {payment.groupName || "—"}
                     </td>
                     <td className="p-4 font-bold text-primary">
                       {formatMonthName(payment.subscriptionDate)}
