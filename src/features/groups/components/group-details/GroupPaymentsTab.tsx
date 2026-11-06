@@ -118,8 +118,10 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
     await recordPayment(
       {
         groupStudentId: selectedStudent.groupStudentId,
-        subscriptionDate: activeMonth,
-        notes: notes || undefined,
+        dto: {
+          subscriptionDate: activeMonth,
+          notes: notes || undefined,
+        },
       },
       {
         onSuccess: (res) => {

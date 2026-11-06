@@ -190,9 +190,10 @@ export interface GroupQueryParams extends QueryParams {
   teacherId?: string;
 }
 
- export interface GroupPayDto {
-  subscriptionDate: string,
-  notes?: string,
-  amount?: number,
-  markAsFullPayment?: boolean,
- } 
+export interface GroupPayDto {
+  subscriptionDate: string;
+  notes?: string;
+  amount?: number;
+  markAsFullPayment?: boolean;
+  paymentMethod?: string;
+} 

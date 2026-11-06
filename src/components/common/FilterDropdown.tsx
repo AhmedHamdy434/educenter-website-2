@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { cn } from "@/lib/utils";
+import { Label } from "../ui/label";
 
 export interface FilterOption {
   label: string;
@@ -48,11 +49,13 @@ export function FilterDropdown({
   useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
   return (
-    <div className={cn("relative min-w-35", className)} ref={dropdownRef}>
+    <div className={cn("relative min-w-35 space-y-2", className)} ref={dropdownRef}>
       {label && (
-        <span className="mb-1 block text-xs font-semibold text-muted-foreground">
+          <Label
+          className="text-xs font-semibold text-muted-foreground block"
+        >
           {label}
-        </span>
+        </Label>
       )}
 
       {/* Trigger Button */}
@@ -63,7 +66,7 @@ export function FilterDropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
-          "flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
+          "flex h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
           isDisabled && "cursor-not-allowed opacity-60 hover:bg-card",
           className
         )}

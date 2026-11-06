@@ -22,8 +22,8 @@ export const PAYMENT_METHOD_OPTIONS = [
     value: "CASH",
   },
   {
-    label: "بطاقة",
-    value: "CARD",
+    label: "انستا باى",
+    value: "INSTAPAY",
   },
   {
     label: "تحويل بنكي",
@@ -34,7 +34,7 @@ export const PAYMENT_METHOD_OPTIONS = [
     value: "WALLET",
   },
   {
-    label: "أونلاين",
-    value: "ONLINE",
+    label: "أخرى",
+    value: "OTHER",
   },
 ];

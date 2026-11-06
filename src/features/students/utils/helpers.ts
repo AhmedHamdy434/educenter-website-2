@@ -1,9 +1,6 @@
 import { fmt } from "@/utils/time";
 import { StudentPaymentMonthItem } from "../types";
 
-
-
-
 export const getMonthStatusText = (m: StudentPaymentMonthItem) => {
   if (m.isWaived) return "(معفى)";
   if (m.status === "PAID") return "(تم السداد بالكامل ✓)";
