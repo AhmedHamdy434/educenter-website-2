@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
+import { OwnerSettingsClient } from "@/features/settings/components/OwnerSettingsClient";
 
 export const metadata: Metadata = {
-  title: "الإعدادات | مدير المركز",
+  title: "إعدادات المركز | مدير المركز",
+  description: "إدارة إعدادات ونسب التوزيع والسياسات المالية للمركز التعليمي",
 };
 
 export default function OwnerSettingsPage() {
-  return (
-    <div className="space-y-6 text-right">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-foreground font-bold">الإعدادات</h1>
-        <p className="text-muted-foreground text-sm">تعديل الملف الشخصي، كلمة المرور، وإعدادات النظام.</p>
-      </div>
-      <div className="rounded-xl border border-border bg-card p-8 shadow-none">
-        <p className="text-foreground font-medium">محتوى صفحة الإعدادات والملف الشخصي</p>
-      </div>
-    </div>
-  );
+  return <OwnerSettingsClient />;
 }
