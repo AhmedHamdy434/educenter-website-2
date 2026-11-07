@@ -74,10 +74,10 @@ export function SharedTable<TData>({
   });
 
   return (
-    <div className="space-y-4 text-right" dir="rtl">
+    <div className="space-y-4 w-full min-w-0 max-w-full">
       {/* Table Container */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-none">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-none w-full min-w-0">
+        <div className="overflow-x-auto w-full">
           <table className="w-full border-collapse text-right text-sm">
             {/* Table Header: Pure background contrast without noisy borders */}
             <thead className="bg-secondary/70 text-foreground text-xs">

@@ -137,7 +137,7 @@ export function StudentPaymentsTable({
   }, [groupId]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 min-w-0 w-full">
       <h3 className="font-bold text-foreground text-xs flex items-center gap-2">
         <Landmark className="size-3.5 text-muted-foreground" />
         <span>

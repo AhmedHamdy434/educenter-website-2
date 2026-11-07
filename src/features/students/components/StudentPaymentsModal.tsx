@@ -36,13 +36,14 @@ export function StudentPaymentsModal({
     <SharedModal
       isOpen={isOpen}
       onClose={onClose}
+      size="xl"
       title={
         groupId
           ? `مدفوعات واشتراك الطالب في هذه المجموعة: ${studentName}`
           : `سجل مدفوعات واشتراك الطالب: ${studentName}`
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-5 min-w-0 w-full">
         {/* 1. نموذج التحصيل */}
         {summary && (
           <StudentPaymentForm summary={summary} isOpen={isOpen} />
