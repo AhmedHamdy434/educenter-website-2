@@ -86,7 +86,7 @@ export function GradeForm({ isOpen, onClose, grade }: GradeFormProps) {
       <FormInput
         label="اسم المرحلة الدراسية"
         id="name"
-        placeholder="مثال: الصف الأول الثانوي"
+        placeholder="أدخل اسم المرحلة الدراسية..."
         error={errors.name?.message}
         {...register("name")}
       />
@@ -94,7 +94,7 @@ export function GradeForm({ isOpen, onClose, grade }: GradeFormProps) {
       <FormTextarea
         label="شرح أو وصف المرحلة (اختياري)"
         id="description"
-        placeholder="مثال: شرح وتدريبات لطلاب الصف الأول الثانوي"
+        placeholder="أدخل وصف وشرح المرحلة الدراسية..."
         error={errors.description?.message}
         {...register("description")}
       />
@@ -103,7 +103,7 @@ export function GradeForm({ isOpen, onClose, grade }: GradeFormProps) {
         label="ترتيب العرض في القائمة"
         id="grade-order"
         type="number"
-        placeholder="مثال: 1"
+        placeholder="أدخل رقم ترتيب العرض..."
         error={errors.order?.message}
         {...register("order", { valueAsNumber: true })}
       />

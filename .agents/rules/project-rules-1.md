@@ -13,6 +13,7 @@ This document defines the mandatory engineering standards, architectural pattern
 *   **Reuse Before Creating**: Search the codebase before writing any component or utility helper.
 *   **Decouple Business Logic**: Page files must only compose layouts. Logic and fetching belong in actions or hooks.
 *   **Arabic Language Standard**: All user-facing copies, error banners, and toast messages must be in professional Arabic.
+*   **Action-Oriented Input Placeholders (No "مثال:")**: All input and textarea `placeholder` attributes must use direct, action-oriented Arabic phrasing indicating what to enter (e.g., `أدخل الاسم...`, `أدخل الوصف...`, `أدخل رقم الهاتف...`, `أدخل الملاحظات...`, `اختر المرحلة...`). Strictly avoid example-based placeholders starting with "مثال:" (e.g. never write `مثال: أحمد محمد...` or `مثال: سنتر الأمل...`).
 
 ---
 
@@ -91,6 +92,7 @@ Encapsulate feature-specific logic inside `src/features/<feature-name>/`:
 *   **Tech Stack**: Always combine `react-hook-form` + `@hookform/resolvers/zod` + `zod`.
 *   **Location**: Validation schemas must live in `features/<feature>/schemas/<name>-schema.ts`.
 *   **Inputs**: Prefer uncontrolled inputs utilizing `register` for maximum render performance.
+*   **Standard Placeholder Phrasing**: Placeholders must always use direct action directives (e.g., `أدخل اسم الطالب...`, `أدخل الوصف...`, `أدخل الملاحظات...`, `اختر المرحلة...`). Never use example-style placeholders prefixed with "مثال:" (e.g., never write `مثال: كذا...`).
 *   **Separation of Dependent Grade/Subject Selectors**: Grade (`gradeId`) and Subject (`subjectId` / `subjectIds`) selectors in forms and toolbars must always be partitioned into separate, dependent dropdowns. Users must select the grade first, which dynamically loads the subject options for that grade and disables the subject selector until a grade is chosen. For entities tied to a single grade (e.g. Groups), switching grades triggers a cascading reset via `@/hooks/useResetOnChange`. For entities supporting multi-grade subjects (e.g. Teachers), the grade selector acts as an active filter, allowing subjects from multiple grades to accumulate with their grade tags displayed underneath, submitting `subjectIds: string[]`.
 
 ---

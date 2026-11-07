@@ -71,8 +71,8 @@ export function QuickWaiveModal({
         </p>
 
         <FormInput
-          label="سبب الإعفاء (اختياري)"
-          placeholder="مثال: منحة تفوق، ظرف خاص بقرار الإدارة"
+          label="سبب الإعفاء"
+          placeholder="أدخل سبب إعفاء الطالب من الرسوم..."
           value={reason}
           onChange={(e) => setReason(e.target.value)}
         />

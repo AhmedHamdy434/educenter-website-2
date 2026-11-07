@@ -64,6 +64,7 @@ This document defines the mandatory engineering standards for authentication, ro
 *   [ ] Used `<DetailsHeaderSkeleton>` for entity detail header loading states instead of blocking spinners?
 *   [ ] Isolated skeletons from grid and card layouts, mapping StatCards via `cards.map(...) ? <StatCardSkeleton /> : <StatCard />` to prevent duplicating grid/Card classes?
 *   [ ] Included `if (!isOpen) return;` early return in modal form reset `useEffect`?
+*   [ ] Checked that all input and textarea placeholders use direct action phrasing (`أدخل...` / `اختر...`) without using "مثال: ..."?
 *   [ ] Called `handleResponseToast()` for user notifications?
 *   [ ] Verified code builds cleanly (`npx tsc --noEmit`) and passes `npm run lint`?
 
@@ -127,6 +128,7 @@ Must manage item creation and editing using React Hook Form + Zod:
 - **Cascading Field Resets**: When form fields have dependent relationships (e.g. `gradeId -> subjectId -> teacherId`), use `@/hooks/useResetOnChange` instead of inline `useEffect` + `useRef` boilerplate.
 - **Separation of Dependent Grade & Subject Selectors**: Whenever subjects are selectable (e.g. in Group forms, Teacher forms, or list filters), they must **never** be presented as an unpartitioned flat list combining grade and subject names in one dropdown. Instead, Grade (`gradeId`) must always be selected first via a dedicated `<FormSelect>`, and the Subject selector (`subjectId` or `subjectIds`) must be strictly dependent on the selected grade (`disabled={!selectedGradeId}`, placeholder indicates choosing grade first, queries enabled only when `selectedGradeId` is chosen). In single-grade forms (e.g. Groups), apply cascading reset via `@/hooks/useResetOnChange` on grade change. In multi-grade entities (e.g. Teachers), allow selecting subjects across multiple grades by accumulating chosen subjects with their grade labels in a dedicated chips container underneath and submitting `subjectIds: string[]`.
 - **Sub-Component Extraction**: For complex or multi-state input sections (such as schedule builders, rich editors, or multi-field pickers), extract focused subcomponents (e.g., `<WeeklySchedulePicker>`) to keep form components under 200 lines.
+- **Direct Action Placeholders (No "مثال:")**: Form inputs and textareas must specify direct instructional placeholders (`placeholder="أدخل الاسم..."`, `placeholder="أدخل الوصف..."`, `placeholder="أدخل الملاحظات..."`, `placeholder="أدخل رقم الهاتف..."`) instead of example-driven placeholders (`مثال: ...`).
 - Form inputs must leverage standard styling wrapper components:
   - **`<FormInput>`**: Standard text/number inputs.
   - **`<FormSelect>`**: Single choice selector supporting `isLoading` to show `Loader2` indicator when options query is pending.

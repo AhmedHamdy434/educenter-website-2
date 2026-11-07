@@ -283,7 +283,7 @@ export function StudentPaymentForm({
           label="ملاحظات"
           id="notes"
           type="text"
-          placeholder="مثال: نقداً / محفظة إلكترونية / دفعة أولى..."
+          placeholder="أدخل ملاحظات السداد والتحصيل..."
           disabled={isCurrentMonthPaid || isRecordPending}
           error={errors.notes?.message}
           {...register("notes")}

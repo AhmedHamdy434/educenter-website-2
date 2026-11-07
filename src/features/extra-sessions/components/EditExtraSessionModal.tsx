@@ -143,7 +143,7 @@ export function EditExtraSessionModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
             label="عنوان الحصة الإضافية"
-            placeholder="مثال: مراجعة الباب الأول"
+            placeholder="أدخل عنوان الحصة الإضافية..."
             error={errors.title?.message}
             {...register('title')}
           />
@@ -218,8 +218,8 @@ export function EditExtraSessionModal({
         {/* Row 3: Location */}
         <div>
           <FormInput
-            label="مكان الانعقاد (القاعة)"
-            placeholder="مثال: قاعة 3"
+            label="مكان الانعقاد"
+            placeholder="أدخل مكان الانعقاد..."
             error={errors.location?.message}
             {...register('location')}
           />
@@ -258,7 +258,7 @@ export function EditExtraSessionModal({
                 min="0"
                 step="5"
                 label="المبلغ المطلوب من كل طالب (ج.م)"
-                placeholder="مثال: 50"
+                placeholder="أدخل قيمة رسوم الحصة..."
                 error={errors.fee?.message}
                 value={watch('fee') || ''}
                 onChange={(e) => setValue('fee', Number(e.target.value) || 0)}

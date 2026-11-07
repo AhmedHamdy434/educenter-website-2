@@ -149,7 +149,7 @@ export function ModalActions({
             size={size}
             onClick={onCancel}
             disabled={loading || cancelDisabled}
-            className="border-border text-foreground hover:bg-muted font-medium cursor-pointer"
+            className="border-border h-11 text-foreground hover:bg-muted font-medium cursor-pointer"
           >
             {cancelLabel}
           </Button>
@@ -164,7 +164,7 @@ export function ModalActions({
             onClick={handleClick}
             disabled={isPrimaryDisabled}
             className={cn(
-              "font-bold shadow-none cursor-pointer flex items-center gap-1.5",
+              "font-bold shadow-none cursor-pointer flex items-center h-11 gap-1.5",
               variant === "brand" && "text-white"
             )}
           >

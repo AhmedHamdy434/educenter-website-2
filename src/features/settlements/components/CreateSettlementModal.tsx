@@ -308,7 +308,7 @@ function CreateSettlementForm({
           <Input
             value={referenceNumber}
             onChange={(e) => setReferenceNumber(e.target.value)}
-            placeholder="مثال: رقم العملية أو إيصال التحويل"
+            placeholder="أدخل رقم العملية أو إيصال التحويل..."
             className="text-xs"
           />
         </div>

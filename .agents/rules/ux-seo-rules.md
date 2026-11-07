@@ -27,7 +27,7 @@ This document defines the mandatory UI/UX styling, Accessibility (WCAG 2.2 AA), 
 *   **Semantic HTML**: Use semantic HTML first (`header`, `main`, `nav`, `section`, `article`, `aside`, `footer`, etc.). Never use clickable divs when a native element (`button`, `a`, `input`) is appropriate.
 *   **Keyboard Navigation**: Every interactive element must be fully keyboard accessible, preserving visible focus indicators (never remove focus outlines unless replaced with an accessible alternative). Ensure logical tab order.
 *   **ARIA**: Use proper ARIA attributes only when semantic HTML is insufficient.
-*   **Form Controls**: Every form control must have an associated label. Inputs must expose validation errors using accessible techniques (`aria-invalid`, `aria-describedby`, live regions where appropriate).
+*   **Form Controls**: Every form control must have an associated label. Inputs must expose validation errors using accessible techniques (`aria-invalid`, `aria-describedby`, live regions where appropriate). Placeholders must strictly use direct action phrasing (e.g. `أدخل...` / `اختر...`) and must never use example-based placeholders starting with "مثال: ...".
 *   **Media**: Every image must include meaningful `alt` text. Decorative images should use `alt=""`. Icon-only buttons must include an accessible name (`aria-label`).
 *   **Headings**: Headings must follow a logical hierarchy (H1 → H2 → H3).
 *   **Contrast**: Use sufficient color contrast (minimum WCAG AA). Never rely on color alone to convey meaning.

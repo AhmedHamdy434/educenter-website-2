@@ -170,7 +170,7 @@ export function GroupForm({
         <FormInput
           label="اسم المجموعة الدراسية"
           id="name"
-          placeholder="مثال: مجموعة أ - الصف الأول الثانوي"
+          placeholder="أدخل اسم المجموعة الدراسية..."
           error={errors.name?.message}
           {...register("name")}
         />
@@ -194,7 +194,7 @@ export function GroupForm({
           id="monthlyFee"
           type="number"
           step="0.01"
-          placeholder="مثال: 500"
+          placeholder="أدخل قيمة الاشتراك الشهري..."
           error={errors.monthlyFee?.message}
           {...register("monthlyFee", {
             valueAsNumber: true,
@@ -214,7 +214,7 @@ export function GroupForm({
           label="مدة المجموعة بالشهور"
           id="monthsCount"
           type="number"
-          placeholder="مثال: 3"
+          placeholder="أدخل مدة المجموعة بالشهور..."
           error={errors.monthsCount?.message}
           {...register("monthsCount", {
             valueAsNumber: true,

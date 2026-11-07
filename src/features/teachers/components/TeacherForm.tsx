@@ -144,7 +144,7 @@ export function TeacherForm({
         <FormInput
           label="الاسم الكامل"
           id="fullName"
-          placeholder="مثال: محمد علي"
+          placeholder="أدخل اسم المعلم رباعي..."
           error={errors.fullName?.message}
           {...register("fullName")}
         />
@@ -152,7 +152,7 @@ export function TeacherForm({
           label="البريد الإلكتروني"
           id="email"
           type="email"
-          placeholder="teacher@example.com"
+          placeholder="أدخل البريد الإلكتروني..."
           error={errors.email?.message}
           {...register("email")}
         />
@@ -170,7 +170,7 @@ export function TeacherForm({
         <FormInput
           label="رقم الهاتف"
           id="phone"
-          placeholder="مثال: 01012345678"
+          placeholder="أدخل رقم هاتف المعلم..."
           error={errors.phone?.message}
           {...register("phone")}
         />

@@ -118,15 +118,15 @@ export function StudentForm({
         <FormInput
           label="الاسم الكامل"
           id="fullName"
-          placeholder="مثال: أحمد محمد"
+          placeholder="أدخل اسم الطالب..."
           error={errors.fullName?.message}
           {...register("fullName")}
         />
 
         <FormInput
-          label="كود الطالب (اختياري)"
+          label="كود الطالب"
           id="code"
-          placeholder="مثال: STU-100230 أو اتركه للتوليد التلقائي"
+          placeholder="أدخل كود الطالب أو اتركه للتوليد التلقائي..."
           error={errors.code?.message}
           {...register("code")}
         />
@@ -137,7 +137,7 @@ export function StudentForm({
           label="البريد الإلكتروني"
           id="email"
           type="email"
-          placeholder="student@example.com"
+          placeholder="أدخل البريد الإلكتروني..."
           error={errors.email?.message}
           {...register("email")}
         />
@@ -156,7 +156,7 @@ export function StudentForm({
         <FormInput
           label="رقم الهاتف"
           id="phone"
-          placeholder="مثال: +966500000000"
+          placeholder="أدخل رقم هاتف الطالب..."
           error={errors.phone?.message}
           {...register("phone")}
         />
@@ -164,7 +164,7 @@ export function StudentForm({
         <FormInput
           label="رقم هاتف ولي الأمر"
           id="parentPhone"
-          placeholder="مثال: +966511111111"
+          placeholder="أدخل رقم هاتف ولي الأمر..."
           error={errors.parentPhone?.message}
           {...register("parentPhone")}
         />
@@ -183,9 +183,9 @@ export function StudentForm({
       </div>
 
       <FormTextarea
-        label="ملاحظات حول الطالب (اختياري)"
+        label="ملاحظات حول الطالب"
         id="notes"
-        placeholder="مثال: يحتاج لمتابعة خاصة في مادة الرياضيات"
+        placeholder="أدخل أي ملاحظات خاصة بالطالب..."
         error={errors.notes?.message}
         {...register("notes")}
       />

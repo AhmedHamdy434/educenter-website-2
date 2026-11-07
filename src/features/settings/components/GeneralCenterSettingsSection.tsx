@@ -87,7 +87,7 @@ export function GeneralCenterSettingsSection({
           <Textarea
             value={receiptNotes || ""}
             onChange={(e) => onChange({ receiptNotes: e.target.value })}
-            placeholder="مثال: يرجى الاحتفاظ بالإيصال لإثبات سداد الاشتراك الشهري..."
+            placeholder="أدخل الملاحظات والتعليمات الافتراضية المطبوعة على الإيصالات..."
             rows={2}
             className="text-xs"
           />

@@ -93,8 +93,8 @@ export function CancelExtraSessionDialog({
             </p>
 
             <FormTextarea
-              label="ملاحظة معالجة المبالغ المستردة (إلزامية)"
-              placeholder="مثال: تم رد المبالغ النقدية للطلاب في مكتب الإدارة."
+              label="ملاحظة معالجة المبالغ المستردة"
+              placeholder="أدخل ملاحظات تسوية المبالغ المستردة..."
               value={confirmRefundNotes}
               onChange={(e) => {
                 setConfirmRefundNotes(e.target.value);
@@ -108,8 +108,8 @@ export function CancelExtraSessionDialog({
 
         {/* Optional Cancellation Reason */}
         <FormTextarea
-          label="سبب الإلغاء (اختياري - للسجلات الداخلية)"
-          placeholder="مثال: اعتذار المعلم لظرف طارئ."
+          label="سبب الإلغاء"
+          placeholder="أدخل سبب إلغاء الحصة الإضافية..."
           value={reason}
           onChange={(e) => setReason(e.target.value)}
         />

@@ -82,8 +82,8 @@ export function QuickPayModal({
         </p>
 
         <FormInput
-          label="ملاحظات التحصيل (اختياري)"
-          placeholder="مثال: تم الاستلام في الاستقبال"
+          label="ملاحظات التحصيل"
+          placeholder="أدخل أي ملاحظات حول التحصيل..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />

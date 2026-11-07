@@ -97,7 +97,7 @@ export function SubjectForm({
       <FormInput
         label="اسم المادة الدراسية"
         id="name"
-        placeholder="مثال: الرياضيات"
+        placeholder="أدخل اسم المادة الدراسية..."
         error={errors.name?.message}
         {...register("name")}
       />
@@ -117,7 +117,7 @@ export function SubjectForm({
       <FormTextarea
         label="شرح أو وصف المادة (اختياري)"
         id="description"
-        placeholder="مثال: منهج الرياضيات لطلاب الصف الأول الثانوي"
+        placeholder="أدخل وصف وشرح المادة الدراسية..."
         error={errors.description?.message}
         {...register("description")}
       />
