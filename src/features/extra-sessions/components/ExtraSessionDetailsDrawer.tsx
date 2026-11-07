@@ -17,6 +17,7 @@ import {
   Phone,
 } from "lucide-react";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loading } from "@/components/common/Loading";
@@ -468,17 +469,12 @@ export function ExtraSessionDetailsDrawer({
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex items-center justify-end pt-2 border-t border-border">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onClose}
-                className="cursor-pointer"
-              >
-                إغلاق
-              </Button>
-            </div>
+            <ModalActions
+              onCancel={onClose}
+              cancelLabel="إغلاق"
+              className="pt-2 border-t border-border mt-0"
+              size="sm"
+            />
           </div>
         )}
       </SharedModal>

@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Button } from "@/components/ui/button";
 import { downloadFile } from "@/lib/export/file-download";
 import { ExcelImportSummary, RowValidationError } from "@/types/table-toolbar";
@@ -270,34 +271,20 @@ export function TableImportModal({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
-            إلغاء
-          </Button>
-          <Button
-            type="button"
-            variant="default"
-            size="lg"
-            onClick={handleConfirmImport}
-            disabled={
-              !file ||
-              isValidating ||
-              errors.length > 0 ||
-              isSubmitting ||
-              !summary
-            }
-            className="gap-1.5 font-semibold"
-          >
-            {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            تأكيد واستيراد البيانات
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={handleClose}
+          onSubmit={handleConfirmImport}
+          isLoading={isSubmitting}
+          disabled={
+            !file ||
+            isValidating ||
+            errors.length > 0 ||
+            !summary
+          }
+          submitLabel="تأكيد واستيراد البيانات"
+          loadingLabel="جاري الاستيراد..."
+          className="pt-3"
+        />
       </div>
     </SharedModal>
   );

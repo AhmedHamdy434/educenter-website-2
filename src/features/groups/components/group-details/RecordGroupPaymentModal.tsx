@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SharedModal } from "@/components/common/SharedModal";
-import { Button } from "@/components/ui/button";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Switch } from "@/components/ui/switch";
 import { FormInput } from "@/components/common/form-input";
 import { FilterDropdown } from "@/components/common/FilterDropdown";
@@ -284,42 +284,18 @@ export function RecordGroupPaymentModal({
         </div>
 
         {/* أزرار الإجراءات */}
-        <div className="flex gap-3 justify-end border-t border-border pt-4 mt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            className="h-10 px-5 rounded-lg border-border text-foreground hover:bg-muted font-medium cursor-pointer"
-          >
-            إلغاء
-          </Button>
-          <Button
-            type="submit"
-            variant="brand"
-            disabled={!canSubmit}
-            className="h-10 px-6 rounded-lg flex items-center gap-2 font-bold shadow-none cursor-pointer"
-          >
-            {isRecordPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>جاري التسجيل...</span>
-              </>
-            ) : isCurrentMonthPaid ? (
-              <>
-                <CheckCircle className="size-4" />
-                <span>تم سداد هذا الشهر مسبقاً</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle className="size-4" />
-                <span>
-                  تأكيد وتسجيل الدفع{" "}
-                  {isAmountValid ? `(${fmt(enteredAmount)} ج.م)` : ""}
-                </span>
-              </>
-            )}
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={handleClose}
+          isLoading={isRecordPending}
+          disabled={!canSubmit}
+          submitLabel={
+            isCurrentMonthPaid
+              ? "تم سداد هذا الشهر مسبقاً"
+              : `تأكيد وتسجيل الدفع ${isAmountValid ? `(${fmt(enteredAmount)} ج.م)` : ""}`
+          }
+          loadingLabel="جاري التسجيل..."
+          icon={CheckCircle}
+        />
       </form>
     </SharedModal>
   );

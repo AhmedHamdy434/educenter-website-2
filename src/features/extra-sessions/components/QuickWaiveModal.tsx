@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { SharedModal } from '@/components/common/SharedModal';
+import { ModalActions } from '@/components/common/ModalActions';
 import { FormInput } from '@/components/common/form-input';
-import { Button } from '@/components/ui/button';
 import { useWaiveExtraSessionStudentMutation } from '../hooks/mutations';
 import { ExtraSessionParticipant } from '../types';
 
@@ -77,31 +77,15 @@ export function QuickWaiveModal({
           onChange={(e) => setReason(e.target.value)}
         />
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={waiveMutation.isPending}
-            className="cursor-pointer"
-          >
-            إلغاء
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handleWaive}
-            disabled={waiveMutation.isPending}
-            className="font-bold cursor-pointer flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
-          >
-            {waiveMutation.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <ShieldCheck className="size-4" />
-            )}
-            <span>تأكيد الإعفاء</span>
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={onClose}
+          onSubmit={handleWaive}
+          isLoading={waiveMutation.isPending}
+          submitLabel="تأكيد الإعفاء"
+          loadingLabel="جاري الإعفاء..."
+          icon={ShieldCheck}
+          className="pt-3"
+        />
       </div>
     </SharedModal>
   );

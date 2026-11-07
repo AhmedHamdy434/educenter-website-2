@@ -3,12 +3,11 @@
 import { useMemo, useEffect, useRef } from "react";
 import {
   Landmark,
-  Loader2,
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
 import { FilterDropdown } from "@/components/common/FilterDropdown";
-import { Button } from "@/components/ui/button";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Switch } from "@/components/ui/switch";
 import { FormInput } from "@/components/common/form-input";
 import { usePayGroupStudentMonthMutation } from "@/features/groups/hooks/mutations";
@@ -303,39 +302,21 @@ export function StudentPaymentForm({
       </div>
 
       {/* زر التأكيد */}
-      <div className="flex justify-end pt-1">
-        <Button
-          type="submit"
-          variant="brand"
-          size="sm"
-          disabled={!canSubmit}
-          className="h-9 px-5 rounded-lg flex items-center gap-1.5 text-xs font-bold shadow-none cursor-pointer"
-        >
-          {isRecordPending ? (
-            <>
-              <Loader2 className="size-3.5 animate-spin" />
-              <span>جاري التسجيل...</span>
-            </>
-          ) : isCurrentMonthPaid ? (
-            <>
-              <CheckCircle className="size-3.5" />
-              <span>
-                {isWaived
-                  ? "هذا الشهر معفى من الاشتراك"
-                  : "تم سداد هذا الشهر بالكامل مسبقاً"}
-              </span>
-            </>
-          ) : (
-            <>
-              <Landmark className="size-3.5" />
-              <span>
-                تأكيد وتسجيل دفع{" "}
-                {isAmountValid ? `(${fmt(enteredAmount)} ج.م)` : ""}
-              </span>
-            </>
-          )}
-        </Button>
-      </div>
+      <ModalActions
+        isSubmitting={isRecordPending}
+        disabled={!canSubmit}
+        submitLabel={
+          isCurrentMonthPaid
+            ? isWaived
+              ? "هذا الشهر معفى من الاشتراك"
+              : "تم سداد هذا الشهر بالكامل مسبقاً"
+            : `تأكيد وتسجيل دفع ${isAmountValid ? `(${fmt(enteredAmount)} ج.م)` : ""}`
+        }
+        loadingLabel="جاري التسجيل..."
+        icon={isCurrentMonthPaid ? CheckCircle : Landmark}
+        size="sm"
+        className="border-t-0 pt-1 mt-0"
+      />
     </form>
   );
 }

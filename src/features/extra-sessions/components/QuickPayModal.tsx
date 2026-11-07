@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { SharedModal } from '@/components/common/SharedModal';
+import { ModalActions } from '@/components/common/ModalActions';
 import { FormInput } from '@/components/common/form-input';
-import { Button } from '@/components/ui/button';
 import { usePayExtraSessionStudentMutation } from '../hooks/mutations';
 import { ExtraSessionParticipant } from '../types';
 
@@ -88,31 +88,19 @@ export function QuickPayModal({
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={payMutation.isPending}
-            className="cursor-pointer"
-          >
-            إلغاء
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handlePay}
-            disabled={payMutation.isPending}
-            className="font-bold cursor-pointer flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            {payMutation.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <CheckCircle2 className="size-4" />
-            )}
-            <span>تأكيد استلام {participant.amountDue} ج.م</span>
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={onClose}
+          onSubmit={handlePay}
+          isLoading={payMutation.isPending}
+          submitLabel={
+            participant
+              ? `تأكيد استلام ${participant.amountDue} ج.م`
+              : "تأكيد الاستلام"
+          }
+          loadingLabel="جاري التسجيل..."
+          icon={CheckCircle2}
+          className="pt-3"
+        />
       </div>
     </SharedModal>
   );

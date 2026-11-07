@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Sparkles, Loader2, Users, Coins } from "lucide-react";
+import { Sparkles, Users, Coins } from "lucide-react";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ModalActions } from "@/components/common/ModalActions";
 import { FormInput } from "@/components/common/form-input";
 import { FormTextarea } from "@/components/common/form-textarea";
 import { FormSelect } from "@/components/common/form-select";
@@ -402,29 +403,14 @@ export function CreateExtraSessionModal({
         />
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={createMutation.isPending}
-            className="cursor-pointer"
-          >
-            إلغاء
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={createMutation.isPending}
-            className="font-bold cursor-pointer flex items-center gap-2"
-          >
-            {createMutation.isPending && (
-              <Loader2 className="size-4 animate-spin" />
-            )}
-            <Sparkles className="size-4" />
-            <span>إنشاء الحصة الإضافية</span>
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={handleClose}
+          isSubmitting={createMutation.isPending}
+          submitLabel="إنشاء الحصة الإضافية"
+          loadingLabel="جاري الإنشاء..."
+          icon={Sparkles}
+          className="pt-4"
+        />
       </form>
     </SharedModal>
   );

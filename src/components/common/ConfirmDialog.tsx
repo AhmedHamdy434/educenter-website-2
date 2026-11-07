@@ -1,12 +1,11 @@
 "use client";
 
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
+import { ModalActions } from "@/components/common/ModalActions";
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -57,35 +56,16 @@ export function ConfirmDialog({
         </AlertDialogHeader>
 
         {/* Action Buttons */}
-        <AlertDialogFooter className="mt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-            className="h-10 px-5 rounded-lg border-border text-foreground hover:bg-muted font-semibold cursor-pointer"
-          >
-            {cancelLabel}
-          </Button>
-          <Button
-            type="button"
-            variant={isDestructive ? "destructive" : "brand"}
-            onClick={async () => {
-              await onConfirm();
-            }}
-            disabled={isLoading}
-            className="h-10 px-6 rounded-lg flex items-center gap-2 font-bold shadow-none cursor-pointer"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                جاري المعالجة...
-              </>
-            ) : (
-              confirmLabel
-            )}
-          </Button>
-        </AlertDialogFooter>
+        <ModalActions
+          onCancel={onClose}
+          onConfirm={onConfirm}
+          isLoading={isLoading}
+          variant={isDestructive ? "destructive" : "brand"}
+          confirmLabel={confirmLabel}
+          cancelLabel={cancelLabel}
+          loadingLabel="جاري المعالجة..."
+          className="border-t-0 pt-2 mt-2"
+        />
       </AlertDialogContent>
     </AlertDialog>
   );

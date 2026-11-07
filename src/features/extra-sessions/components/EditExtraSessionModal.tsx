@@ -5,16 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Edit3,
-  Loader2,
   Info,
   Coins,
 } from 'lucide-react';
 import { SharedModal } from '@/components/common/SharedModal';
+import { ModalActions } from '@/components/common/ModalActions';
 import { FormInput } from '@/components/common/form-input';
 import { FormTextarea } from '@/components/common/form-textarea';
 import { FormSelect } from '@/components/common/form-select';
 import { FormDatePicker } from '@/components/common/form-date-picker';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useUpdateExtraSessionMutation } from '../hooks/mutations';
@@ -283,29 +282,15 @@ export function EditExtraSessionModal({
         />
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={updateMutation.isPending}
-            className="cursor-pointer"
-          >
-            إلغاء
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={updateMutation.isPending || isExpired}
-            className="font-bold cursor-pointer flex items-center gap-1.5"
-          >
-            {updateMutation.isPending && (
-              <Loader2 className="size-4 animate-spin" />
-            )}
-            <Edit3 className="size-4" />
-            <span>حفظ التعديلات</span>
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={onClose}
+          isSubmitting={updateMutation.isPending}
+          disabled={isExpired}
+          submitLabel="حفظ التعديلات"
+          loadingLabel="جاري الحفظ..."
+          icon={Edit3}
+          className="pt-3"
+        />
       </form>
     </SharedModal>
   );

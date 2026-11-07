@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Users, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus, Users } from "lucide-react";
+import { ModalActions } from "@/components/common/ModalActions";
 import { SharedModal } from "@/components/common/SharedModal";
 import { TableSearch } from "@/components/common/TableSearch";
 import { Loading } from "@/components/common/Loading";
@@ -173,35 +173,19 @@ export function AddStudentsModal({
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-3 justify-end border-t border-border pt-4 mt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            className="h-10 px-5 rounded-lg border-border text-foreground hover:bg-muted font-medium"
-          >
-            إلغاء
-          </Button>
-          <Button
-            type="button"
-            variant="brand"
-            onClick={handleSave}
-            disabled={selectedStudentIds.length === 0 || isAddPending}
-            className="h-10 px-6 rounded-lg flex items-center gap-2 font-bold shadow-none"
-          >
-            {isAddPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                جاري الإضافة...
-              </>
-            ) : (
-              <>
-                <Plus className="size-4" />
-                إضافة الطلاب المحددين
-              </>
-            )}
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={handleClose}
+          onSubmit={handleSave}
+          isLoading={isAddPending}
+          disabled={selectedStudentIds.length === 0}
+          submitLabel={
+            selectedStudentIds.length > 0
+              ? `إضافة (${selectedStudentIds.length}) طلاب محددين`
+              : "إضافة الطلاب المحددين"
+          }
+          loadingLabel="جاري الإضافة..."
+          icon={Plus}
+        />
       </div>
     </SharedModal>
   );

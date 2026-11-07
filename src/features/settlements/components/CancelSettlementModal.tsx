@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { SharedModal } from "@/components/common/SharedModal";
-import { Button } from "@/components/ui/button";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
@@ -66,26 +66,17 @@ export function CancelSettlementModal({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            disabled={cancelMutation.isPending}
-          >
-            تراجع
-          </Button>
-          <Button
-            type="submit"
-            variant="destructive"
-            size="sm"
-            disabled={!reason.trim() || cancelMutation.isPending}
-            className="font-bold gap-1.5"
-          >
-            {cancelMutation.isPending ? "جاري الإلغاء..." : "تأكيد إلغاء التسوية"}
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={onClose}
+          cancelLabel="تراجع"
+          submitLabel="تأكيد إلغاء التسوية"
+          loadingLabel="جاري الإلغاء..."
+          variant="destructive"
+          isSubmitting={cancelMutation.isPending}
+          disabled={!reason.trim()}
+          size="sm"
+          className="pt-2"
+        />
       </form>
     </SharedModal>
   );

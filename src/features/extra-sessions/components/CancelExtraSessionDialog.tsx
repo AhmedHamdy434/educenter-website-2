@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Loader2, Ban } from 'lucide-react';
+import { AlertTriangle, Ban } from 'lucide-react';
 import { SharedModal } from '@/components/common/SharedModal';
+import { ModalActions } from '@/components/common/ModalActions';
 import { FormTextarea } from '@/components/common/form-textarea';
-import { Button } from '@/components/ui/button';
 import { useCancelExtraSessionMutation } from '../hooks/mutations';
 import { ExtraSessionItem, ExtraSessionDetails } from '../types';
 
@@ -115,34 +115,18 @@ export function CancelExtraSessionDialog({
         />
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={cancelMutation.isPending}
-            className="cursor-pointer"
-          >
-            تراجع
-          </Button>
-
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleCancel}
-            disabled={
-              cancelMutation.isPending ||
-              (hasPaidStudents && !confirmRefundNotes.trim())
-            }
-            className="font-bold cursor-pointer flex items-center gap-1.5"
-          >
-            {cancelMutation.isPending && (
-              <Loader2 className="size-4 animate-spin" />
-            )}
-            <Ban className="size-4" />
-            <span>تأكيد الإلغاء النهائي</span>
-          </Button>
-        </div>
+        <ModalActions
+          onCancel={handleClose}
+          onSubmit={handleCancel}
+          cancelLabel="تراجع"
+          submitLabel="تأكيد الإلغاء النهائي"
+          loadingLabel="جاري الإلغاء..."
+          variant="destructive"
+          isLoading={cancelMutation.isPending}
+          disabled={hasPaidStudents && !confirmRefundNotes.trim()}
+          icon={Ban}
+          className="pt-3"
+        />
       </div>
     </SharedModal>
   );

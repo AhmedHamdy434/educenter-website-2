@@ -2,7 +2,7 @@
 
 import React from "react";
 import { SharedModal } from "@/components/common/SharedModal";
-import { Button } from "@/components/ui/button";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Receipt } from "lucide-react";
@@ -143,11 +143,12 @@ export function SettlementDetailsModal({
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
-            <Button size="sm" variant="outline" onClick={onClose}>
-              إغلاق
-            </Button>
-          </div>
+          <ModalActions
+            onCancel={onClose}
+            cancelLabel="إغلاق"
+            className="pt-2 border-t-0 mt-0"
+            size="sm"
+          />
         </div>
       )}
     </SharedModal>

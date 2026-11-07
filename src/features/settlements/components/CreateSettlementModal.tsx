@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { SharedModal } from "@/components/common/SharedModal";
+import { ModalActions } from "@/components/common/ModalActions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -342,30 +343,20 @@ function CreateSettlementForm({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onClose}
-          disabled={createMutation.isPending}
-        >
-          إلغاء
-        </Button>
-        <Button
-          type="submit"
-          size="sm"
-          disabled={amount <= 0 || isExceeding || createMutation.isPending}
-          className="font-bold gap-1.5"
-        >
-          <CheckCircle2 className="size-4" />
-          {createMutation.isPending
-            ? "جاري التسجيل..."
-            : isPendingStatus
+      <ModalActions
+        onCancel={onClose}
+        isSubmitting={createMutation.isPending}
+        disabled={amount <= 0 || isExceeding}
+        submitLabel={
+          isPendingStatus
             ? `حجز تسوية معلقة (${amount.toLocaleString()} ج.م)`
-            : `تأكيد وصرف التسوية (${amount.toLocaleString()} ج.م)`}
-        </Button>
-      </div>
+            : `تأكيد وصرف التسوية (${amount.toLocaleString()} ج.م)`
+        }
+        loadingLabel="جاري التسجيل..."
+        icon={CheckCircle2}
+        size="sm"
+        className="pt-3"
+      />
     </form>
   );
 }
