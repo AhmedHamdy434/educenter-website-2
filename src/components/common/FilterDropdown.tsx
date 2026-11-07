@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { ChevronDown, Check, Loader2 } from "lucide-react";
-import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface FilterOption {
   label: string;
@@ -34,8 +38,7 @@ export function FilterDropdown({
   isLoading = false,
   disabled = false,
 }: FilterDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
 
   const isDisabled = disabled || isLoading;
   const defaultPlaceholder = isLoading
@@ -45,51 +48,49 @@ export function FilterDropdown({
       : (allOptionLabel || placeholder || "الكل");
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Close dropdown on outside click
-  useOnClickOutside(dropdownRef, () => setIsOpen(false));
-
   return (
-    <div className={cn("relative min-w-35 space-y-2", className)} ref={dropdownRef}>
+    <div className={cn("min-w-35 space-y-2", className)}>
       {label && (
-          <Label
-          className="text-xs font-semibold text-muted-foreground block"
-        >
+        <Label className="text-xs font-semibold text-muted-foreground block text-right">
           {label}
         </Label>
       )}
 
-      {/* Trigger Button */}
-      <button
-        type="button"
-        disabled={isDisabled}
-        onClick={() => !isDisabled && setIsOpen(!isOpen)}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        className={cn(
-          "flex h-11 w-full items-center mb-0! justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
-          isDisabled && "cursor-not-allowed opacity-60 hover:bg-card",
-          className
-        )}
-      >
-        <span className="truncate text-xs">
-          {selectedOption ? selectedOption.label : defaultPlaceholder}
-        </span>
-        {isLoading ? (
-          <Loader2 className="size-4 animate-spin text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronDown
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            disabled={isDisabled}
+            aria-haspopup="listbox"
+            aria-expanded={open}
             className={cn(
-              "size-4 text-muted-foreground transition-transform duration-200 shrink-0",
-              isOpen && "rotate-180 text-primary"
+              "flex h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
+              isDisabled && "cursor-not-allowed opacity-60 hover:bg-card"
             )}
-          />
-        )}
-      </button>
+          >
+            <span className="truncate text-xs">
+              {selectedOption ? selectedOption.label : defaultPlaceholder}
+            </span>
+            {isLoading ? (
+              <Loader2 className="size-4 animate-spin text-muted-foreground shrink-0" />
+            ) : (
+              <ChevronDown
+                className={cn(
+                  "size-4 text-muted-foreground transition-transform duration-200 shrink-0",
+                  open && "rotate-180 text-primary"
+                )}
+              />
+            )}
+          </button>
+        </PopoverTrigger>
 
-      {/* Options Dropdown */}
-      {isOpen && !isDisabled && (
-        <div className="absolute z-60 mt-1.5 w-full min-w-40 rounded-xl border border-border bg-card p-1 shadow-lg animate-in fade-in-50 zoom-in-95 duration-100">
-          <ul role="listbox" className="space-y-0.5 max-h-60">
+        <PopoverContent
+          align="start"
+          sideOffset={4}
+          className="z-60 w-(--radix-popover-trigger-width) min-w-40 p-1 rounded-xl border border-border bg-card shadow-lg ring-0"
+          dir="rtl"
+        >
+          <ul role="listbox" className="space-y-0.5 max-h-60 overflow-y-auto">
             {options.length === 0 ? (
               <li className="px-3 py-2 text-center text-xs text-muted-foreground select-none">
                 لا يوجد
@@ -104,7 +105,7 @@ export function FilterDropdown({
                       aria-selected={!value}
                       onClick={() => {
                         onChange("");
-                        setIsOpen(false);
+                        setOpen(false);
                       }}
                       className={cn(
                         "flex w-full items-center justify-between rounded-lg px-3 py-2 text-right text-xs font-semibold transition-colors cursor-pointer",
@@ -130,7 +131,7 @@ export function FilterDropdown({
                         aria-selected={isSelected}
                         onClick={() => {
                           onChange(option.value);
-                          setIsOpen(false);
+                          setOpen(false);
                         }}
                         className={cn(
                           "flex w-full items-center justify-between rounded-lg px-3 py-2 text-right text-xs font-semibold transition-colors cursor-pointer",
@@ -150,8 +151,8 @@ export function FilterDropdown({
               </>
             )}
           </ul>
-        </div>
-      )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
