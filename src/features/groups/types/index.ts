@@ -1,4 +1,4 @@
-import { QueryParams, ApiResponse } from "@/types";
+import { QueryParams, ApiResponse, PaymentStatus } from "@/types";
 import { type DayOfWeek } from "@/utils/time";
 export type { DayOfWeek };
 
@@ -109,7 +109,6 @@ export interface CreateGroupDTO {
   isActive?: boolean;
 }
 
-
 export interface GroupStudentPaymentDetail {
   id: string;
   subscriptionDate: string;
@@ -119,26 +118,22 @@ export interface GroupStudentPaymentDetail {
 }
 
 export interface GroupPaymentsStats {
-  /** إجمالي الطلاب المسجلين في المجموعة */
   total: number;
-  /** عدد المسددين للشهر المستهدف (أو كل الأشهر) */
   paid: number;
-  /** عدد غير المسددين */
   unpaid: number;
-  /** الإيراد المتوقع (ج.م) */
   expected: number;
-  /** الإيراد المحصَّل (ج.م) */
   collected: number;
-  /** قائمة شهور المجموعة بصيغة YYYY-MM-DD */
   groupMonths: string[];
-  /** الشهر المستهدف النشط */
-  activeMonth?: string;
+  activeMonth: string;
 }
 
 export interface GroupStudentCurrentMonth {
   isRequired: boolean;
   isPaid: boolean;
   payment?: GroupStudentPaymentDetail | null;
+  amountDue: number;
+  status: PaymentStatus;
+  paidAmount: number;
 }
 
 export interface GroupStudentPaymentInfo {
@@ -196,4 +191,4 @@ export interface GroupPayDto {
   amount?: number;
   markAsFullPayment?: boolean;
   paymentMethod?: string;
-} 
+}

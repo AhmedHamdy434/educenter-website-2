@@ -66,7 +66,7 @@ export function FilterDropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
-          "flex h-11 w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
+          "flex h-11 w-full items-center mb-0! justify-between gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none transition-all hover:bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary shadow-none cursor-pointer",
           isDisabled && "cursor-not-allowed opacity-60 hover:bg-card",
           className
         )}
@@ -88,8 +88,8 @@ export function FilterDropdown({
 
       {/* Options Dropdown */}
       {isOpen && !isDisabled && (
-        <div className="absolute z-50 mt-1.5 w-full min-w-40 rounded-xl border border-border bg-card p-1 shadow-lg animate-in fade-in-50 zoom-in-95 duration-100">
-          <ul role="listbox" className="space-y-0.5 max-h-60 overflow-y-auto">
+        <div className="absolute z-60 mt-1.5 w-full min-w-40 rounded-xl border border-border bg-card p-1 shadow-lg animate-in fade-in-50 zoom-in-95 duration-100">
+          <ul role="listbox" className="space-y-0.5 max-h-60">
             {options.length === 0 ? (
               <li className="px-3 py-2 text-center text-xs text-muted-foreground select-none">
                 لا يوجد

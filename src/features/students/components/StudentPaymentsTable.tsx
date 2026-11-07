@@ -6,6 +6,7 @@ import { Landmark, Receipt, Undo2 } from "lucide-react";
 import { SharedTable } from "@/components/common/SharedTable";
 import { fmt, formatFullDate, formatMonthName } from "@/utils/time";
 import { StudentPaymentHistoryItem } from "../types";
+import { PaymentStatus } from "@/types";
 
 interface StudentPaymentsTableProps {
   payments: StudentPaymentHistoryItem[];
@@ -36,11 +37,6 @@ export function StudentPaymentsTable({
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
               <Receipt className="size-3 shrink-0" />
               <span>{payment.receiptNumber}</span>
-              {payment.isLegacy && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border font-sans">
-                  قديم
-                </span>
-              )}
             </div>
           );
         },
@@ -53,7 +49,7 @@ export function StudentPaymentsTable({
               enableSorting: false,
               cell: ({ row }) => (
                 <span className="font-bold text-foreground">
-                  {row.original.groupName || "المجموعة"}
+                  {row.original.groupName}
                 </span>
               ),
             } as ColumnDef<StudentPaymentHistoryItem>,
@@ -76,8 +72,7 @@ export function StudentPaymentsTable({
         cell: ({ row }) => {
           const payment = row.original;
           const hasRefund = payment.refundedAmount > 0;
-          const netAmount = payment.amount - payment.refundedAmount;
-          const isRowFull = payment.status === "PAID";
+          const isRowFull = payment.status === PaymentStatus.PAID;
 
           return (
             <div className="flex flex-col gap-0.5">
@@ -87,18 +82,16 @@ export function StudentPaymentsTable({
               {hasRefund && (
                 <span className="text-[10px] text-destructive font-medium flex items-center gap-1">
                   <Undo2 className="size-3" />
-                  مسترد {fmt(payment.refundedAmount)} ج.م (الصافي{" "}
-                  {fmt(netAmount)} ج.م)
+                  مسترد {fmt(payment.refundedAmount)} ج.م 
                 </span>
               )}
               {isRowFull ? (
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                  تم السداد بالكامل ✓
+                  تم السداد ✓
                 </span>
               ) : (
                 <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                  سداد جزئي (متبقي {fmt(payment.remainingAfter)} ج.م من{" "}
-                  {fmt(payment.amountDue)} ج.م)
+                  سداد جزئي 
                 </span>
               )}
             </div>
@@ -122,7 +115,6 @@ export function StudentPaymentsTable({
         cell: ({ row }) => (
           <span
             className="font-mono text-muted-foreground text-[10px]"
-            dir="ltr"
           >
             {formatFullDate(row.original.paidAt)}
           </span>

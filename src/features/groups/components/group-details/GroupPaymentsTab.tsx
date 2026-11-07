@@ -4,28 +4,26 @@ import { useState, useMemo, useCallback } from "react";
 import {
   Calendar,
   CheckCircle,
-  Loader2,
   Users,
   AlertCircle,
   Landmark,
   CreditCard,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SharedModal } from "@/components/common/SharedModal";
 import { SharedTable } from "@/components/common/SharedTable";
 import { TableSearch } from "@/components/common/TableSearch";
 import { FilterDropdown } from "@/components/common/FilterDropdown";
-import { StatCard } from "@/components/common/StatCard";
+import { StatCard, StatCardSkeleton } from "@/components/common/StatCard";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { useGroupPaymentsQuery } from "../../hooks/queries";
-import { usePayGroupStudentMonthMutation } from "../../hooks/mutations";
 import { useSubscriptionStore } from "@/features/subscription/state/useSubscriptionStore";
 import {
   type GroupStudentPaymentInfo,
   type GroupPaymentsQueryParams,
+  GroupPaymentsStats,
 } from "../../types";
 import { formatMonthName } from "@/utils/time";
 import { getGroupPaymentsColumns } from "./group-payments-columns";
+import { RecordGroupPaymentModal } from "./RecordGroupPaymentModal";
 
 interface GroupPaymentsTabProps {
   groupId: string;
@@ -54,7 +52,7 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
       limit,
       search,
       month: month || undefined,
-      sortBy: sortBy as GroupPaymentsQueryParams["sortBy"],
+      sortBy,
       sortOrder,
     }),
     [page, limit, search, month, sortBy, sortOrder],
@@ -68,21 +66,12 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
     refetch,
   } = useGroupPaymentsQuery(groupId, queryParams);
 
-  const stats = paymentsRes?.stats;
+  console.log("d", paymentsRes);
+  const stats = paymentsRes?.stats as GroupPaymentsStats;
 
-  const availableMonths = useMemo(
-    () => (stats?.groupMonths ?? []) as string[],
-    [stats?.groupMonths],
-  );
+  const availableMonths = stats?.groupMonths ?? [];
 
-  const defaultMonth = useMemo(() => {
-    if (availableMonths.length === 0) return "";
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
-    return availableMonths.includes(todayStr) ? todayStr : availableMonths[0];
-  }, [availableMonths]);
-
-  const activeMonth = month || stats?.activeMonth || defaultMonth;
+  const activeMonth = month ?? stats?.activeMonth ?? "";
 
   const payments = paymentsRes?.data || [];
   const meta = paymentsRes?.meta;
@@ -94,44 +83,18 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
   // حالة مودال تسجيل الدفع
   const [selectedStudent, setSelectedStudent] =
     useState<GroupStudentPaymentInfo | null>(null);
-  const [notes, setNotes] = useState("");
-
-  const { mutateAsync: recordPayment, isPending: isRecordPending } =
-    usePayGroupStudentMonthMutation();
 
   const handleOpenRecordModal = useCallback(
     (student: GroupStudentPaymentInfo) => {
       if (isExpired) return;
       setSelectedStudent(student);
-      setNotes("");
     },
     [isExpired],
   );
 
   const handleCloseRecordModal = useCallback(() => {
     setSelectedStudent(null);
-    setNotes("");
   }, []);
-
-  const handleRecordPayment = async () => {
-    if (isExpired || !selectedStudent || !activeMonth) return;
-    await recordPayment(
-      {
-        groupStudentId: selectedStudent.groupStudentId,
-        dto: {
-          subscriptionDate: activeMonth,
-          notes: notes || undefined,
-        },
-      },
-      {
-        onSuccess: (res) => {
-          if (res.success) {
-            handleCloseRecordModal();
-          }
-        },
-      },
-    );
-  };
 
   const handleMonthChange = (newMonth: string) => {
     updateQuery({ month: newMonth || undefined, page: 1 });
@@ -149,6 +112,40 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
       }),
     [page, limit, activeMonth, isExpired, handleOpenRecordModal],
   );
+
+  const cards = [
+    {
+      label: "إجمالي الطلاب",
+      value: stats?.total,
+      unit: "طالب",
+      icon: Users,
+    },
+    {
+      label: "المسددون",
+      value: stats?.paid,
+      unit: "طالب",
+      icon: CheckCircle,
+    },
+    {
+      label: "المتبقون",
+      value: stats?.unpaid,
+      unit: "طالب",
+      icon: AlertCircle,
+    },
+    {
+      label: "الإيراد المتوقع",
+      value: stats?.expected,
+      unit: "ج.م",
+      icon: Landmark,
+    },
+    {
+      label: "الإيراد المحصل",
+      value: stats?.collected,
+      unit: "ج.م",
+      icon: CreditCard,
+      variant: "primary",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -178,37 +175,20 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
 
       {/* 2. Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        <StatCard
-          label="إجمالي الطلاب"
-          value={stats?.total ?? 0}
-          unit="طالب"
-          icon={Users}
-        />
-        <StatCard
-          label="المسددون"
-          value={stats?.paid ?? 0}
-          unit="طالب"
-          icon={CheckCircle}
-        />
-        <StatCard
-          label="المتبقون"
-          value={stats?.unpaid ?? 0}
-          unit="طالب"
-          icon={AlertCircle}
-        />
-        <StatCard
-          label="الإيراد المتوقع"
-          value={Number(stats?.expected ?? 0).toFixed(2)}
-          unit="ج.م"
-          icon={Landmark}
-        />
-        <StatCard
-          label="الإيراد المحصل"
-          value={Number(stats?.collected ?? 0).toFixed(2)}
-          unit="ج.م"
-          icon={CreditCard}
-          variant="primary"
-        />
+        {cards.map(({ label, value, unit, icon, variant }) =>
+          isPaymentsLoading ? (
+            <StatCardSkeleton key={label} />
+          ) : (
+            <StatCard
+              key={label}
+              label={label}
+              value={value}
+              unit={unit}
+              icon={icon}
+              variant={variant === "primary" ? "primary" : "default"}
+            />
+          ),
+        )}
       </div>
 
       {/* 3. Total Records Counter Bar */}
@@ -246,83 +226,13 @@ export function GroupPaymentsTab({ groupId }: GroupPaymentsTabProps) {
       />
 
       {/* 5. Record Payment Modal Dialog */}
-      {selectedStudent && (
-        <SharedModal
-          isOpen={!!selectedStudent}
-          onClose={handleCloseRecordModal}
-          title="تحصيل اشتراك الطالب"
-        >
-          <div className="space-y-4 text-right" dir="rtl">
-            <div className="bg-secondary/40 border border-border p-4 rounded-xl space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">الطالب:</span>
-                <span className="font-bold text-foreground">
-                  {selectedStudent.studentInfo?.fullName}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">الشهر:</span>
-                <span className="font-bold text-foreground">
-                  {formatMonthName(activeMonth)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm border-t border-border pt-2">
-                <span className="text-muted-foreground">مبلغ الاشتراك:</span>
-                <span className="font-bold text-primary">
-                  {Number(selectedStudent.monthlyFee || 0).toFixed(2)} ج.م
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="paymentNotes"
-                className="text-xs font-bold text-foreground"
-              >
-                ملاحظات الدفع (اختياري)
-              </label>
-              <textarea
-                id="paymentNotes"
-                rows={3}
-                placeholder="مثال: دفع نقداً كاش / تحويل محفظة إلكترونية..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full p-3 rounded-xl border border-input bg-card focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all text-right resize-none animate-none"
-              />
-            </div>
-
-            <div className="flex gap-3 justify-end border-t border-border pt-4 mt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCloseRecordModal}
-                className="h-10 px-5 rounded-lg border-border text-foreground hover:bg-muted font-medium cursor-pointer"
-              >
-                إلغاء
-              </Button>
-              <Button
-                type="button"
-                variant="brand"
-                onClick={handleRecordPayment}
-                disabled={isRecordPending}
-                className="h-10 px-6 rounded-lg flex items-center gap-2 font-bold shadow-none cursor-pointer"
-              >
-                {isRecordPending ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    <span>جاري التسجيل...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="size-4" />
-                    <span>تأكيد وتسجيل الدفع</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </SharedModal>
-      )}
+      <RecordGroupPaymentModal
+        isOpen={!!selectedStudent}
+        onClose={handleCloseRecordModal}
+        student={selectedStudent}
+        activeMonth={activeMonth}
+        isExpired={isExpired}
+      />
     </div>
   );
 }

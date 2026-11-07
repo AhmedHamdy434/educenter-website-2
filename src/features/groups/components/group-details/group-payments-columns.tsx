@@ -5,6 +5,7 @@ import { CheckCircle, AlertCircle, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { type GroupStudentPaymentInfo } from "../../types";
+import { PaymentStatus } from "@/types";
 
 interface GroupPaymentsColumnsOptions {
   page?: number;
@@ -69,10 +70,7 @@ export function getGroupPaymentsColumns({
       header: "رقم الهاتف",
       enableSorting: false,
       cell: ({ row }) => (
-        <span
-          className="font-mono text-xs text-muted-foreground"
-          dir="ltr"
-        >
+        <span className="font-mono text-xs text-muted-foreground" dir="ltr">
           {row.original.studentInfo?.phone || "—"}
         </span>
       ),
@@ -103,29 +101,29 @@ export function getGroupPaymentsColumns({
       ),
     },
     {
+      id: "amountdue",
+      header: "المبلغ المستحق",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span className="font-bold text-foreground text-xs">
+          {Number(row.original?.currentMonth?.amountDue || 0).toFixed(2)} ج.م
+        </span>
+      ),
+    },
+    {
       id: "status",
       header: () => <div className="text-center">حالة الدفع</div>,
       enableSorting: false,
       cell: ({ row }) => {
-        const item = row.original;
-        const normalizedTarget = activeMonth ? activeMonth.slice(0, 7) : "";
-        const isRequired = item.currentMonth !== undefined
-          ? item.currentMonth.isRequired
-          : activeMonth
-          ? !!item.requiredMonths?.some((m) => m.slice(0, 7) === normalizedTarget)
-          : false;
-
-        const isPaid = item.currentMonth !== undefined
-          ? item.currentMonth.isPaid
-          : activeMonth
-          ? !!item.paidMonths?.some((p) => p.subscriptionDate.slice(0, 7) === normalizedTarget)
-          : false;
-
         if (!activeMonth) {
-          return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+          return (
+            <div className="text-center text-muted-foreground/40 text-xs">
+              —
+            </div>
+          );
         }
 
-        if (!isRequired) {
+        if (!row.original.currentMonth?.isRequired) {
           return (
             <div className="flex justify-center">
               <Badge
@@ -138,7 +136,7 @@ export function getGroupPaymentsColumns({
           );
         }
 
-        if (isPaid) {
+        if (row.original.currentMonth?.status === PaymentStatus.PAID) {
           return (
             <div className="flex justify-center">
               <Badge
@@ -147,6 +145,20 @@ export function getGroupPaymentsColumns({
               >
                 <CheckCircle className="size-3" />
                 <span>تم التحصيل</span>
+              </Badge>
+            </div>
+          );
+        }
+        if (
+          row.original.currentMonth?.status === PaymentStatus.PARTIALLY_PAID
+        ) {
+          return (
+            <div className="flex justify-center">
+              <Badge
+                variant="subtle"
+                className="bg-emerald-50/80 text-emerald-800 border-emerald-300/80 text-xs font-bold flex items-center gap-1"
+              >
+                دفع ({row.original.currentMonth?.paidAmount})
               </Badge>
             </div>
           );
@@ -170,24 +182,20 @@ export function getGroupPaymentsColumns({
       header: () => <div className="text-center">الملاحظات</div>,
       enableSorting: false,
       cell: ({ row }) => {
-        const item = row.original;
-        const normalizedTarget = activeMonth ? activeMonth.slice(0, 7) : "";
-        const paymentNotes = item.currentMonth !== undefined
-          ? item.currentMonth.payment?.notes
-          : activeMonth
-          ? item.paidMonths?.find((p) => p.subscriptionDate.slice(0, 7) === normalizedTarget)?.notes
-          : undefined;
-
         if (!activeMonth) {
-          return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+          return (
+            <div className="text-center text-muted-foreground/40 text-xs">
+              —
+            </div>
+          );
         }
 
         return (
           <div
             className="text-center text-xs text-muted-foreground max-w-36 truncate mx-auto"
-            title={paymentNotes || ""}
+            title={row.original.currentMonth?.payment?.notes || ""}
           >
-            {paymentNotes || "—"}
+            {row.original.currentMonth?.payment?.notes || "—"}
           </div>
         );
       },
@@ -198,21 +206,16 @@ export function getGroupPaymentsColumns({
       enableSorting: false,
       cell: ({ row }) => {
         const item = row.original;
-        const normalizedTarget = activeMonth ? activeMonth.slice(0, 7) : "";
-        const isRequired = item.currentMonth !== undefined
-          ? item.currentMonth.isRequired
-          : activeMonth
-          ? !!item.requiredMonths?.some((m) => m.slice(0, 7) === normalizedTarget)
-          : false;
-
-        const isPaid = item.currentMonth !== undefined
-          ? item.currentMonth.isPaid
-          : activeMonth
-          ? !!item.paidMonths?.some((p) => p.subscriptionDate.slice(0, 7) === normalizedTarget)
-          : false;
+        const isRequired = item.currentMonth?.isRequired
+        const isPaid = item.currentMonth?.isPaid
+ 
 
         if (!activeMonth) {
-          return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+          return (
+            <div className="text-center text-muted-foreground/40 text-xs">
+              —
+            </div>
+          );
         }
 
         if (isRequired && !isPaid) {
@@ -237,9 +240,10 @@ export function getGroupPaymentsColumns({
           );
         }
 
-        return <div className="text-center text-muted-foreground/40 text-xs">—</div>;
+        return (
+          <div className="text-center text-muted-foreground/40 text-xs">—</div>
+        );
       },
     },
   ];
 }
-

@@ -42,7 +42,7 @@ export function SharedModal({
           <DialogPrimitive.Content
             aria-describedby={undefined}
             className={cn(
-              "relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-card shadow-xl transition-all border border-border flex flex-col",
+              "relative w-full max-w-2xl max-h-[90vh] h-full rounded-2xl p-6 bg-card shadow-xl transition-all border border-border flex flex-col",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
               "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
               "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

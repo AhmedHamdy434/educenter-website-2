@@ -1,4 +1,4 @@
-import { QueryParams } from "@/types";
+import { PaymentStatus, QueryParams } from "@/types";
 
 export interface StudentEnrollment {
   id: string;
@@ -55,16 +55,16 @@ export interface UpdateStudentDTO {
   isActive?: boolean;
 }
 
- export interface StudentPaymentMonthItem {
+export interface StudentPaymentMonthItem {
   month: string;
   amountDue: number;
   paidAmount: number;
   remainingAmount: number;
-  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
+  status: PaymentStatus;
   isWaived: boolean;
 }
 
- export interface StudentPaymentHistoryItem {
+export interface StudentPaymentHistoryItem {
   id: string;
   receiptNumber: string;
   groupId: string;
@@ -74,14 +74,14 @@ export interface UpdateStudentDTO {
   refundedAmount: number;
   amountDue: number;
   remainingAfter: number;
-  status: 'PAID' | 'PARTIALLY_PAID';
+  status: PaymentStatus;
   paymentMethod: string;
   paidAt: string;
   notes: string | null;
   isLegacy: boolean;
 }
 
- export interface StudentPaymentsTotals {
+export interface StudentPaymentsTotals {
   paymentsCount: number;
   totalPaid: number;
   totalRefunded: number;

@@ -22,6 +22,7 @@ import {
   StudentPayFormValues,
   studentPaySchema,
 } from "../schemas/group-pay-schema";
+import { PaymentStatus } from "@/types";
 
 interface StudentPaymentFormProps {
   summary: StudentPayment;
@@ -37,7 +38,6 @@ export function StudentPaymentForm({
   const canRecordPayment = Boolean(summary.canRecordPayment);
   const months = useMemo(() => summary.months ?? [], [summary.months]);
   const monthlyFee = group?.monthlyFee ?? 0;
-
   // طفرة سداد اشتراك الشهر
   const { mutateAsync: recordPayment, isPending: isRecordPending } =
     usePayGroupStudentMonthMutation();
@@ -77,8 +77,8 @@ export function StudentPaymentForm({
   const activePaid = activeItem?.paidAmount ?? 0;
   const activeRemaining = activeItem?.remainingAmount ?? 0;
   const isWaived = Boolean(activeItem?.isWaived);
-  const isCurrentMonthPaid = activeItem?.status === "PAID" || isWaived;
-  const isCurrentMonthPartial = activeItem?.status === "PARTIALLY_PAID";
+  const isCurrentMonthPaid = activeItem?.status === PaymentStatus.PAID || isWaived;
+  const isCurrentMonthPartial = activeItem?.status === PaymentStatus.PARTIALLY_PAID;
 
   // تتبع التهيئة الأولية للمودال لتجنب تصفير اختيارات المستخدم عند الـ refetch في الخلفية
   const isInitializedRef = useRef(false);
@@ -195,21 +195,6 @@ export function StudentPaymentForm({
           {monthlyFee > 0 && (
             <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">
               قيمة الاشتراك: {fmt(monthlyFee)} ج.م
-            </span>
-          )}
-          {activeItem && activeItem.amountDue !== monthlyFee && (
-            <span className="text-xs font-semibold text-foreground bg-muted px-2 py-0.5 rounded-md border border-border">
-              المستحق لهذا الشهر: {fmt(activeItem.amountDue)} ج.م
-            </span>
-          )}
-          {activePaid > 0 && (
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
-              المسدد: {fmt(activePaid)} ج.م
-            </span>
-          )}
-          {activeRemaining > 0 && activePaid > 0 && (
-            <span className="text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
-              المتبقي: {fmt(activeRemaining)} ج.م
             </span>
           )}
         </div>

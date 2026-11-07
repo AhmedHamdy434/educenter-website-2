@@ -34,6 +34,12 @@ export enum UserRole {
   STUDENT = "STUDENT",
 }
 
+export enum PaymentStatus {
+  PAID = "PAID",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  UNPAID = "UNPAID",
+}
+
 export interface User {
   id: string;
   fullName: string;
