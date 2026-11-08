@@ -38,3 +38,29 @@ export const PAYMENT_METHOD_OPTIONS = [
     value: "OTHER",
   },
 ];
+
+export const HOUR_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1).map(
+  (v) => {
+    return {
+      label: String(v),
+      value: String(v),
+    };
+  },
+);
+export const MiNUTE_OPTIONS = ["00", "15", "30", "45"].map((v) => {
+  return {
+    label: String(v),
+    value: String(v),
+  };
+});
+
+export const PERIOD_OPTIONS = [
+  {
+    label: "صباحاً (ص)",
+    value: "AM",
+  },
+  {
+    label: "مساءً (م)",
+    value: "PM",
+  },
+];

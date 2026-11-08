@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const createExtraSessionSchema = z.object({
+export const extraSessionSchema = z.object({
   title: z
     .string()
     .max(100, { message: 'عنوان الحصة لا يتجاوز 100 حرف' })
@@ -24,21 +24,13 @@ export const createExtraSessionSchema = z.object({
   studentIds: z.array(z.string()).optional(),
 });
 
-export type CreateExtraSessionFormValues = z.infer<typeof createExtraSessionSchema>;
+export type ExtraSessionFormValues = z.infer<typeof extraSessionSchema>;
 
-export const updateExtraSessionSchema = z.object({
-  title: z.string().max(100).optional().or(z.literal('')),
-  type: z.enum(['MAKEUP', 'REVISION', 'EXAM_PREP', 'OTHER']),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  hour: z.number().min(0).max(23).optional(),
-  minute: z.number().min(0).max(59).optional(),
-  isPaid: z.boolean(),
-  fee: z.number().min(0).optional(),
-  location: z.string().max(100).optional().or(z.literal('')),
-  notes: z.string().max(500).optional().or(z.literal('')),
-});
+export const createExtraSessionSchema = extraSessionSchema;
+export type CreateExtraSessionFormValues = ExtraSessionFormValues;
 
-export type UpdateExtraSessionFormValues = z.infer<typeof updateExtraSessionSchema>;
+export const updateExtraSessionSchema = extraSessionSchema;
+export type UpdateExtraSessionFormValues = ExtraSessionFormValues;
 
 export const cancelExtraSessionSchema = z.object({
   reason: z.string().max(300, { message: 'السبب لا يتجاوز 300 حرف' }).optional().or(z.literal('')),

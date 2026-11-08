@@ -18,9 +18,9 @@ import { Loading } from "@/components/common/Loading";
 import { TableSearch } from "@/components/common/TableSearch";
 import { EmptyState } from "@/components/common/EmptyState";
 import { QueryErrorState } from "@/components/common/QueryErrorState";
+import { useCrudModal } from "@/hooks/useCrudModal";
 import { useGroupExtraSessionsQuery } from "../hooks/queries";
-import { CreateExtraSessionModal } from "./CreateExtraSessionModal";
-import { EditExtraSessionModal } from "./EditExtraSessionModal";
+import { ExtraSessionModal } from "./ExtraSessionModal";
 import { CancelExtraSessionDialog } from "./CancelExtraSessionDialog";
 import { ExtraSessionDetailsDrawer } from "./ExtraSessionDetailsDrawer";
 import { ExtraSessionsStats } from "./ExtraSessionsStats";
@@ -40,10 +40,14 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
   const search = searchParams.get("search") || "";
 
   // Modal states
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingSession, setEditingSession] = useState<ExtraSessionItem | null>(
-    null,
-  );
+  const {
+    isOpen: isModalOpen,
+    selectedItem: editingSession,
+    openCreate: handleOpenCreate,
+    openEdit: handleOpenEdit,
+    close: handleCloseModal,
+  } = useCrudModal<ExtraSessionItem>();
+
   const [cancelingSession, setCancelingSession] =
     useState<ExtraSessionItem | null>(null);
   const [detailsSessionId, setDetailsSessionId] = useState<string | null>(null);
@@ -88,7 +92,7 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
         {/* Create Extra Session Action */}
         <Button
           type="button"
-          onClick={() => setIsCreateOpen(true)}
+          onClick={handleOpenCreate}
           className="h-10 px-4 font-bold text-xs cursor-pointer flex items-center gap-2 self-start sm:self-auto shrink-0 shadow-xs"
         >
           <Sparkles className="size-4" />
@@ -116,11 +120,6 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
               ? "لم يتم العثور على أي حصص تطابق معايير البحث."
               : "يمكنك إنشاء حصة إضافية للمجموعة لأي غرض (مراجعة، تعويض، ليلة امتحان) سواء كانت مجانية أو برسوم كاش."
           }
-          action={{
-            label: "حصة إضافية جديدة",
-            onClick: () => setIsCreateOpen(true),
-            icon: Sparkles,
-          }}
           className="border border-dashed border-border rounded-2xl bg-card"
         />
       ) : (
@@ -247,7 +246,7 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => setEditingSession(session)}
+                      onClick={() => handleOpenEdit(session)}
                       className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground cursor-pointer"
                       title="تعديل الحصة"
                     >
@@ -276,16 +275,11 @@ export function GroupExtraSessionsTab({ groupId }: GroupExtraSessionsTabProps) {
       )}
 
       {/* Modals & Drawers */}
-      <CreateExtraSessionModal
+      <ExtraSessionModal
         groupId={groupId}
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-      />
-
-      <EditExtraSessionModal
+        isOpen={isModalOpen}
         session={editingSession}
-        isOpen={!!editingSession}
-        onClose={() => setEditingSession(null)}
+        onClose={handleCloseModal}
       />
 
       <CancelExtraSessionDialog
