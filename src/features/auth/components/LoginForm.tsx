@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { GraduationCap, ArrowRight, Loader2 } from "lucide-react";
 
 import { loginSchema, type LoginFormValues } from "../schemas/login-schema";
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -35,6 +37,7 @@ export function LoginForm() {
     const result = await loginAction(data);
 
     if (result.success) {
+      queryClient.clear();
       if (result.data?.mustChangePassword) {
         router.push("/change-password");
       } else {

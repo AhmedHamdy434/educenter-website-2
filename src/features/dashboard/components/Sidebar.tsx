@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { GraduationCap, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { GraduationCap, LogOut, Loader2 } from "lucide-react";
 
-import { logoutAction } from "@/features/auth/actions/logout";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import { User, UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { ROLE_TRANSLATIONS } from "@/constants";
@@ -19,7 +19,7 @@ interface SidebarProps {
 
 export function Sidebar({ role, user, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { logout, isPending: isLoggingOut } = useLogout();
   const centerSlug = user.center?.slug || "";
 
   // Filter routes based on user role
@@ -28,13 +28,11 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
   );
 
   const handleLogout = async () => {
-    const result = await logoutAction();
-    if (result.success) {
-      // Redirect to login
-      router.push("/login");
-      router.refresh();
-      if (onClose) onClose();
-    }
+    await logout({
+      onSuccess: () => {
+        if (onClose) onClose();
+      },
+    });
   };
 
   return (
@@ -160,10 +158,15 @@ export function Sidebar({ role, user, onClose }: SidebarProps) {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
+            disabled={isLoggingOut}
             aria-label="تسجيل الخروج"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar cursor-pointer"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
           >
-            <LogOut className="size-4.5" />
+            {isLoggingOut ? (
+              <Loader2 className="size-4.5 animate-spin" />
+            ) : (
+              <LogOut className="size-4.5" />
+            )}
           </button>
         </div>
       </div>

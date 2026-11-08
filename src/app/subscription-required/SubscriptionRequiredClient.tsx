@@ -1,23 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { LogOut, Home, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { logoutAction } from "@/features/auth/actions/logout";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 
 export function SubscriptionRequiredClient() {
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { logout, isPending: isLoggingOut } = useLogout();
 
   const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await logoutAction();
-      window.location.href = "/login";
-    } catch {
-      setIsLoggingOut(false);
-      window.location.href = "/login";
-    }
+    await logout({ hardRedirect: true });
   };
 
   return (
