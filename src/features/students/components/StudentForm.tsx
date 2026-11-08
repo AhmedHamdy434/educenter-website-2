@@ -7,12 +7,16 @@ import { FormInput } from "@/components/common/form-input";
 import { FormSelect } from "@/components/common/form-select";
 import { FormTextarea } from "@/components/common/form-textarea";
 import { FormActions } from "@/components/common/FormActions";
-import { studentSchema, type StudentFormValues } from "../schemas/student-schema";
+import {
+  studentSchema,
+  type StudentFormValues,
+} from "../schemas/student-schema";
 import { type Student } from "../types";
 import {
   useCreateStudentMutation,
   useUpdateStudentMutation,
 } from "../hooks/mutations";
+import { cn } from "@/lib/utils";
 
 interface StudentFormProps {
   isOpen: boolean;
@@ -80,10 +84,13 @@ export function StudentForm({
   // Populate form values if editing
   useEffect(() => {
     if (student) {
-      console.log("bbbbbbbbbbbbb",student)
+      console.log("bbbbbbbbbbbbb", student);
       // Find active grade ID from enrollments
-      const activeEnrollment = student.enrollments.find((e) => e.isActive) ?? student.enrollments[0];
-      const gradeId = String(activeEnrollment?.grade?.id) || String(activeEnrollment?.gradeId);
+      const activeEnrollment =
+        student.enrollments.find((e) => e.isActive) ?? student.enrollments[0];
+      const gradeId =
+        String(activeEnrollment?.grade?.id) ||
+        String(activeEnrollment?.gradeId);
 
       reset({
         fullName: student.user.fullName,
@@ -107,14 +114,16 @@ export function StudentForm({
         code: "",
       });
     }
-  }, [student, reset, isOpen , isGradesLoading]);
+  }, [student, reset, isOpen, isGradesLoading]);
 
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-4 text-right"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        className={cn(`grid grid-cols-1 gap-4`, !student && "md:grid-cols-2")}
+      >
         <FormInput
           label="الاسم الكامل"
           id="fullName"
@@ -123,13 +132,15 @@ export function StudentForm({
           {...register("fullName")}
         />
 
-        <FormInput
-          label="كود الطالب"
-          id="code"
-          placeholder="أدخل كود الطالب أو اتركه للتوليد التلقائي..."
-          error={errors.code?.message}
-          {...register("code")}
-        />
+        {!student && (
+          <FormInput
+            label="كود الطالب"
+            id="code"
+            placeholder="أدخل كود الطالب أو اتركه للتوليد التلقائي..."
+            error={errors.code?.message}
+            {...register("code")}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

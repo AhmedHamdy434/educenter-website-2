@@ -63,7 +63,7 @@ export function useUpdateStudentMutation() {
         parentPhone: values.parentPhone,
         notes: values.notes || undefined,
         gradeId: values.gradeId,
-        code: values.code?.trim() || undefined,
+        // code: values.code?.trim() || undefined,
       });
     },
     onSuccess: (result) => {
