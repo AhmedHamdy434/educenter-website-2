@@ -84,7 +84,6 @@ export function StudentForm({
   // Populate form values if editing
   useEffect(() => {
     if (student) {
-      console.log("bbbbbbbbbbbbb", student);
       // Find active grade ID from enrollments
       const activeEnrollment =
         student.enrollments.find((e) => e.isActive) ?? student.enrollments[0];
@@ -114,7 +113,7 @@ export function StudentForm({
         code: "",
       });
     }
-  }, [student, reset, isOpen, isGradesLoading]);
+  }, [student, isOpen]);
 
   return (
     <form
