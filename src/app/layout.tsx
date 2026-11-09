@@ -19,6 +19,13 @@ export const metadata: Metadata = {
     template: "%s | EduCenter",
   },
   description: "منصة شاملة تساعدك على إدارة طلابك، معلميك، الدروس، الاختبارات، والتقارير في مكان واحد بكل سهولة واحترافية.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   alternates: {
     canonical: "/",
   },
@@ -29,11 +36,20 @@ export const metadata: Metadata = {
     siteName: "EduCenter",
     locale: "ar_EG",
     type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 868,
+        height: 256,
+        alt: "EduCenter - منصة إدارة مراكز التعليم",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "EduCenter - منصة إدارة مراكز التعليم",
     description: "منصة شاملة تساعدك على إدارة طلابك، معلميك، الدروس، الاختبارات، والتقارير في مكان واحد بكل سهولة واحترافية.",
+    images: ["/logo.png"],
   },
   robots: {
     index: true,

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { GraduationCap, MessageCircle, Send } from "lucide-react";
+import Image from "next/image";
+import { MessageCircle, Send } from "lucide-react";
 
 const Youtube = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -25,14 +26,15 @@ export function Footer() {
           <div className="lg:col-span-2 flex flex-col gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 text-primary hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 group"
             >
-              <div className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary border border-border">
-                <GraduationCap className="size-6 stroke-[2.5]" />
-              </div>
-              <span className="font-extrabold text-xl tracking-tight text-foreground">
-                EduCenter
-              </span>
+              <Image
+                src="/logo.png"
+                alt="EduCenter - منصة مراكز التعليم"
+                width={150}
+                height={44}
+                className="h-10 w-auto object-contain transition-transform group-hover:scale-102"
+              />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
               المنصة المتكاملة الرائدة في إدارة السناتر التعليمية والمجموعات الدراسية. نساعدك على تنظيم عملك، متابعة طلابك، وتنمية أعمالك بكفاءة وسهولة.
@@ -97,7 +99,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground font-medium">
-            © {new Date().getFullYear()} EduCenter. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} EduCenter 434. جميع الحقوق محفوظة.
           </p>
 
           {/* Social Icons */}

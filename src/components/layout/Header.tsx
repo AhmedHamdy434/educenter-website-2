@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap, BookOpen } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/features/auth/actions/get-current-user";
 import { HeaderMobileMenu } from "./HeaderMobileMenu";
@@ -27,19 +27,15 @@ export async function Header() {
         <div className="flex h-20 items-center justify-between">
           {/* Right Side: Logo */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-primary border border-border transition-transform group-hover:scale-105">
-                <GraduationCap className="size-6 relative z-10" />
-                <BookOpen className="size-4 absolute bottom-1.5 left-1.5 opacity-40" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-sans text-xl font-bold tracking-tight text-foreground">
-                  EduCenter
-                </span>
-                <span className="text-[10px] text-muted-foreground font-medium -mt-1">
-                  منصة مراكز التعليم
-                </span>
-              </div>
+            <Link href="/" className="flex items-center gap-2 group">
+              <Image
+                src="/logo.png"
+                alt="EduCenter - منصة مراكز التعليم"
+                width={170}
+                height={50}
+                priority
+                className="h-11 w-auto object-contain transition-transform group-hover:scale-102"
+              />
             </Link>
           </div>
 

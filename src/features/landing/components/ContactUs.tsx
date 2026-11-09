@@ -93,7 +93,7 @@ export function ContactUs() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-stretch">
           {/* Right Column: Contact Form */}
           <FadeIn
-            direction="right"
+            direction="down"
             delay={0.1}
             className="lg:col-span-7 flex flex-col justify-between"
           >
