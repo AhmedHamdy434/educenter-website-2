@@ -63,6 +63,8 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
   id,
   className,
 }: FormSelectProps<TFieldValues>) {
+  const generatedId = React.useId();
+  const selectId = id || generatedId;
   const isDisabled = disabled || isLoading;
   const effectivePlaceholder = isLoading ? "جاري التحميل..." : placeholder;
 
@@ -77,7 +79,8 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
       dir="rtl"
     >
       <SelectTrigger
-        id={id}
+        id={selectId}
+        aria-label={label || placeholder || "قائمة منسدلة"}
         aria-invalid={!!error}
         className={cn(
           "w-full min-h-11 px-4 py-3 rounded-xl border border-input bg-card text-foreground text-sm font-medium outline-none transition-all text-right flex items-center justify-between shadow-none",
@@ -117,7 +120,7 @@ export function FormSelect<TFieldValues extends FieldValues = FieldValues>({
     <div className="space-y-2 w-full text-right" dir="rtl">
       {label && (
         <Label
-          htmlFor={id}
+          htmlFor={selectId}
           className="text-xs font-semibold text-muted-foreground block text-right select-none"
         >
           {label}

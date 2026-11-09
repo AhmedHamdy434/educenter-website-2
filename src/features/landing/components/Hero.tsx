@@ -75,7 +75,7 @@ export function Hero() {
             </FadeIn>
 
             {/* Social Proof / Avatars */}
-            <FadeIn direction="up" delay={0.4} duration={0.6}>
+            {/* <FadeIn direction="up" delay={0.4} duration={0.6}> */}
               <div className="flex items-center gap-4 pt-4 border-t border-border mt-2">
                 <div className="flex -space-x-2 space-x-reverse overflow-hidden">
                   <div className="relative size-10 rounded-full border-2 border-card overflow-hidden bg-secondary">
@@ -93,12 +93,12 @@ export function Hero() {
                   <span className="text-xs text-muted-foreground font-medium">يثقون بنا حول الوطن العربي</span>
                 </div>
               </div>
-            </FadeIn>
+            {/* </FadeIn> */}
           </div>
 
           {/* Left Column: Hero Dashboard Image */}
           <div className="lg:col-span-5 relative">
-            <FadeIn direction="left" delay={0.2} duration={0.8}>
+            {/* <FadeIn direction="left" delay={0.2} duration={0.8}> */}
               <div className="relative mx-auto max-w-md lg:max-w-none">
                 {/* Visual Glow */}
                 <div className="absolute inset-0 m-auto w-[85%] h-[85%] rounded-full bg-secondary/80 -z-10 animate-pulse duration-8000" />
@@ -114,7 +114,7 @@ export function Hero() {
                   />
                 </div>
               </div>
-            </FadeIn>
+            {/* </FadeIn> */}
           </div>
         </div>
       </div>
